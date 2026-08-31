@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WodIO - Inicio</title>
+
+    <!-- Favicon y manifest -->
+    <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Estilos internos solo para logos -->
+    <style>
+        .logo {
+            height: clamp(32px, 6vw, 48px);
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .logo-light {
+            display: none;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .logo-dark {
+                display: none;
+            }
+
+            .logo-light {
+                display: block;
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .logo-dark {
+                display: block;
+            }
+
+            .logo-light {
+                display: none;
+            }
+        }
+
+        .hero-logo {
+            height: clamp(80px, 12vw, 140px);
+            width: auto;
+            margin-bottom: 16px;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* VIDEO */
+        .hero-video {
+            width: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+        }
+
+        /* GRID HERO */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            align-items: center;
+        }
+
+        @media (min-width: 900px) {
+            .hero-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Botones de acceso */
+        .access-buttons {
+            margin-top: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .access-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 22px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .access-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+            color: #fff;
+        }
+
+        .btn-user {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            color: var(--text-main);
+        }
+    </style>
+
+    <!-- CSS global -->
+    <link rel="stylesheet" href="../src/css/base.css">
+    <link rel="stylesheet" href="../src/css/layout.css">
+    <link rel="stylesheet" href="../src/css/components.css">
+    <link rel="stylesheet" href="../src/css/theme.css">
+
+    <!-- Iconos externos -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="/public/assets/icons/Logo-WodIO_black.png" alt="WodIO logo" class="logo logo-dark">
+            <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO logo" class="logo logo-light">
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="container hero">
+
+        <div class="hero-grid">
+
+            <!-- COLUMNA IZQUIERDA: TEXTO -->
+            <div>
+                <img src="/public/assets/icons/Logo-WodIO_black.png" alt="WodIO logo grande"
+                    class="hero-logo logo-dark">
+                <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO logo grande"
+                    class="hero-logo logo-light">
+
+                <h1 class="hero-title">Bienvenido a WodIO</h1>
+
+                <p class="hero-subtitle">
+                    La plataforma diseñada para llevar tu box al siguiente nivel.
+                    Controla tus clases, gestiona tus atletas, organiza tus eventos y analiza tu progreso con precisión.
+                </p>
+
+                <p class="text-muted">
+                    WodIO combina potencia, simplicidad y una experiencia moderna para que puedas centrarte en lo que
+                    importa:
+                    <span class="highlight">entrenar, crecer y liderar tu comunidad.</span>
+                </p>
+
+                <!-- ACCESOS SEPARADOS -->
+                <div class="access-buttons">
+
+                    <button class="access-btn btn-admin" onclick="location.href='login.html'">
+                        <i class="ph ph-buildings"></i>
+                        Acceso Box / Gimnasio
+                    </button>
+
+                    <button class="access-btn btn-user" onclick="location.href='login-user.html'">
+                        <i class="ph ph-user"></i>
+                        Acceso Usuario / Atleta
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: VIDEO -->
+            <div>
+                <video id="heroVideo" class="hero-video" autoplay muted loop playsinline>
+                    <source src="/public/assets/videos/video-index.mp4" type="video/mp4">
+                    Tu navegador no soporta video HTML5.
+                </video>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        © 2026 WodIO — Plataforma de gestión para boxes y atletas
+    </footer>
+
+    <!-- Control de velocidad del vídeo -->
+    <script>
+        const video = document.getElementById('heroVideo');
+        video.playbackRate = 0.5;
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WodIO - Dashboard</title>
+
+    <!-- CSS global -->
+    <link rel="stylesheet" href="../src/css/base.css">
+    <link rel="stylesheet" href="../src/css/layout.css">
+    <link rel="stylesheet" href="../src/css/components.css">
+    <link rel="stylesheet" href="../src/css/theme.css">
+
+    <!-- Iconos externos -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+
+    <!-- JS menú móvil -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const toggle = document.querySelector(".nav-toggle");
+            const links = document.querySelector(".nav-links");
+
+            toggle.addEventListener("click", () => {
+                links.style.display = links.style.display === "flex" ? "none" : "flex";
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <span class="navbar-title">
+            <i class="ph ph-dumbbell" style="font-size: 22px; margin-right: 6px;"></i> WodIO
+        </span>
+
+        <div class="nav-links">
+            <a href="classes.html"><i class="ph ph-calendar"></i> Clases</a>
+            <a href="progress.html"><i class="ph ph-chart-line-up"></i> Progreso</a>
+            <a href="payments.html"><i class="ph ph-credit-card"></i> Pagos</a>
+            <a href="events.html"><i class="ph ph-trophy"></i> Eventos</a>
+        </div>
+
+        <button class="nav-toggle">
+            <i class="ph ph-list"></i>
+        </button>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <div class="container">
+
+        <!-- HERO -->
+        <section class="hero">
+            <h1 class="hero-title">
+                <i class="ph ph-gauge" style="margin-right: 6px;"></i>
+                Tu panel de entrenamiento
+            </h1>
+            <p class="hero-subtitle">Revisa tus clases, progreso y pagos en un solo lugar.</p>
+        </section>
+
+        <!-- TARJETAS -->
+        <div class="grid grid-3 mt-24">
+
+            <div class="card">
+                <h3><i class="ph ph-calendar-check"></i> Clases hoy</h3>
+                <p class="card-meta">2 reservas · 1 plaza libre</p>
+                <button onclick="location.href='classes.html'">
+                    <i class="ph ph-arrow-right"></i> Ver clases
+                </button>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-chart-line-up"></i> Progreso</h3>
+                <p class="card-meta">Último PR hace 3 días</p>
+                <button onclick="location.href='progress.html'">
+                    <i class="ph ph-arrow-right"></i> Ver registros
+                </button>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-credit-card"></i> Pagos</h3>
+                <p class="card-meta">Mensualidad pendiente</p>
+                <button onclick="location.href='payments.html'">
+                    <i class="ph ph-arrow-right"></i> Pagar ahora
+                </button>
+            </div>
+
+        </div>
+
+        <!-- EVENTOS -->
+        <section class="mt-32">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="ph ph-trophy"></i> Eventos del Box
+                </h2>
+                <button class="btn-secondary" onclick="location.href='events.html'">
+                    <i class="ph ph-list-plus"></i> Ver todos
+                </button>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-medal"></i> Throwdown 2026</h3>
+                <p class="card-meta">12 Octubre · 30 plazas</p>
+                <button onclick="location.href='events.html'">
+                    <i class="ph ph-arrow-right"></i> Inscribirme
+                </button>

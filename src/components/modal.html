@@ -1,0 +1,16 @@
+<div class="modal" id="{{id}}">
+    <div class="modal-content">
+        <h3><i class="ph ph-info"></i> {{titulo}}</h3>
+        <p>{{mensaje}}</p>
+
+        <div style="margin-top: 16px; display: flex; gap: 12px;">
+            <button class="btn-secondary" onclick="closeModal('{{id}}')">
+                <i class="ph ph-x-circle"></i> Cancelar
+            </button>
+
+            <button onclick="{{accion}}">
+                <i class="ph ph-check-circle"></i> Confirmar
+            </button>
+        </div>
+    </div>
+</div>

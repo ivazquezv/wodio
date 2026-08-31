@@ -1,0 +1,271 @@
+/* -------------------------------------------------------
+   CONTENEDOR PRINCIPAL
+------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 32px);
+}
+
+/* -------------------------------------------------------
+   NAVBAR — MÓVIL FIRST
+------------------------------------------------------- */
+
+.navbar {
+  background-color: var(--bg-elevated);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border-soft);
+  backdrop-filter: blur(6px);
+}
+
+.navbar-title {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 1.1rem;
+}
+
+.nav-links {
+  display: none;
+  gap: 20px;
+  font-size: 0.95rem;
+  align-items: center;
+}
+
+.nav-links a {
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  transition:
+    background var(--transition),
+    color var(--transition);
+}
+
+.nav-links a:hover {
+  background-color: var(--bg-surface);
+  color: var(--primary);
+}
+
+.nav-toggle {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  transition:
+    background var(--transition),
+    transform var(--transition);
+}
+
+.nav-toggle:hover {
+  background-color: var(--bg-elevated);
+  transform: scale(1.05);
+}
+
+/* -------------------------------------------------------
+   GRID RESPONSIVE
+------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.grid-2,
+.grid-3 {
+  grid-template-columns: 1fr;
+}
+
+/* -------------------------------------------------------
+   FOOTER
+------------------------------------------------------- */
+
+.footer {
+  margin-top: 40px;
+  padding: 20px;
+  text-align: center;
+  background-color: var(--bg-elevated);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-soft);
+}
+
+/* -------------------------------------------------------
+   BREAKPOINTS
+------------------------------------------------------- */
+
+@media (min-width: 640px) {
+  .nav-links {
+    display: flex;
+  }
+
+  .nav-toggle {
+    display: none;
+  }
+
+  .grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 32px;
+  }
+}
+
+/* -------------------------------------------------------
+   LOGOS
+------------------------------------------------------- */
+
+.logo {
+  height: clamp(32px, 6vw, 48px);
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.logo-light {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo-dark {
+    display: none;
+  }
+  .logo-light {
+    display: block;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .logo-dark {
+    display: block;
+  }
+  .logo-light {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------
+   BOTONES (global)
+------------------------------------------------------- */
+
+button {
+  cursor: pointer;
+  border: none;
+
+  padding: clamp(10px, 2vw, 14px) clamp(16px, 2vw, 24px);
+  border-radius: 999px;
+
+  background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+  color: #ffffff;
+  font-weight: 600;
+
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  line-height: 1;
+
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
+}
+
+button i {
+  font-size: 0.85em;
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* -------------------------------------------------------
+   BOTÓN HERO (independiente y proporcionado)
+------------------------------------------------------- */
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 12px 22px;
+  border-radius: 999px;
+
+  background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+  color: #ffffff;
+  font-weight: 600;
+
+  font-size: 1rem;
+  line-height: 1;
+
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.hero-cta i {
+  font-size: 0.9em;
+}
+
+.hero-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
+}
+
+/* -------------------------------------------------------
+   HERO RESPONSIVE
+------------------------------------------------------- */
+
+.hero {
+  padding: 32px 18px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+/* Dos columnas solo cuando hay espacio real */
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Texto más grande en móvil */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2.2rem;
+    line-height: 1.25;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.45;
+  }
+
+  .text-muted {
+    font-size: 1.1rem;
+    line-height: 1.45;
+  }
+}

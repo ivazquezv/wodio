@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WodIO - Crear cuenta</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
+    <meta name="theme-color" content="#000000">
+
+    <!-- CSS global -->
+    <link rel="stylesheet" href="../src/css/base.css">
+    <link rel="stylesheet" href="../src/css/layout.css">
+    <link rel="stylesheet" href="../src/css/components.css">
+    <link rel="stylesheet" href="../src/css/theme.css">
+
+    <script src="https://unpkg.com/phosphor-icons"></script>
+
+    <style>
+        .register-wrapper {
+            max-width: 420px;
+            margin: 60px auto;
+            text-align: center;
+        }
+
+        .register-logo {
+            height: clamp(80px, 12vw, 140px);
+            margin: 0 auto 20px auto;
+            display: block;
+        }
+
+        .register-card {
+            padding: 28px;
+            border-radius: 20px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            text-align: left;
+        }
+
+        .register-card label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+        }
+
+        .register-card input {
+            margin-top: 6px;
+        }
+
+        .register-btn {
+            margin-top: 10px;
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
+        }
+
+        .register-links {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .register-links a {
+            color: var(--primary-soft);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="/public/assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO logo">
+        </div>
+    </nav>
+
+    <div class="register-wrapper">
+
+        <img src="/public/assets/icons/Logo-WodIO_white.png" class="register-logo" alt="WodIO logo">
+
+        <h1 class="hero-title"><i class="ph ph-user-plus"></i> Crear cuenta</h1>
+
+        <div class="register-card">
+
+            <label><i class="ph ph-user"></i> Nombre completo</label>
+            <input type="text" placeholder="Tu nombre">
+
+            <label><i class="ph ph-envelope"></i> Correo electrónico</label>
+            <input type="email" placeholder="tuemail@ejemplo.com">
+
+            <label><i class="ph ph-lock"></i> Contraseña</label>
+            <input type="password" placeholder="••••••••">
+
+            <label><i class="ph ph-lock-key"></i> Confirmar contraseña</label>
+            <input type="password" placeholder="••••••••">
+
+            <button class="register-btn">
+                <i class="ph ph-check-circle"></i>
+                Crear cuenta
+            </button>
+
+        </div>
+
+        <div class="register-links">
+            ¿Ya tienes cuenta?
+            <a href="login.html">Iniciar sesión</a>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

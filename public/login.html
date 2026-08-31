@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WodIO - Login</title>
+
+    <!-- Favicon y manifest -->
+    <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
+    <meta name="theme-color" content="#000000">
+
+    <!-- CSS global -->
+    <link rel="stylesheet" href="../src/css/base.css">
+    <link rel="stylesheet" href="../src/css/layout.css">
+    <link rel="stylesheet" href="../src/css/components.css">
+    <link rel="stylesheet" href="../src/css/theme.css">
+
+    <!-- Iconos -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+
+    <style>
+        .login-wrapper {
+            max-width: 420px;
+            margin: 60px auto;
+            text-align: center;
+        }
+
+        .login-logo {
+            height: clamp(80px, 12vw, 140px);
+            margin: 0 auto 20px auto;
+            display: block;
+        }
+
+        .login-card {
+            padding: 28px;
+            border-radius: 20px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            text-align: left;
+        }
+
+        .login-card label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+        }
+
+        .login-card input {
+            margin-top: 6px;
+        }
+
+        .login-btn {
+            margin-top: 10px;
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
+        }
+
+        .login-links {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: center;
+        }
+
+        .login-links a {
+            color: var(--primary-soft);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-soft);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="/public/assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO logo">
+        </div>
+    </nav>
+
+    <!-- LOGIN -->
+    <div class="login-wrapper">
+
+        <img src="/public/assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO logo">
+
+        <h1 class="hero-title"><i class="ph ph-sign-in"></i> Iniciar sesión</h1>
+
+        <div class="login-card">
+
+            <label><i class="ph ph-envelope"></i> Correo electrónico</label>
+            <input type="email" placeholder="tuemail@ejemplo.com">
+
+            <label><i class="ph ph-lock"></i> Contraseña</label>
+            <input type="password" placeholder="••••••••">
+
+            <button class="login-btn">
+                <i class="ph ph-arrow-right"></i>
+                Entrar
+            </button>
+
+            <div class="login-links">
+                <a href="password-reset.html">He olvidado mi contraseña</a>
+                <a href="register.html">Crear cuenta</a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        © 2026 WodIO — Plataforma de gestión para boxes y atletas
+    </footer>
+
+</body>
+
+</html>
