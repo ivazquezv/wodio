@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>WodIO — Plataforma de gestión para boxes y atletas</title>
 
     <!-- Favicon y manifest -->
@@ -12,111 +14,8 @@
     <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
     <meta name="theme-color" content="#000000">
 
-    <!-- Estilos internos solo para logos -->
-    <style>
-        .logo {
-            height: clamp(32px, 6vw, 48px);
-            width: auto;
-            display: block;
-            object-fit: contain;
-        }
-
-        .logo-light {
-            display: none;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .logo-dark {
-                display: none;
-            }
-
-            .logo-light {
-                display: block;
-            }
-        }
-
-        @media (prefers-color-scheme: light) {
-            .logo-dark {
-                display: block;
-            }
-
-            .logo-light {
-                display: none;
-            }
-        }
-
-        .hero-logo {
-            height: clamp(80px, 12vw, 140px);
-            width: auto;
-            margin-bottom: 16px;
-            display: block;
-            object-fit: contain;
-        }
-
-        .hero-video {
-            width: 100%;
-            border-radius: 16px;
-            object-fit: cover;
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-        }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 32px;
-            align-items: center;
-        }
-
-        @media (min-width: 900px) {
-            .hero-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        .access-buttons {
-            margin-top: 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .access-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 22px;
-            border-radius: var(--radius-full);
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-
-        .access-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
-        }
-
-        .btn-admin {
-            background: linear-gradient(135deg, var(--primary), var(--primary-soft));
-            color: #fff;
-        }
-
-        .btn-user {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-soft);
-            color: var(--text-main);
-        }
-    </style>
-
     <!-- CSS global -->
-    <link rel="stylesheet" href="/src/css/base.css">
-    <link rel="stylesheet" href="/src/css/layout.css">
-    <link rel="stylesheet" href="/src/css/components.css">
-    <link rel="stylesheet" href="/src/css/theme.css">
-
-
+    <link rel="stylesheet" href="/src/css/wodio.css">
 
     <!-- Iconos externos -->
     <script src="https://unpkg.com/phosphor-icons"></script>
@@ -126,38 +25,82 @@
 
     <!-- NAVBAR -->
     <nav class="navbar">
+
+        <!-- IZQUIERDA: LOGO + NOMBRE -->
         <div class="navbar-left">
-            <img src="/public/assets/icons/Logo-WodIO_black.png" alt="WodIO logo" class="logo logo-dark">
-            <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO logo" class="logo logo-light">
+            <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO logo" class="logo logo-dark">
+            <span class="navbar-title">WodIO</span>
         </div>
+
+        <!-- DERECHA: LINKS DESKTOP -->
+        <div class="nav-links">
+            <a href="#hero">Inicio</a>
+            <a href="#about">Qué es WodIO</a>
+            <a href="#features">Funciones</a>
+            <a href="#benefits">Ventajas</a>
+            <a href="#pricing">Precios</a>
+            <a href="#contact">Contacto</a>
+        </div>
+
+        <!-- BOTÓN ACCESO -->
+        <button class="nav-login" onclick="location.href='login.html'">
+            <i class="ph ph-sign-in"></i> Entrar
+        </button>
+
+        <!-- TOGGLE MÓVIL -->
+        <button class="nav-toggle" id="navToggle">
+            <i class="ph ph-list"></i>
+        </button>
+
     </nav>
 
+    <!-- MENÚ MÓVIL -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#hero">Inicio</a>
+        <a href="#about">Qué es WodIO</a>
+        <a href="#features">Funciones</a>
+        <a href="#benefits">Ventajas</a>
+        <a href="#pricing">Precios</a>
+        <a href="#contact">Contacto</a>
+
+        <button class="mobile-login" onclick="location.href='login.html'">
+            <i class="ph ph-sign-in"></i> Entrar
+        </button>
+    </div>
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        navToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('open');
+        });
+    </script>
+
     <!-- HERO -->
-    <div class="container hero">
+    <div class="container hero" id="hero">
 
         <div class="hero-grid">
 
             <!-- COLUMNA IZQUIERDA: TEXTO -->
             <div>
-                <img src="/public/assets/icons/Logo-WodIO_black.png" alt="WodIO logo grande"
-                    class="hero-logo logo-dark">
-                <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO logo grande"
-                    class="hero-logo logo-light">
+                <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO logo grande" class="hero-logo">
 
-                <h1 class="hero-title">Bienvenido a WodIO</h1>
+                <h1 class="hero-title">La plataforma que impulsa tu box</h1>
 
                 <p class="hero-subtitle">
-                    La plataforma diseñada para llevar tu box al siguiente nivel.
-                    Controla tus clases, gestiona tus atletas, organiza tus eventos y analiza tu progreso con precisión.
+                    WodIO centraliza la gestión de tu box en un único lugar: clases, atletas, programación,
+                    eventos, rendimiento y comunicación. Todo con una interfaz moderna, rápida y pensada para el día a
+                    día.
                 </p>
 
                 <p class="text-muted">
-                    WodIO combina potencia, simplicidad y una experiencia moderna para que puedas centrarte en lo que
-                    importa:
-                    <span class="highlight">entrenar, crecer y liderar tu comunidad.</span>
+                    Optimiza tu tiempo, mejora la experiencia de tus atletas y toma decisiones basadas en datos reales.
+                    WodIO es la herramienta que te permite <strong>entrenar, crecer y liderar tu comunidad</strong>
+                    con la máxima eficiencia.
                 </p>
 
-                <!-- ACCESOS SEPARADOS -->
+                <!-- ACCESOS -->
                 <div class="access-buttons">
 
                     <button class="access-btn btn-admin" onclick="location.href='login.html'">
@@ -184,9 +127,140 @@
         </div>
     </div>
 
+    <!-- SECCIÓN: ¿QUÉ ES WODIO? -->
+    <section class="container mt-48" id="about">
+        <h2>Qué es WodIO</h2>
+        <p class="text-muted">
+            WodIO es una plataforma integral diseñada para boxes de CrossTraining y gimnasios funcionales.
+            Su objetivo es simplificar la gestión diaria, mejorar la experiencia de los atletas y ofrecer herramientas
+            avanzadas para tomar decisiones basadas en datos reales.
+        </p>
+    </section>
+
+    <!-- SECCIÓN: FUNCIONES -->
+    <section class="container mt-48" id="features">
+        <h2>Funciones principales</h2>
+
+        <div class="grid grid-3 mt-24">
+
+            <div class="card">
+                <h3><i class="ph ph-calendar"></i> Gestión de clases</h3>
+                <p class="card-meta">Crea, organiza y controla tus clases diarias con facilidad.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-users-three"></i> Control de atletas</h3>
+                <p class="card-meta">Registra entrenamientos, PRs y rendimiento individual.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-chart-line-up"></i> Análisis y métricas</h3>
+                <p class="card-meta">Visualiza estadísticas reales para mejorar la toma de decisiones.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-trophy"></i> Eventos y competiciones</h3>
+                <p class="card-meta">Organiza competiciones internas y externas con facilidad.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-whatsapp-logo"></i> Comunicación</h3>
+                <p class="card-meta">Conecta con tus atletas mediante avisos y notificaciones.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-database"></i> Gestión avanzada</h3>
+                <p class="card-meta">Control de pagos, membresías, horarios y administración completa.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN: VENTAJAS -->
+    <section class="container mt-64" id="benefits">
+        <h2>¿Por qué elegir WodIO?</h2>
+
+        <div class="grid grid-2 mt-24">
+
+            <div class="card">
+                <h3><i class="ph ph-lightning"></i> Rápido y moderno</h3>
+                <p class="card-meta">Interfaz optimizada para velocidad y fluidez.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-shield-check"></i> Seguro y fiable</h3>
+                <p class="card-meta">Protección de datos garantizada.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-devices"></i> 100% responsive</h3>
+                <p class="card-meta">Funciona perfectamente en móvil, tablet y ordenador.</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-smiley"></i> Fácil de usar</h3>
+                <p class="card-meta">Diseño intuitivo para atletas y coaches.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN: TESTIMONIOS -->
+    <section class="container mt-64" id="testimonials">
+        <h2>Lo que dicen los boxes</h2>
+
+        <div class="grid grid-3 mt-24">
+
+            <div class="card">
+                <h3><i class="ph ph-star"></i> Box Norte</h3>
+                <p class="card-meta">“WodIO nos ha permitido organizar mejor nuestras clases.”</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-star"></i> CrossTraining Pamplona</h3>
+                <p class="card-meta">“La plataforma es rápida, clara y muy fácil de usar.”</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-star"></i> Box Egüés</h3>
+                <p class="card-meta">“El análisis de rendimiento es brutal.”</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN: PRECIOS -->
+    <section class="container mt-64" id="pricing">
+        <h2>Planes y precios</h2>
+
+        <div class="grid grid-3 mt-24">
+
+            <div class="card">
+                <h3><i class="ph ph-coins"></i> Starter</h3>
+                <p class="card-meta">Ideal para boxes pequeños.</p>
+                <p class="highlight">29€/mes</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-crown"></i> Pro</h3>
+                <p class="card-meta">La opción más equilibrada.</p>
+                <p class="highlight">49€/mes</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-fire"></i> Elite</h3>
+                <p class="card-meta">Para boxes con gran volumen.</p>
+                <p class="highlight">79€/mes</p>
+            </div>
+
+        </div>
+    </section>
+
     <!-- FOOTER -->
-    <footer class="footer">
-        © 2026 WodIO — Plataforma de gestión para boxes y atletas
+    <footer class="footer" id="contact">
+        <p>© 2026 WodIO — Plataforma de gestión para boxes y atletas</p>
+        <p>Desarrollado con pasión para la comunidad de entrenamiento funcional.</p>
+        <p>Contacto: <a href="mailto:soporte@wodio.com">soporte@wodio.com</a></p>
     </footer>
 
     <!-- Control de velocidad del vídeo -->
