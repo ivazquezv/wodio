@@ -99,8 +99,9 @@ body {
 
 .hero-video {
   width: 100%;
+  height: 100%; /* Igual altura que la columna izquierda */
+  object-fit: cover; /* Mantiene proporción sin deformar */
   border-radius: 16px;
-  object-fit: cover;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
