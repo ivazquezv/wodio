@@ -60,9 +60,6 @@ Correo: ivan.vazquez.vidador@gmail.com
 
 Sitio web: https://wodio.netlify.app
 
-Licencia
+## Licencia
+
 Este proyecto se distribuye bajo licencia MIT.
-
-```
-
-```
