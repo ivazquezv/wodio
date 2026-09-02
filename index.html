@@ -245,8 +245,25 @@
                 <p class="card-meta">“El análisis de rendimiento es brutal.”</p>
             </div>
 
+            <!-- NUEVOS TESTIMONIOS -->
+            <div class="card">
+                <h3><i class="ph ph-star"></i> Box Ribera</h3>
+                <p class="card-meta">“Los atletas están encantados con poder ver su progreso día a día.”</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-star"></i> CrossFit Tudela</h3>
+                <p class="card-meta">“La gestión de pagos y suscripciones nos ha ahorrado muchísimo tiempo.”</p>
+            </div>
+
+            <div class="card">
+                <h3><i class="ph ph-star"></i> Box Ansoáin</h3>
+                <p class="card-meta">“La programación semanal es súper intuitiva y visual.”</p>
+            </div>
+
         </div>
     </section>
+
 
     <!-- SEPARADOR -->
     <hr class="section-divider-gradient">
@@ -257,26 +274,40 @@
 
         <div class="grid grid-3 mt-24">
 
+            <!-- PLAN STARTER -->
             <div class="card">
                 <h3><i class="ph ph-coins"></i> Starter</h3>
                 <p class="card-meta">Ideal para boxes pequeños.</p>
                 <p class="highlight">29€/mes</p>
+
+                <a href="#contact" class="btn-primary mt-16">Contratar plan</a>
+                <a href="/info/starter" class="btn-secondary mt-12">Más información</a>
             </div>
 
+            <!-- PLAN PRO -->
             <div class="card">
                 <h3><i class="ph ph-crown"></i> Pro</h3>
                 <p class="card-meta">La opción más equilibrada.</p>
                 <p class="highlight">49€/mes</p>
+
+                <a href="#contact" class="btn-primary mt-16">Contratar plan</a>
+                <a href="/info/pro" class="btn-secondary mt-12">Más información</a>
             </div>
 
+            <!-- PLAN ELITE -->
             <div class="card">
                 <h3><i class="ph ph-fire"></i> Elite</h3>
                 <p class="card-meta">Para boxes con gran volumen.</p>
                 <p class="highlight">79€/mes</p>
+
+                <a href="#contact" class="btn-primary mt-16">Contratar plan</a>
+                <a href="/info/elite" class="btn-secondary mt-12">Más información</a>
             </div>
 
         </div>
     </section>
+
+
 
     <!-- FOOTER -->
     <footer class="footer" id="contact">
@@ -291,6 +322,42 @@
         video.playbackRate = 0.5;
     </script>
 
+    <!-- Botón de scroll hacia arriba -->
+    <button id="scrollTopBtn" class="scroll-top-btn">
+        <i class="ph-arrow-up"></i>
+    </button>
+
 </body>
+
+<!-- Botón de scroll hacia arriba -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("scrollTopBtn");
+
+        window.addEventListener("scroll", () => {
+            const scrollPos = window.scrollY;
+            const docHeight = document.body.scrollHeight;
+            const winHeight = window.innerHeight;
+
+            // Aparición progresiva según porcentaje de scroll
+            const scrollPercent = scrollPos / (docHeight - winHeight);
+
+            if (scrollPercent > 0.25) {
+                btn.classList.add("show");
+            } else {
+                btn.classList.remove("show");
+            }
+        });
+
+        btn.addEventListener("click", () => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    });
+</script>
+
+
 
 </html>
