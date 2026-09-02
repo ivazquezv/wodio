@@ -27,36 +27,42 @@ Este repositorio contiene la página oficial de WodIO, desarrollada como una lan
 ## Instalación
 
 1. Clonar el repositorio:
-
-```bash
-git clone https://github.com/ivazquezv/wodio.git
+   git clone https://github.com/ivazquezv/wodio.git
 
 2. Acceder al directorio del proyecto:
-cd wodio
+   cd wodio
 
 3. Abrir el archivo principal:
-public/index.html
-El proyecto funciona como una landing estática y no requiere instalación adicional.
+   public/index.html
+   El proyecto funciona como una landing estática y no requiere instalación adicional.
 
-Despliegue
+## Despliegue
+
 El sitio está configurado para desplegarse en Netlify utilizando la carpeta public como directorio de publicación.
 Cada actualización en la rama main genera un nuevo despliegue automático.
 
-Contribución
+## Contribución
+
 Las contribuciones pueden realizarse mediante pull requests.
 Antes de enviar cambios, se recomienda mantener la claridad, consistencia y documentación del código.
 
-Autor
+## Autor
+
 WodIO ha sido creado y desarrollado por Iván Vázquez Vidador, como parte de un proyecto orientado a la digitalización y optimización de la gestión en boxes de entrenamiento funcional.
 
-Contacto
+## Contacto
+
 Para consultas relacionadas con WodIO, colaboraciones o soporte:
 
 Correo: contacto@wodio.app
+Correo: contacta@ivanvazquezv.com
+Correo: ivan.vazquez.vidador@gmail.com
 
 Sitio web: https://wodio.netlify.app
 
 Licencia
 Este proyecto se distribuye bajo licencia MIT.
+
+```
 
 ```
