@@ -2,65 +2,439 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
-    <title>WodIO - Login</title>
 
-    <!-- Favicon y manifest -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión | WodIO</title>
+
+    <meta name="description" content="Accede a WodIO para gestionar tu box, clases, atletas, programación y actividad.">
+
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0b0b0f">
+
+    <!-- =====================================================
+         FAVICON
+    ====================================================== -->
+
     <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
-    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
-    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
-    <meta name="theme-color" content="#000000">
 
-    <!-- CSS global -->
+    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
+
+    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
+
+    <!-- =====================================================
+         CSS
+    ====================================================== -->
+
     <link rel="stylesheet" href="/src/css/wodio.css">
 
-    <!-- Iconos -->
-    <script src="https://unpkg.com/phosphor-icons"></script>
+    <!-- =====================================================
+         ICONOS
+    ====================================================== -->
+
+    <script src="https://unpkg.com/phosphor-icons" defer></script>
+
 </head>
+
 
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="navbar-left">
-            <img src="/public/assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO logo">
-        </div>
-    </nav>
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-    <!-- LOGIN -->
-    <main class="login-wrapper">
+    <header class="site-header">
 
-        <img src="/public/assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO logo">
+        <nav class="navbar" aria-label="Navegación principal">
 
-        <h1 class="hero-title"><i class="ph ph-sign-in"></i> Iniciar sesión</h1>
+            <a href="/public/index.html" class="navbar-left" aria-label="Volver a WodIO">
 
-        <form class="login-card">
+                <img src="/public/assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO">
 
-            <label for="email"><i class="ph ph-envelope"></i> Correo electrónico</label>
-            <input id="email" type="email" placeholder="tuemail@ejemplo.com" required>
+            </a>
 
-            <label for="password"><i class="ph ph-lock"></i> Contraseña</label>
-            <input id="password" type="password" placeholder="••••••••" required>
+            <div class="nav-actions">
 
-            <button class="login-btn" type="submit">
-                <i class="ph ph-arrow-right"></i>
-                Entrar
-            </button>
+                <span class="navbar-title">
+                    ¿No tienes una cuenta?
+                </span>
 
-            <div class="login-links">
-                <a href="password-reset.html">He olvidado mi contraseña</a>
-                <a href="register.html">Crear cuenta</a>
+                <a href="/public/register.html" class="nav-register">
+                    Crear cuenta
+                </a>
+
             </div>
 
-        </form>
+        </nav>
+
+    </header>
+
+
+    <!-- =====================================================
+         LOGIN
+    ====================================================== -->
+
+    <main>
+
+        <section class="login-wrapper" aria-labelledby="login-title">
+
+            <!-- Logo -->
+
+            <img src="/public/assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
+
+
+            <!-- Cabecera -->
+
+            <div class="login-heading">
+
+                <span class="section-eyebrow">
+                    ACCESO A WODIO
+                </span>
+
+                <h1 id="login-title">
+                    Bienvenido de nuevo
+                </h1>
+
+                <p class="text-muted">
+                    Accede a tu cuenta para gestionar tu box
+                    y consultar toda tu actividad.
+                </p>
+
+            </div>
+
+
+            <!-- Formulario -->
+
+            <form class="login-card" id="loginForm" novalidate>
+
+                <!-- Mensaje de error -->
+
+                <div id="loginMessage" class="login-message" role="alert" aria-live="polite" hidden></div>
+
+
+                <!-- Email -->
+
+                <div class="form-field">
+
+                    <label for="email">
+
+                        <i class="ph ph-envelope" aria-hidden="true"></i>
+
+                        Correo electrónico
+
+                    </label>
+
+                    <input id="email" name="email" type="email" autocomplete="email" placeholder="tuemail@ejemplo.com"
+                        required autofocus>
+
+                </div>
+
+
+                <!-- Password -->
+
+                <div class="form-field">
+
+                    <div class="form-label-row">
+
+                        <label for="password">
+
+                            <i class="ph ph-lock" aria-hidden="true"></i>
+
+                            Contraseña
+
+                        </label>
+
+                        <a href="/public/password-reset.html" class="password-reset-link">
+                            ¿La has olvidado?
+                        </a>
+
+                    </div>
+
+
+                    <div class="password-field">
+
+                        <input id="password" name="password" type="password" autocomplete="current-password"
+                            placeholder="Introduce tu contraseña" required>
+
+                        <button type="button" class="password-toggle" id="passwordToggle"
+                            aria-label="Mostrar contraseña" aria-controls="password" aria-pressed="false">
+
+                            <i class="ph ph-eye" aria-hidden="true"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Recordarme -->
+
+                <label class="remember-me">
+
+                    <input type="checkbox" id="remember" name="remember">
+
+                    <span>
+                        Mantener la sesión iniciada
+                    </span>
+
+                </label>
+
+
+                <!-- Submit -->
+
+                <button class="login-btn" id="loginBtn" type="submit">
+
+                    <i class="ph ph-sign-in" aria-hidden="true"></i>
+
+                    <span id="loginBtnText">
+                        Iniciar sesión
+                    </span>
+
+                </button>
+
+
+                <!-- Registro -->
+
+                <div class="login-register">
+
+                    <span>
+                        ¿Todavía no tienes cuenta?
+                    </span>
+
+                    <a href="/public/register.html">
+                        Crear una cuenta
+                    </a>
+
+                </div>
+
+            </form>
+
+
+            <!-- Acceso atleta -->
+
+            <div class="athlete-access">
+
+                <div class="athlete-access-icon">
+
+                    <i class="ph ph-user" aria-hidden="true"></i>
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        ¿Eres atleta?
+                    </strong>
+
+                    <p>
+                        Accede a tu área personal para consultar
+                        tus clases y progreso.
+                    </p>
+
+                    <a href="/public/login-user.html">
+                        Acceso para atletas
+                        <i class="ph ph-arrow-right" aria-hidden="true"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- Volver -->
+
+            <a href="/public/index.html" class="login-back">
+
+                <i class="ph ph-arrow-left" aria-hidden="true"></i>
+
+                Volver a WodIO
+
+            </a>
+
+        </section>
 
     </main>
 
-    <!-- FOOTER -->
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
     <footer class="footer">
-        © 2026 WodIO — Plataforma de gestión para boxes y atletas
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 WodIO. Todos los derechos reservados.
+            </p>
+
+            <div>
+
+                <a href="#">
+                    Privacidad
+                </a>
+
+                <a href="#">
+                    Términos
+                </a>
+
+            </div>
+
+        </div>
+
     </footer>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const loginForm =
+                document.getElementById("loginForm");
+
+            const loginBtn =
+                document.getElementById("loginBtn");
+
+            const loginBtnText =
+                document.getElementById("loginBtnText");
+
+            const loginMessage =
+                document.getElementById("loginMessage");
+
+            const password =
+                document.getElementById("password");
+
+            const passwordToggle =
+                document.getElementById("passwordToggle");
+
+
+            /* =================================================
+               MOSTRAR / OCULTAR CONTRASEÑA
+            ================================================= */
+
+            passwordToggle?.addEventListener("click", () => {
+
+                const isPassword =
+                    password.type === "password";
+
+                password.type =
+                    isPassword ? "text" : "password";
+
+                passwordToggle.setAttribute(
+                    "aria-pressed",
+                    String(isPassword)
+                );
+
+                passwordToggle.setAttribute(
+                    "aria-label",
+                    isPassword
+                        ? "Ocultar contraseña"
+                        : "Mostrar contraseña"
+                );
+
+                passwordToggle.innerHTML =
+                    isPassword
+                        ? '<i class="ph ph-eye-slash" aria-hidden="true"></i>'
+                        : '<i class="ph ph-eye" aria-hidden="true"></i>';
+
+            });
+
+
+            /* =================================================
+               FORMULARIO
+            ================================================= */
+
+            loginForm?.addEventListener("submit", async (event) => {
+
+                event.preventDefault();
+
+                loginMessage.hidden = true;
+                loginMessage.textContent = "";
+
+                if (!loginForm.checkValidity()) {
+
+                    loginForm.reportValidity();
+
+                    return;
+
+                }
+
+
+                /* Estado de carga */
+
+                loginBtn.disabled = true;
+
+                loginBtnText.textContent =
+                    "Iniciando sesión...";
+
+                loginBtn.querySelector("i").className =
+                    "ph ph-spinner-gap";
+
+
+                /*
+                 * Aquí se conectará Supabase Auth.
+                 *
+                 * Ejemplo futuro:
+                 *
+                 * const { data, error } =
+                 *     await supabase.auth.signInWithPassword({
+                 *         email,
+                 *         password
+                 *     });
+                 */
+
+
+                try {
+
+                    /*
+                     * Temporalmente simulamos la petición.
+                     *
+                     * Este bloque deberá sustituirse
+                     * por auth.js cuando conectemos Supabase.
+                     */
+
+                    await new Promise(resolve =>
+                        setTimeout(resolve, 700)
+                    );
+
+                    console.info(
+                        "Login preparado para conectar con Supabase."
+                    );
+
+
+                } catch (error) {
+
+                    loginMessage.textContent =
+                        "No se ha podido iniciar sesión. Comprueba tus datos e inténtalo de nuevo.";
+
+                    loginMessage.hidden = false;
+
+                } finally {
+
+                    loginBtn.disabled = false;
+
+                    loginBtnText.textContent =
+                        "Iniciar sesión";
+
+                    loginBtn.querySelector("i").className =
+                        "ph ph-sign-in";
+
+                }
+
+            });
+
+        });
+
+    </script>
 
 </body>
 
