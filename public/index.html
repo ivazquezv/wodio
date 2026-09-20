@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WodIO — Gestión inteligente para boxes y atletas</title>
+
+    <meta name="description"
+        content="WodIO centraliza la gestión de tu box: clases, atletas, WODs, reservas, eventos, progreso y pagos en una única plataforma.">
+
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="assets/icons/favicon/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="assets/icons/favicon/site.webmanifest">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/wodio.css">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/phosphor-icons" defer></script>
+
+
+</head>
+
+<body>
+
+
+    <!-- =========================================================
+     NAVBAR
+========================================================== -->
+
+    <header class="site-header">
+
+        <nav class="navbar" aria-label="Navegación principal">
+
+            <a href="#hero" class="navbar-left" aria-label="WodIO - Inicio">
+                <img src="assets/icons/Logo-WodIO_white.png" alt="WodIO" class="logo logo-dark">
+            </a>
+
+            <span class="navbar-title">
+                Plataforma de gestión para boxes y atletas
+            </span>
+
+            <div class="nav-links">
+                <a href="#about">Plataforma</a>
+                <a href="#features">Funciones</a>
+                <a href="#benefits">Ventajas</a>
+                <a href="#pricing">Precios</a>
+            </div>
+
+            <div class="nav-actions">
+
+                <a href="login.html" class="nav-login">
+                    <i class="ph ph-sign-in"></i>
+                    Entrar
+                </a>
+
+                <a href="register.html" class="nav-register">
+                    Crear cuenta
+                </a>
+
+            </div>
+
+            <button class="nav-toggle" id="navToggle" type="button" aria-label="Abrir menú" aria-expanded="false"
+                aria-controls="mobileMenu">
+
+                <i class="ph ph-list"></i>
+
+            </button>
+
+        </nav>
+
+
+        <!-- MENÚ MÓVIL -->
+
+        <div class="mobile-menu" id="mobileMenu">
+
+            <a href="#hero">Inicio</a>
+            <a href="#about">Plataforma</a>
+            <a href="#features">Funciones</a>
+            <a href="#benefits">Ventajas</a>
+            <a href="#pricing">Precios</a>
+
+            <div class="mobile-menu-actions">
+
+                <a href="login.html" class="mobile-login">
+                    <i class="ph ph-sign-in"></i>
+                    Iniciar sesión
+                </a>
+
+                <a href="register.html" class="btn-primary">
+                    Crear cuenta
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- =====================================================
+         HERO
+    ====================================================== -->
+
+        <section class="container hero" id="hero">
+
+            <div class="hero-grid">
+
+                <div class="hero-content">
+
+                    <span class="hero-badge">
+                        <i class="ph ph-lightning"></i>
+                        Gestión inteligente para tu box
+                    </span>
+
+                    <img src="assets/icons/Logo-WodIO_white.png" alt="WodIO" class="hero-logo">
+
+                    <h1 class="hero-title">
+                        Gestiona tu box.
+                        <span>Haz crecer tu comunidad.</span>
+                    </h1>
+
+                    <p class="hero-subtitle">
+                        WodIO reúne en una sola plataforma todo lo que necesitas
+                        para gestionar tu box y mejorar la experiencia de tus atletas.
+                    </p>
+
+                    <div class="hero-actions">
+
+                        <a href="register.html" class="btn-primary hero-cta">
+                            <i class="ph ph-rocket-launch"></i>
+                            Empezar ahora
+                        </a>
+
+                        <a href="#about" class="btn-secondary hero-cta">
+                            <i class="ph ph-play-circle"></i>
+                            Conocer WodIO
+                        </a>
+
+                    </div>
+
+                    <div class="hero-trust">
+
+                        <div>
+                            <i class="ph ph-check-circle"></i>
+                            Gestión centralizada
+                        </div>
+
+                        <div>
+                            <i class="ph ph-check-circle"></i>
+                            Para boxes y atletas
+                        </div>
+
+                        <div>
+                            <i class="ph ph-check-circle"></i>
+                            Acceso desde cualquier dispositivo
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-media">
+
+                    <div class="hero-video-wrapper">
+
+                        <video id="heroVideo" class="hero-video" autoplay muted loop playsinline preload="metadata">
+
+                            <source src="assets/videos/video-index.mp4" type="video/mp4">
+
+                            Tu navegador no soporta vídeo HTML5.
+
+                        </video>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+         PLATAFORMA
+    ====================================================== -->
+
+        <section class="container mt-64" id="about">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    LA PLATAFORMA
+                </span>
+
+                <h2>
+                    Todo tu box.
+                    <span>En un solo lugar.</span>
+                </h2>
+
+                <p class="text-muted">
+                    WodIO está diseñado para simplificar la gestión diaria
+                    de boxes de CrossTraining y entrenamiento funcional.
+                    Menos tareas administrativas. Más tiempo para tus atletas.
+                </p>
+
+            </div>
+
+
+            <div class="about-video mt-32">
+
+                <video class="video-demo" autoplay muted loop playsinline preload="metadata">
+
+                    <source src="assets/videos/WodIO-video.mp4" type="video/mp4">
+
+                    Tu navegador no soporta vídeo HTML5.
+
+                </video>
+
+            </div>
+
+        </section>
+
+
+        <hr class="section-divider-gradient">
+
+
+        <!-- =====================================================
+         PARA QUIÉN
+    ====================================================== -->
+
+        <section class="container mt-64">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    UNA PLATAFORMA
+                </span>
+
+                <h2>
+                    Diseñada para las personas
+                    <span>que hacen funcionar un box.</span>
+                </h2>
+
+            </div>
+
+
+            <div class="grid grid-2 mt-32">
+
+                <article class="card audience-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-buildings"></i>
+                    </div>
+
+                    <h3>
+                        Para propietarios y coaches
+                    </h3>
+
+                    <p class="card-meta">
+                        Gestiona clases, horarios, atletas, membresías,
+                        pagos, eventos y programación desde un único panel.
+                    </p>
+
+                    <a href="#features" class="card-link">
+                        Ver funcionalidades
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+
+                </article>
+
+
+                <article class="card audience-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-user"></i>
+                    </div>
+
+                    <h3>
+                        Para atletas
+                    </h3>
+
+                    <p class="card-meta">
+                        Consulta tus clases, reserva entrenamientos,
+                        registra resultados y sigue tu evolución.
+                    </p>
+
+                    <a href="login-user.html" class="card-link">
+                        Acceso atleta
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+         FUNCIONALIDADES
+    ====================================================== -->
+
+        <section class="container mt-64" id="features">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    FUNCIONALIDADES
+                </span>
+
+                <h2>
+                    Todo lo que necesitas
+                    <span>para gestionar tu box.</span>
+                </h2>
+
+                <p class="text-muted">
+                    Una plataforma preparada para centralizar la operativa
+                    diaria y ofrecer una mejor experiencia a tus atletas.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-3 mt-32">
+
+                <article class="card feature-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-calendar-check"></i>
+                    </div>
+
+                    <h3>Gestión de clases</h3>
+
+                    <p class="card-meta">
+                        Organiza horarios, plazas, reservas y asistencia
+                        de forma sencilla.
+                    </p>
+
+                </article>
+
+
+                <article class="card feature-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-users-three"></i>
+                    </div>
+
+                    <h3>Gestión de atletas</h3>
+
+                    <p class="card-meta">
+                        Centraliza la información de tus atletas y
+                        consulta su actividad y evolución.
+                    </p>
+
+                </article>
+
+
+                <article class="card feature-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-barbell"></i>
+                    </div>
+
+                    <h3>WODs y programación</h3>
+
+                    <p class="card-meta">
+                        Publica entrenamientos y facilita el acceso
+                        a la programación diaria.
+                    </p>
+
+                </article>
+
+
+                <article class="card feature-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-chart-line-up"></i>
+                    </div>
+
+                    <h3>Progreso y métricas</h3>
+
+                    <p class="card-meta">
+                        Registra resultados, PRs y evolución para
+                        convertir los datos en información útil.
+                    </p>
+
+                </article>
+
+
+                <article class="card feature-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-trophy"></i>
+                    </div>
+
+                    <h3>Eventos</h3>
+
+                    <p class="card-meta">
+                        Organiza competiciones, actividades especiales
+                        y eventos de comunidad.
+                    </p>
+
+                </article>
+
+
+                <article class="card feature-card">
+
+                    <div class="card-icon">
+                        <i class="ph ph-credit-card"></i>
+                    </div>
+
+                    <h3>Membresías y pagos</h3>
+
+                    <p class="card-meta">
+                        Controla suscripciones, cuotas, pagos y estados
+                        de membresía.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <hr class="section-divider-gradient">
+
+
+        <!-- =====================================================
+         VENTAJAS
+    ====================================================== -->
+
+        <section class="container mt-64" id="benefits">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    POR QUÉ WODIO
+                </span>
+
+                <h2>
+                    Menos gestión.
+                    <span>Más entrenamiento.</span>
+                </h2>
+
+            </div>
+
+
+            <div class="grid grid-2 mt-32">
+
+                <article class="card benefit-card">
+
+                    <i class="ph ph-lightning"></i>
+
+                    <div>
+                        <h3>Rápido y sencillo</h3>
+
+                        <p class="card-meta">
+                            Una interfaz pensada para utilizarse todos los días
+                            sin procesos innecesarios.
+                        </p>
+                    </div>
+
+                </article>
+
+
+                <article class="card benefit-card">
+
+                    <i class="ph ph-shield-check"></i>
+
+                    <div>
+                        <h3>Datos centralizados</h3>
+
+                        <p class="card-meta">
+                            Toda la información de tu box organizada en
+                            un único entorno.
+                        </p>
+                    </div>
+
+                </article>
+
+
+                <article class="card benefit-card">
+
+
+                    <i class="ph ph-device-mobile"></i>
+
+                    <div>
+                        <h3>Multidispositivo</h3>
+
+                        <p class="card-meta">
+                            Accede desde ordenador, tablet o móvil
+                            cuando lo necesites.
+                        </p>
+                    </div>
+
+
+                </article>
+
+
+
+                <article class="card benefit-card">
+
+                    <i class="ph ph-chart-line-up"></i>
+
+                    <div>
+                        <h3>Decisiones basadas en datos</h3>
+
+                        <p class="card-meta">
+                            Convierte la actividad de tu box en información
+                            útil para mejorar su gestión.
+                        </p>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <hr class="section-divider-gradient">
+
+
+        <!-- =====================================================
+         PRECIOS
+    ====================================================== -->
+
+        <section class="container mt-64" id="pricing">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    PLANES
+                </span>
+
+                <h2>
+                    Empieza con el plan
+                    <span>que encaje con tu box.</span>
+                </h2>
+
+                <p class="text-muted">
+                    Planes pensados para diferentes tamaños y necesidades.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-3 mt-32">
+
+
+                <!-- STARTER -->
+
+                <article class="card pricing-card">
+
+                    <div class="pricing-header">
+
+                        <div class="card-icon">
+                            <i class="ph ph-rocket"></i>
+                        </div>
+
+                        <h3>Starter</h3>
+
+                        <p class="card-meta">
+                            Para boxes pequeños.
+                        </p>
+
+                    </div>
+
+                    <p class="highlight">
+                        29€<span>/mes</span>
+                    </p>
+
+                    <ul class="pricing-features">
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Gestión de clases
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Gestión de atletas
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Reservas
+                        </li>
+
+                    </ul>
+
+                    <a href="register.html" class="btn-primary">
+                        Empezar
+                    </a>
+
+                </article>
+
+
+                <!-- PRO -->
+
+                <article class="card pricing-card pricing-featured">
+
+                    <span class="pricing-badge">
+                        Recomendado
+                    </span>
+
+                    <div class="pricing-header">
+
+                        <div class="card-icon">
+                            <i class="ph ph-crown"></i>
+                        </div>
+
+                        <h3>Pro</h3>
+
+                        <p class="card-meta">
+                            Para boxes en crecimiento.
+                        </p>
+
+                    </div>
+
+                    <p class="highlight">
+                        49€<span>/mes</span>
+                    </p>
+
+                    <ul class="pricing-features">
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Todo Starter
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Programación y WODs
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Eventos
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Métricas y progreso
+                        </li>
+
+                    </ul>
+
+                    <a href="register.html" class="btn-primary">
+                        Empezar
+                    </a>
+
+                </article>
+
+
+                <!-- ELITE -->
+
+                <article class="card pricing-card">
+
+                    <div class="pricing-header">
+
+                        <div class="card-icon">
+                            <i class="ph ph-fire"></i>
+                        </div>
+
+                        <h3>Elite</h3>
+
+                        <p class="card-meta">
+                            Para boxes con mayor volumen.
+                        </p>
+
+                    </div>
+
+                    <p class="highlight">
+                        79€<span>/mes</span>
+                    </p>
+
+                    <ul class="pricing-features">
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Todo Pro
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Gestión avanzada
+                        </li>
+
+                        <li>
+                            <i class="ph ph-check"></i>
+                            Pagos y membresías
+                        </li>
+
+                    </ul>
+
+                    <a href="register.html" class="btn-primary">
+                        Empezar
+                    </a>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+         CTA FINAL
+    ====================================================== -->
+
+        <section class="container mt-64">
+
+            <div class="cta-section">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        WODIO
+                    </span>
+
+                    <h2>
+                        Tu box tiene una comunidad.
+                        <span>WodIO te ayuda a gestionarla.</span>
+                    </h2>
+
+                    <p>
+                        Centraliza la gestión, mejora la experiencia
+                        de tus atletas y dedica más tiempo a lo que
+                        realmente importa.
+                    </p>
+
+                </div>
+
+                <div class="cta-actions">
+
+                    <a href="register.html" class="btn-primary">
+                        <i class="ph ph-rocket-launch"></i>
+                        Crear mi cuenta
+                    </a>
+
+                    <a href="login.html" class="btn-secondary">
+                        Ya tengo una cuenta
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+     FOOTER
+========================================================== -->
+
+    <footer class="footer" id="contact">
+
+        <div class="footer-content">
+
+            <div class="footer-brand">
+
+                <img src="assets/icons/Logo-WodIO_white.png" alt="WodIO" class="footer-logo">
+
+                <p>
+                    Plataforma de gestión para boxes,
+                    coaches y atletas.
+                </p>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>WodIO</h3>
+
+                <a href="#about">Plataforma</a>
+                <a href="#features">Funciones</a>
+                <a href="#pricing">Precios</a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>Acceso</h3>
+
+                <a href="login.html">
+                    Iniciar sesión
+                </a>
+
+                <a href="register.html">
+                    Crear cuenta
+                </a>
+
+                <a href="login-user.html">
+                    Acceso atleta
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>Contacto</h3>
+
+                <a href="mailto:soporte@wodio.com">
+                    soporte@wodio.com
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 WodIO. Todos los derechos reservados.
+            </p>
+
+            <div>
+
+                <a href="#">
+                    Privacidad
+                </a>
+
+                <a href="#">
+                    Términos
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================================
+     SCROLL TOP
+========================================================== -->
+
+    <button id="scrollTopBtn" class="scroll-top-btn" type="button" aria-label="Volver arriba">
+
+        <i class="ph ph-arrow-up"></i>
+
+    </button>
+
+
+    <!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const navToggle = document.getElementById("navToggle");
+            const mobileMenu = document.getElementById("mobileMenu");
+            const scrollTopBtn = document.getElementById("scrollTopBtn");
+            const heroVideo = document.getElementById("heroVideo");
+
+
+            /* =====================================================
+               MENÚ MÓVIL
+            ====================================================== */
+
+            navToggle?.addEventListener("click", () => {
+
+                const isOpen = mobileMenu.classList.toggle("open");
+
+                navToggle.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
+
+                navToggle.setAttribute(
+                    "aria-label",
+                    isOpen ? "Cerrar menú" : "Abrir menú"
+                );
+
+                navToggle.innerHTML = isOpen
+                    ? '<i class="ph ph-x"></i>'
+                    : '<i class="ph ph-list"></i>';
+
+            });
+
+
+            /* =====================================================
+               CERRAR MENÚ AL NAVEGAR
+            ====================================================== */
+
+            mobileMenu
+                ?.querySelectorAll("a")
+                .forEach(link => {
+
+                    link.addEventListener("click", () => {
+
+                        mobileMenu.classList.remove("open");
+
+                        navToggle.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+
+                        navToggle.setAttribute(
+                            "aria-label",
+                            "Abrir menú"
+                        );
+
+                        navToggle.innerHTML =
+                            '<i class="ph ph-list"></i>';
+
+                    });
+
+                });
+
+
+            /* =====================================================
+               VELOCIDAD DEL HERO
+            ====================================================== */
+
+            if (heroVideo) {
+
+                heroVideo.playbackRate = 0.5;
+
+            }
+
+
+            /* =====================================================
+               SCROLL TOP
+            ====================================================== */
+
+            const updateScrollButton = () => {
+
+                if (!scrollTopBtn) {
+                    return;
+                }
+
+                if (window.scrollY > 500) {
+
+                    scrollTopBtn.classList.add("show");
+
+                } else {
+
+                    scrollTopBtn.classList.remove("show");
+
+                }
+
+            };
+
+
+            window.addEventListener(
+                "scroll",
+                updateScrollButton,
+                { passive: true }
+            );
+
+
+            scrollTopBtn?.addEventListener(
+                "click",
+                () => {
+
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+
+                }
+            );
+
+
+            updateScrollButton();
+
+        });
+
+    </script>
+
+
+</body>
+
+</html>
