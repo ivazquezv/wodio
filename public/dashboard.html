@@ -6,757 +6,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+
     <title>Dashboard | WodIO</title>
+
     <meta name="description" content="Panel principal de WodIO para gestionar tu box de CrossTraining.">
 
-    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <meta name="theme-color" content="#0b0b0f">
+
+    <!-- FAVICON -->
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/icons/favicon/favicon-96x96.png">
+
+    <link rel="shortcut icon" href="assets/icons/favicon/favicon.ico">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
+
+    <link rel="manifest" href="assets/icons/favicon/site.webmanifest">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="../src/css/wodio.css">
 
-    <style>
-        .dashboard-page {
-            min-height: 100vh;
-            background: var(--bg-main);
-        }
-
-        .dashboard-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-
-        .dashboard-sidebar {
-            width: 250px;
-            flex-shrink: 0;
-            background: var(--bg-surface);
-            border-right: 1px solid var(--border-soft);
-            padding: 24px 16px;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 100;
-        }
-
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 4px 10px 28px;
-        }
-
-        .sidebar-logo img {
-            width: 38px;
-            height: 38px;
-            object-fit: contain;
-        }
-
-        .sidebar-logo span {
-            font-size: 21px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .sidebar-logo strong {
-            color: var(--primary);
-        }
-
-        .sidebar-section {
-            margin-bottom: 28px;
-        }
-
-        .sidebar-label {
-            padding: 0 12px;
-            margin-bottom: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-height: 44px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            color: var(--text-soft);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition:
-                background .2s ease,
-                color .2s ease,
-                transform .2s ease;
-        }
-
-        .sidebar-link:hover {
-            background: var(--bg-elevated);
-            color: var(--text-main);
-        }
-
-        .sidebar-link.active {
-            background: rgba(255, 107, 0, .12);
-            color: var(--primary-soft);
-        }
-
-        .sidebar-icon {
-            width: 20px;
-            text-align: center;
-            font-size: 17px;
-        }
-
-        .sidebar-bottom {
-            margin-top: auto;
-        }
-
-        .sidebar-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            border-top: 1px solid var(--border-soft);
-            margin-bottom: 10px;
-        }
-
-        .profile-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            background: rgba(255, 107, 0, .14);
-            color: var(--primary-soft);
-            font-weight: 800;
-            font-size: 13px;
-        }
-
-        .profile-info {
-            min-width: 0;
-        }
-
-        .profile-name {
-            color: var(--text-main);
-            font-size: 13px;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .profile-role {
-            color: var(--text-muted);
-            font-size: 11px;
-            margin-top: 2px;
-        }
-
-        /* MAIN */
-
-        .dashboard-main {
-            flex: 1;
-            margin-left: 250px;
-            min-width: 0;
-        }
-
-        .dashboard-header {
-            height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            padding: 0 34px;
-            border-bottom: 1px solid var(--border-soft);
-            background: rgba(11, 11, 15, .92);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .mobile-menu-button {
-            display: none;
-            width: 42px;
-            height: 42px;
-            border: 1px solid var(--border-soft);
-            border-radius: 10px;
-            background: var(--bg-surface);
-            color: var(--text-main);
-            cursor: pointer;
-            font-size: 19px;
-        }
-
-        .header-title {
-            min-width: 0;
-        }
-
-        .header-title h1 {
-            margin: 0;
-            font-size: 20px;
-            letter-spacing: -.4px;
-        }
-
-        .header-title p {
-            margin: 4px 0 0;
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-icon {
-            width: 42px;
-            height: 42px;
-            display: grid;
-            place-items: center;
-            border: 1px solid var(--border-soft);
-            border-radius: 10px;
-            background: var(--bg-surface);
-            color: var(--text-soft);
-            text-decoration: none;
-            transition: .2s ease;
-        }
-
-        .header-icon:hover {
-            border-color: var(--border-primary);
-            color: var(--primary-soft);
-        }
-
-        .dashboard-content {
-            max-width: 1500px;
-            margin: 0 auto;
-            padding: 32px 34px 50px;
-        }
-
-        /* WELCOME */
-
-        .welcome-card {
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 30px;
-            padding: 30px;
-            margin-bottom: 24px;
-            border: 1px solid var(--border-primary);
-            border-radius: 18px;
-            background:
-                radial-gradient(circle at 85% 50%,
-                    rgba(255, 107, 0, .14),
-                    transparent 35%),
-                var(--bg-card);
-        }
-
-        .welcome-card::after {
-            content: "";
-            position: absolute;
-            width: 180px;
-            height: 180px;
-            right: -80px;
-            top: -80px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 107, 0, .12);
-        }
-
-        .welcome-copy {
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-copy .eyebrow {
-            color: var(--primary-soft);
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .welcome-copy h2 {
-            margin: 0;
-            font-size: 28px;
-            letter-spacing: -.8px;
-        }
-
-        .welcome-copy p {
-            margin: 9px 0 0;
-            max-width: 650px;
-            color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .welcome-date {
-            position: relative;
-            z-index: 1;
-            flex-shrink: 0;
-            padding: 15px 18px;
-            border: 1px solid var(--border-soft);
-            border-radius: 12px;
-            background: rgba(0, 0, 0, .18);
-            text-align: right;
-        }
-
-        .welcome-date span {
-            display: block;
-            color: var(--text-muted);
-            font-size: 11px;
-            margin-bottom: 4px;
-        }
-
-        .welcome-date strong {
-            color: var(--text-main);
-            font-size: 15px;
-        }
-
-        /* STATS */
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            padding: 20px;
-            border: 1px solid var(--border-soft);
-            border-radius: 14px;
-            background: var(--bg-card);
-            transition:
-                border-color .2s ease,
-                transform .2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--border-primary);
-        }
-
-        .stat-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .stat-icon {
-            width: 34px;
-            height: 34px;
-            display: grid;
-            place-items: center;
-            border-radius: 9px;
-            background: rgba(255, 107, 0, .1);
-            color: var(--primary-soft);
-        }
-
-        .stat-value {
-            color: var(--text-main);
-            font-size: 28px;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        .stat-description {
-            margin-top: 8px;
-            color: var(--text-muted);
-            font-size: 11px;
-        }
-
-        .stat-description strong {
-            color: var(--primary-soft);
-        }
-
-        /* GRID */
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
-            gap: 20px;
-        }
-
-        .dashboard-column {
-            min-width: 0;
-        }
-
-        .dashboard-section {
-            margin-bottom: 20px;
-            border: 1px solid var(--border-soft);
-            border-radius: 14px;
-            background: var(--bg-card);
-            overflow: hidden;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 19px 20px;
-            border-bottom: 1px solid var(--border-soft);
-        }
-
-        .section-header h3 {
-            margin: 0;
-            font-size: 15px;
-        }
-
-        .section-link {
-            color: var(--primary-soft);
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .section-link:hover {
-            text-decoration: underline;
-        }
-
-        /* CLASSES */
-
-        .class-list {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .class-item {
-            display: grid;
-            grid-template-columns: 70px minmax(0, 1fr) auto;
-            align-items: center;
-            gap: 16px;
-            padding: 17px 20px;
-            border-bottom: 1px solid var(--border-soft);
-        }
-
-        .class-item:last-child {
-            border-bottom: 0;
-        }
-
-        .class-time {
-            text-align: center;
-        }
-
-        .class-time strong {
-            display: block;
-            font-size: 15px;
-            color: var(--text-main);
-        }
-
-        .class-time span {
-            display: block;
-            margin-top: 3px;
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        .class-info {
-            min-width: 0;
-        }
-
-        .class-name {
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 700;
-        }
-
-        .class-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 5px;
-            color: var(--text-muted);
-            font-size: 11px;
-        }
-
-        .class-status {
-            padding: 6px 10px;
-            border-radius: 7px;
-            font-size: 10px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .status-confirmed {
-            background: rgba(34, 197, 94, .1);
-            color: #4ade80;
-        }
-
-        .status-available {
-            background: rgba(255, 107, 0, .1);
-            color: var(--primary-soft);
-        }
-
-        /* QUICK ACTIONS */
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 16px;
-        }
-
-        .quick-action {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-height: 72px;
-            padding: 12px;
-            border: 1px solid var(--border-soft);
-            border-radius: 10px;
-            background: var(--bg-surface);
-            color: var(--text-soft);
-            text-decoration: none;
-            transition: .2s ease;
-        }
-
-        .quick-action:hover {
-            border-color: var(--border-primary);
-            color: var(--text-main);
-            transform: translateY(-1px);
-        }
-
-        .quick-action-icon {
-            width: 34px;
-            height: 34px;
-            flex-shrink: 0;
-            display: grid;
-            place-items: center;
-            border-radius: 8px;
-            background: rgba(255, 107, 0, .1);
-            color: var(--primary-soft);
-        }
-
-        .quick-action strong {
-            display: block;
-            font-size: 12px;
-        }
-
-        .quick-action span {
-            display: block;
-            margin-top: 3px;
-            color: var(--text-muted);
-            font-size: 10px;
-        }
-
-        /* PROGRESS */
-
-        .progress-content {
-            padding: 20px;
-        }
-
-        .progress-row {
-            margin-bottom: 19px;
-        }
-
-        .progress-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 7px;
-            font-size: 11px;
-        }
-
-        .progress-info span:first-child {
-            color: var(--text-soft);
-        }
-
-        .progress-info span:last-child {
-            color: var(--primary-soft);
-            font-weight: 700;
-        }
-
-        .progress-bar {
-            height: 6px;
-            border-radius: 99px;
-            background: var(--bg-elevated);
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            width: 0;
-            border-radius: inherit;
-            background: var(--primary);
-        }
-
-        /* ANNOUNCEMENTS */
-
-        .announcement {
-            display: flex;
-            gap: 12px;
-            padding: 17px 20px;
-            border-bottom: 1px solid var(--border-soft);
-        }
-
-        .announcement:last-child {
-            border-bottom: 0;
-        }
-
-        .announcement-icon {
-            width: 34px;
-            height: 34px;
-            flex-shrink: 0;
-            display: grid;
-            place-items: center;
-            border-radius: 9px;
-            background: rgba(255, 107, 0, .1);
-            color: var(--primary-soft);
-        }
-
-        .announcement strong {
-            display: block;
-            font-size: 12px;
-            color: var(--text-main);
-        }
-
-        .announcement p {
-            margin: 4px 0 0;
-            color: var(--text-muted);
-            font-size: 11px;
-            line-height: 1.5;
-        }
-
-        /* MOBILE OVERLAY */
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .65);
-            z-index: 90;
-        }
-
-        @media (max-width: 1100px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 800px) {
-            .dashboard-sidebar {
-                transform: translateX(-100%);
-                transition: transform .25s ease;
-            }
-
-            .dashboard-sidebar.open {
-                transform: translateX(0);
-            }
-
-            .dashboard-sidebar.open+.sidebar-overlay {
-                display: block;
-            }
-
-            .dashboard-main {
-                margin-left: 0;
-            }
-
-            .mobile-menu-button {
-                display: block;
-            }
-
-            .dashboard-header {
-                padding: 0 18px;
-            }
-
-            .header-title {
-                margin-right: auto;
-            }
-
-            .dashboard-content {
-                padding: 22px 18px 40px;
-            }
-
-            .welcome-card {
-                align-items: flex-start;
-                flex-direction: column;
-                padding: 24px;
-            }
-
-            .welcome-date {
-                text-align: left;
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 560px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 15px;
-            }
-
-            .stat-value {
-                font-size: 23px;
-            }
-
-            .stat-icon {
-                width: 30px;
-                height: 30px;
-            }
-
-            .header-title h1 {
-                font-size: 16px;
-            }
-
-            .header-title p {
-                display: none;
-            }
-
-            .header-actions .header-icon:first-child {
-                display: none;
-            }
-
-            .welcome-copy h2 {
-                font-size: 23px;
-            }
-
-            .class-item {
-                grid-template-columns: 55px minmax(0, 1fr);
-                gap: 11px;
-            }
-
-            .class-status {
-                grid-column: 2;
-                justify-self: start;
-            }
-
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 
 </head>
 
@@ -764,18 +34,32 @@
 
     <div class="dashboard-layout">
 
-        <!-- SIDEBAR -->
+
+        <!-- =====================================================
+     SIDEBAR
+====================================================== -->
+
         <aside class="dashboard-sidebar" id="dashboardSidebar">
 
-            <a href="dashboard.html" class="sidebar-logo">
-                <img src="../assets/logo.png" alt="WodIO">
-                <span>Wod<strong>IO</strong></span>
+            <a href="dashboard.html" class="sidebar-logo" aria-label="WodIO Dashboard">
+
+                <img src="assets/icons/Logo-WodIO_white.png" alt="WodIO">
+
+                <span>
+                    Wod<strong>IO</strong>
+                </span>
+
             </a>
 
+
             <div class="sidebar-section">
-                <div class="sidebar-label">Principal</div>
+
+                <div class="sidebar-label">
+                    Principal
+                </div>
 
                 <nav class="sidebar-nav">
+
                     <a href="dashboard.html" class="sidebar-link active">
                         <span class="sidebar-icon">⌂</span>
                         Dashboard
@@ -795,13 +79,20 @@
                         <span class="sidebar-icon">↗</span>
                         Progreso
                     </a>
+
                 </nav>
+
             </div>
 
+
             <div class="sidebar-section">
-                <div class="sidebar-label">Gestión</div>
+
+                <div class="sidebar-label">
+                    Gestión
+                </div>
 
                 <nav class="sidebar-nav">
+
                     <a href="payments.html" class="sidebar-link">
                         <span class="sidebar-icon">€</span>
                         Pagos
@@ -811,15 +102,22 @@
                         <span class="sidebar-icon">⚙</span>
                         Administración
                     </a>
+
                 </nav>
+
             </div>
+
 
             <div class="sidebar-bottom">
 
                 <div class="sidebar-profile">
-                    <div class="profile-avatar" id="profileAvatar">--</div>
+
+                    <div class="profile-avatar" id="profileAvatar">
+                        --
+                    </div>
 
                     <div class="profile-info">
+
                         <div class="profile-name" id="profileName">
                             Cargando...
                         </div>
@@ -827,8 +125,11 @@
                         <div class="profile-role" id="profileRole">
                             Usuario
                         </div>
+
                     </div>
+
                 </div>
+
 
                 <button type="button" class="sidebar-link" id="logoutButton"
                     style="width:100%; border:0; background:transparent; cursor:pointer;">
@@ -840,9 +141,14 @@
 
         </aside>
 
+
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- MAIN -->
+
+        <!-- =====================================================
+     MAIN
+====================================================== -->
+
         <main class="dashboard-main">
 
             <header class="dashboard-header">
@@ -851,10 +157,19 @@
                     ☰
                 </button>
 
+
                 <div class="header-title">
-                    <h1>Dashboard</h1>
-                    <p>Resumen de tu actividad en WodIO</p>
+
+                    <h1>
+                        Dashboard
+                    </h1>
+
+                    <p>
+                        Resumen de tu actividad en WodIO
+                    </p>
+
                 </div>
+
 
                 <div class="header-actions">
 
@@ -870,16 +185,26 @@
 
             </header>
 
+
             <div class="dashboard-content">
 
-                <!-- WELCOME -->
+                <!-- =================================================
+             WELCOME
+        ================================================== -->
+
                 <section class="welcome-card">
 
                     <div class="welcome-copy">
-                        <div class="eyebrow">Panel de control</div>
+
+                        <div class="eyebrow">
+                            Panel de control
+                        </div>
 
                         <h2>
-                            Hola, <span id="welcomeName">atleta</span>.
+                            Hola,
+                            <span id="welcomeName">
+                                atleta
+                            </span>.
                         </h2>
 
                         <p>
@@ -887,106 +212,203 @@
                             y mantén toda tu actividad del box organizada
                             desde un único lugar.
                         </p>
+
                     </div>
 
+
                     <div class="welcome-date">
-                        <span>Hoy</span>
-                        <strong id="currentDate">--</strong>
+
+                        <span>
+                            Hoy
+                        </span>
+
+                        <strong id="currentDate">
+                            --
+                        </strong>
+
                     </div>
 
                 </section>
 
-                <!-- STATS -->
+
+                <!-- =================================================
+             STATS
+        ================================================== -->
+
                 <section class="stats-grid">
 
                     <article class="stat-card">
+
                         <div class="stat-top">
-                            <span class="stat-label">Clases este mes</span>
-                            <span class="stat-icon">▦</span>
+
+                            <span class="stat-label">
+                                Clases este mes
+                            </span>
+
+                            <span class="stat-icon">
+                                ▦
+                            </span>
+
                         </div>
 
-                        <div class="stat-value">12</div>
+                        <div class="stat-value">
+                            12
+                        </div>
 
                         <div class="stat-description">
-                            <strong>+3</strong> respecto al mes anterior
+                            <strong>+3</strong>
+                            respecto al mes anterior
                         </div>
+
                     </article>
 
+
                     <article class="stat-card">
+
                         <div class="stat-top">
-                            <span class="stat-label">Asistencia</span>
-                            <span class="stat-icon">✓</span>
+
+                            <span class="stat-label">
+                                Asistencia
+                            </span>
+
+                            <span class="stat-icon">
+                                ✓
+                            </span>
+
                         </div>
 
-                        <div class="stat-value">92%</div>
+                        <div class="stat-value">
+                            92%
+                        </div>
 
                         <div class="stat-description">
                             Últimos 30 días
                         </div>
+
                     </article>
 
+
                     <article class="stat-card">
+
                         <div class="stat-top">
-                            <span class="stat-label">Racha actual</span>
-                            <span class="stat-icon">↗</span>
+
+                            <span class="stat-label">
+                                Racha actual
+                            </span>
+
+                            <span class="stat-icon">
+                                ↗
+                            </span>
+
                         </div>
 
-                        <div class="stat-value">7</div>
+                        <div class="stat-value">
+                            7
+                        </div>
 
                         <div class="stat-description">
                             Días consecutivos
                         </div>
+
                     </article>
 
+
                     <article class="stat-card">
+
                         <div class="stat-top">
-                            <span class="stat-label">Próxima clase</span>
-                            <span class="stat-icon">◷</span>
+
+                            <span class="stat-label">
+                                Próxima clase
+                            </span>
+
+                            <span class="stat-icon">
+                                ◷
+                            </span>
+
                         </div>
 
-                        <div class="stat-value">18:00</div>
+                        <div class="stat-value">
+                            18:00
+                        </div>
 
                         <div class="stat-description">
                             Hoy · CrossTraining
                         </div>
+
                     </article>
 
                 </section>
 
+
+                <!-- =================================================
+             CONTENT GRID
+        ================================================== -->
+
                 <div class="dashboard-grid">
 
-                    <!-- LEFT COLUMN -->
+
+                    <!-- =================================================
+                 LEFT COLUMN
+            ================================================== -->
+
                     <div class="dashboard-column">
 
-                        <!-- UPCOMING CLASSES -->
+
+                        <!-- PRÓXIMAS CLASES -->
+
                         <section class="dashboard-section">
 
                             <div class="section-header">
-                                <h3>Próximas clases</h3>
+
+                                <h3>
+                                    Próximas clases
+                                </h3>
+
                                 <a href="classes.html" class="section-link">
                                     Ver todas
                                 </a>
+
                             </div>
 
+
                             <div class="class-list">
+
 
                                 <article class="class-item">
 
                                     <div class="class-time">
-                                        <strong>18:00</strong>
-                                        <span>HOY</span>
+
+                                        <strong>
+                                            18:00
+                                        </strong>
+
+                                        <span>
+                                            HOY
+                                        </span>
+
                                     </div>
 
+
                                     <div class="class-info">
+
                                         <div class="class-name">
                                             CrossTraining
                                         </div>
 
                                         <div class="class-meta">
-                                            <span>60 min</span>
-                                            <span>Coach Carlos</span>
+
+                                            <span>
+                                                60 min
+                                            </span>
+
+                                            <span>
+                                                Coach Carlos
+                                            </span>
+
                                         </div>
+
                                     </div>
+
 
                                     <span class="class-status status-confirmed">
                                         Reservada
@@ -994,23 +416,42 @@
 
                                 </article>
 
+
                                 <article class="class-item">
 
                                     <div class="class-time">
-                                        <strong>09:00</strong>
-                                        <span>MAÑANA</span>
+
+                                        <strong>
+                                            09:00
+                                        </strong>
+
+                                        <span>
+                                            MAÑANA
+                                        </span>
+
                                     </div>
 
+
                                     <div class="class-info">
+
                                         <div class="class-name">
                                             Strength
                                         </div>
 
                                         <div class="class-meta">
-                                            <span>60 min</span>
-                                            <span>Coach Marta</span>
+
+                                            <span>
+                                                60 min
+                                            </span>
+
+                                            <span>
+                                                Coach Marta
+                                            </span>
+
                                         </div>
+
                                     </div>
+
 
                                     <span class="class-status status-confirmed">
                                         Reservada
@@ -1018,23 +459,42 @@
 
                                 </article>
 
+
                                 <article class="class-item">
 
                                     <div class="class-time">
-                                        <strong>19:00</strong>
-                                        <span>JUEVES</span>
+
+                                        <strong>
+                                            19:00
+                                        </strong>
+
+                                        <span>
+                                            JUEVES
+                                        </span>
+
                                     </div>
 
+
                                     <div class="class-info">
+
                                         <div class="class-name">
                                             WOD
                                         </div>
 
                                         <div class="class-meta">
-                                            <span>60 min</span>
-                                            <span>Coach David</span>
+
+                                            <span>
+                                                60 min
+                                            </span>
+
+                                            <span>
+                                                Coach David
+                                            </span>
+
                                         </div>
+
                                     </div>
+
 
                                     <span class="class-status status-available">
                                         3 plazas
@@ -1042,57 +502,89 @@
 
                                 </article>
 
+
                             </div>
 
                         </section>
 
-                        <!-- ACTIVITY -->
+
+                        <!-- ACTIVIDAD -->
+
                         <section class="dashboard-section">
 
                             <div class="section-header">
-                                <h3>Actividad reciente</h3>
+
+                                <h3>
+                                    Actividad reciente
+                                </h3>
+
                                 <a href="progress.html" class="section-link">
                                     Ver progreso
                                 </a>
+
                             </div>
+
 
                             <div class="announcement">
 
-                                <div class="announcement-icon">✓</div>
+                                <div class="announcement-icon">
+                                    ✓
+                                </div>
 
                                 <div>
-                                    <strong>Clase completada</strong>
+
+                                    <strong>
+                                        Clase completada
+                                    </strong>
+
                                     <p>
                                         Has completado CrossTraining ·
                                         16 septiembre.
                                     </p>
+
                                 </div>
 
                             </div>
 
+
                             <div class="announcement">
 
-                                <div class="announcement-icon">↗</div>
+                                <div class="announcement-icon">
+                                    ↗
+                                </div>
 
                                 <div>
-                                    <strong>Nuevo récord personal</strong>
+
+                                    <strong>
+                                        Nuevo récord personal
+                                    </strong>
+
                                     <p>
                                         Has mejorado tu marca en Back Squat.
                                     </p>
+
                                 </div>
 
                             </div>
 
+
                             <div class="announcement">
 
-                                <div class="announcement-icon">€</div>
+                                <div class="announcement-icon">
+                                    €
+                                </div>
 
                                 <div>
-                                    <strong>Pago realizado</strong>
+
+                                    <strong>
+                                        Pago realizado
+                                    </strong>
+
                                     <p>
                                         Tu cuota mensual ha sido procesada
                                         correctamente.
                                     </p>
+
                                 </div>
 
                             </div>
@@ -1101,136 +593,252 @@
 
                     </div>
 
-                    <!-- RIGHT COLUMN -->
+
+                    <!-- =================================================
+                 RIGHT COLUMN
+            ================================================== -->
+
                     <div class="dashboard-column">
 
-                        <!-- QUICK ACTIONS -->
+
+                        <!-- ACCESOS RÁPIDOS -->
+
                         <section class="dashboard-section">
 
                             <div class="section-header">
-                                <h3>Accesos rápidos</h3>
+
+                                <h3>
+                                    Accesos rápidos
+                                </h3>
+
                             </div>
+
 
                             <div class="quick-actions">
 
+
                                 <a href="classes.html" class="quick-action">
-                                    <span class="quick-action-icon">+</span>
+
+                                    <span class="quick-action-icon">
+                                        +
+                                    </span>
 
                                     <span>
-                                        <strong>Reservar clase</strong>
-                                        <span>Ver horarios disponibles</span>
+
+                                        <strong>
+                                            Reservar clase
+                                        </strong>
+
+                                        <span>
+                                            Ver horarios disponibles
+                                        </span>
+
                                     </span>
+
                                 </a>
+
 
                                 <a href="progress.html" class="quick-action">
-                                    <span class="quick-action-icon">↗</span>
+
+                                    <span class="quick-action-icon">
+                                        ↗
+                                    </span>
 
                                     <span>
-                                        <strong>Mi progreso</strong>
-                                        <span>Marcas y evolución</span>
+
+                                        <strong>
+                                            Mi progreso
+                                        </strong>
+
+                                        <span>
+                                            Marcas y evolución
+                                        </span>
+
                                     </span>
+
                                 </a>
+
 
                                 <a href="events.html" class="quick-action">
-                                    <span class="quick-action-icon">◷</span>
+
+                                    <span class="quick-action-icon">
+                                        ◷
+                                    </span>
 
                                     <span>
-                                        <strong>Eventos</strong>
-                                        <span>Próximas actividades</span>
+
+                                        <strong>
+                                            Eventos
+                                        </strong>
+
+                                        <span>
+                                            Próximas actividades
+                                        </span>
+
                                     </span>
+
                                 </a>
+
 
                                 <a href="payments.html" class="quick-action">
-                                    <span class="quick-action-icon">€</span>
+
+                                    <span class="quick-action-icon">
+                                        €
+                                    </span>
 
                                     <span>
-                                        <strong>Pagos</strong>
-                                        <span>Cuotas y facturación</span>
+
+                                        <strong>
+                                            Pagos
+                                        </strong>
+
+                                        <span>
+                                            Cuotas y facturación
+                                        </span>
+
                                     </span>
+
                                 </a>
+
 
                             </div>
 
                         </section>
 
-                        <!-- PROGRESS -->
+
+                        <!-- OBJETIVOS -->
+
                         <section class="dashboard-section">
 
                             <div class="section-header">
-                                <h3>Objetivos</h3>
+
+                                <h3>
+                                    Objetivos
+                                </h3>
+
                                 <a href="progress.html" class="section-link">
                                     Detalles
                                 </a>
+
                             </div>
+
 
                             <div class="progress-content">
 
+
                                 <div class="progress-row">
 
                                     <div class="progress-info">
-                                        <span>Clases mensuales</span>
-                                        <span>12 / 16</span>
+
+                                        <span>
+                                            Clases mensuales
+                                        </span>
+
+                                        <span>
+                                            12 / 16
+                                        </span>
+
                                     </div>
 
+
                                     <div class="progress-bar">
+
                                         <div class="progress-fill" style="width:75%;"></div>
+
                                     </div>
 
                                 </div>
 
+
                                 <div class="progress-row">
 
                                     <div class="progress-info">
-                                        <span>Asistencia</span>
-                                        <span>92%</span>
+
+                                        <span>
+                                            Asistencia
+                                        </span>
+
+                                        <span>
+                                            92%
+                                        </span>
+
                                     </div>
 
+
                                     <div class="progress-bar">
+
                                         <div class="progress-fill" style="width:92%;"></div>
+
                                     </div>
 
                                 </div>
+
 
                                 <div class="progress-row">
 
                                     <div class="progress-info">
-                                        <span>Racha mensual</span>
-                                        <span>7 / 10</span>
+
+                                        <span>
+                                            Racha mensual
+                                        </span>
+
+                                        <span>
+                                            7 / 10
+                                        </span>
+
                                     </div>
 
+
                                     <div class="progress-bar">
+
                                         <div class="progress-fill" style="width:70%;"></div>
+
                                     </div>
 
                                 </div>
+
 
                             </div>
 
                         </section>
 
-                        <!-- NOTICE -->
+
+                        <!-- INFORMACIÓN DEL BOX -->
+
                         <section class="dashboard-section">
 
                             <div class="section-header">
-                                <h3>Información del box</h3>
+
+                                <h3>
+                                    Información del box
+                                </h3>
+
                             </div>
+
 
                             <div class="announcement">
 
-                                <div class="announcement-icon">!</div>
+                                <div class="announcement-icon">
+                                    !
+                                </div>
 
                                 <div>
-                                    <strong>Horario especial</strong>
+
+                                    <strong>
+                                        Horario especial
+                                    </strong>
 
                                     <p>
                                         Consulta los horarios modificados
                                         antes de reservar tu próxima clase.
                                     </p>
+
                                 </div>
 
                             </div>
 
                         </section>
+
 
                     </div>
 
@@ -1240,7 +848,12 @@
 
         </main>
 
+
     </div>
+
+    <!-- =========================================================
+     SUPABASE
+========================================================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1248,130 +861,276 @@
 
     <script src="../src/js/supabase.js"></script>
 
+    <!-- =========================================================
+     DASHBOARD LOGIC
+========================================================== -->
+
     <script>
-        const sidebar = document.getElementById("dashboardSidebar");
-        const menuButton = document.getElementById("mobileMenuButton");
-        const overlay = document.getElementById("sidebarOverlay");
-        const logoutButton = document.getElementById("logoutButton");
+
+        const sidebar =
+            document.getElementById("dashboardSidebar");
+
+        const menuButton =
+            document.getElementById("mobileMenuButton");
+
+        const overlay =
+            document.getElementById("sidebarOverlay");
+
+        const logoutButton =
+            document.getElementById("logoutButton");
+
 
         function openSidebar() {
+
             sidebar.classList.add("open");
+
         }
+
 
         function closeSidebar() {
+
             sidebar.classList.remove("open");
+
         }
 
-        menuButton?.addEventListener("click", openSidebar);
-        overlay?.addEventListener("click", closeSidebar);
 
-        document.querySelectorAll(".sidebar-link").forEach(link => {
-            link.addEventListener("click", () => {
-                if (window.innerWidth <= 800) {
-                    closeSidebar();
-                }
+        menuButton?.addEventListener(
+            "click",
+            openSidebar
+        );
+
+
+        overlay?.addEventListener(
+            "click",
+            closeSidebar
+        );
+
+
+        document
+            .querySelectorAll(".sidebar-link")
+            .forEach(link => {
+
+                link.addEventListener(
+                    "click",
+                    () => {
+
+                        if (window.innerWidth <= 800) {
+                            closeSidebar();
+                        }
+
+                    }
+                );
+
             });
-        });
+
 
         function formatCurrentDate() {
-            const dateElement = document.getElementById("currentDate");
 
-            if (!dateElement) return;
+            const dateElement =
+                document.getElementById("currentDate");
 
-            const today = new Date();
+            if (!dateElement) {
+                return;
+            }
 
-            const formatted = today.toLocaleDateString("es-ES", {
-                weekday: "long",
-                day: "numeric",
-                month: "long"
-            });
+
+            const today =
+                new Date();
+
+
+            const formatted =
+                today.toLocaleDateString(
+                    "es-ES",
+                    {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long"
+                    }
+                );
+
 
             dateElement.textContent =
-                formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                formatted.charAt(0).toUpperCase()
+                + formatted.slice(1);
+
         }
 
-        function getInitials(firstName, lastName) {
-            const first = firstName?.trim()?.charAt(0) || "";
-            const last = lastName?.trim()?.charAt(0) || "";
 
-            return (first + last).toUpperCase() || "U";
+        function getInitials(
+            firstName,
+            lastName
+        ) {
+
+            const first =
+                firstName?.trim()?.charAt(0)
+                || "";
+
+            const last =
+                lastName?.trim()?.charAt(0)
+                || "";
+
+
+            return (
+                first + last
+            ).toUpperCase()
+                || "U";
+
         }
+
 
         async function loadUserProfile() {
 
             if (
                 typeof supabaseClient === "undefined"
             ) {
-                console.warn("Supabase no está disponible.");
+
+                console.warn(
+                    "Supabase no está disponible."
+                );
+
                 return;
+
             }
+
 
             try {
 
                 const {
                     data: { user },
                     error: sessionError
-                } = await supabaseClient.auth.getUser();
+                } =
+                    await supabaseClient.auth.getUser();
 
-                if (sessionError || !user) {
-                    window.location.href = "login.html";
+
+                if (
+                    sessionError ||
+                    !user
+                ) {
+
+                    window.location.href =
+                        "login.html";
+
                     return;
+
                 }
 
-                const { data: profile, error } =
+
+                const {
+                    data: profile,
+                    error
+                } =
                     await supabaseClient
                         .from("profiles")
-                        .select("first_name, last_name, role")
-                        .eq("id", user.id)
+                        .select(
+                            "first_name, last_name, role"
+                        )
+                        .eq(
+                            "id",
+                            user.id
+                        )
                         .single();
 
+
                 if (error) {
+
                     console.warn(
                         "No se pudo cargar el perfil:",
                         error.message
                     );
 
+
                     const emailName =
-                        user.email?.split("@")[0] || "Usuario";
+                        user.email?.split("@")[0]
+                        || "Usuario";
 
-                    document.getElementById("profileName").textContent =
+
+                    document
+                        .getElementById("profileName")
+                        .textContent =
                         emailName;
 
-                    document.getElementById("welcomeName").textContent =
+
+                    document
+                        .getElementById("welcomeName")
+                        .textContent =
                         emailName;
 
-                    document.getElementById("profileAvatar").textContent =
-                        emailName.substring(0, 2).toUpperCase();
+
+                    document
+                        .getElementById("profileAvatar")
+                        .textContent =
+                        emailName
+                            .substring(0, 2)
+                            .toUpperCase();
+
 
                     return;
+
                 }
 
-                const firstName = profile?.first_name || "";
-                const lastName = profile?.last_name || "";
+
+                const firstName =
+                    profile?.first_name || "";
+
+
+                const lastName =
+                    profile?.last_name || "";
+
 
                 const fullName =
-                    `${firstName} ${lastName}`.trim() ||
-                    user.email?.split("@")[0] ||
+                    `${firstName} ${lastName}`.trim()
+                    ||
+                    user.email?.split("@")[0]
+                    ||
                     "Usuario";
 
-                document.getElementById("profileName").textContent =
+
+                document
+                    .getElementById("profileName")
+                    .textContent =
                     fullName;
 
-                document.getElementById("welcomeName").textContent =
+
+                document
+                    .getElementById("welcomeName")
+                    .textContent =
                     firstName || fullName;
 
-                document.getElementById("profileAvatar").textContent =
-                    getInitials(firstName, lastName);
+
+                document
+                    .getElementById("profileAvatar")
+                    .textContent =
+                    getInitials(
+                        firstName,
+                        lastName
+                    );
+
 
                 const roleLabels = {
-                    athlete: "Atleta",
-                    coach: "Coach",
-                    box_admin: "Administrador",
-                    super_admin: "Super administrador"
+
+                    athlete:
+                        "Atleta",
+
+                    coach:
+                        "Coach",
+
+                    box_admin:
+                        "Administrador",
+
+                    super_admin:
+                        "Super administrador"
+
                 };
 
-                document.getElementById("profileRole").textContent =
-                    roleLabels[profile?.role] || "Usuario";
+
+                document
+                    .getElementById("profileRole")
+                    .textContent =
+                    roleLabels[
+                    profile?.role
+                    ]
+                    || "Usuario";
+
 
             } catch (error) {
 
@@ -1381,37 +1140,66 @@
                 );
 
             }
+
         }
+
 
         async function logout() {
 
-            if (typeof supabaseClient === "undefined") {
-                window.location.href = "login.html";
+            if (
+                typeof supabaseClient === "undefined"
+            ) {
+
+                window.location.href =
+                    "login.html";
+
                 return;
+
             }
 
-            logoutButton.disabled = true;
 
-            const { error } =
+            logoutButton.disabled =
+                true;
+
+
+            const {
+                error
+            } =
                 await supabaseClient.auth.signOut();
 
+
             if (error) {
+
                 console.error(
                     "Error cerrando sesión:",
                     error
                 );
 
-                logoutButton.disabled = false;
+
+                logoutButton.disabled =
+                    false;
+
                 return;
+
             }
 
-            window.location.href = "login.html";
+
+            window.location.href =
+                "login.html";
+
         }
 
-        logoutButton?.addEventListener("click", logout);
+
+        logoutButton?.addEventListener(
+            "click",
+            logout
+        );
+
 
         formatCurrentDate();
+
         loadUserProfile();
+
     </script>
 
 </body>
