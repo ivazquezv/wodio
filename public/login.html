@@ -17,22 +17,16 @@
 
     <meta name="theme-color" content="#0b0b0f">
 
-
     <!-- FAVICON -->
 
     <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
-
     <link rel="alternate icon" type="image/png" href="assets/icons/favicon/favicon-96x96.png">
-
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
-
     <link rel="manifest" href="assets/icons/favicon/site.webmanifest">
-
 
     <!-- CSS -->
 
     <link rel="stylesheet" href="../src/css/wodio.css">
-
 
     <!-- ICONOS -->
 
@@ -58,7 +52,6 @@
 
             </a>
 
-
             <div class="nav-actions">
 
                 <span class="navbar-title">
@@ -83,7 +76,6 @@
     <main>
 
         <section class="login-wrapper" aria-labelledby="login-title">
-
 
             <!-- LOGO -->
 
@@ -116,10 +108,10 @@
 
             <form class="login-card" id="loginForm" novalidate>
 
-
                 <!-- MENSAJE -->
 
-                <div id="loginMessage" class="login-message" role="alert" aria-live="assertive" hidden></div>
+                <div id="loginMessage" class="login-message" role="alert" aria-live="assertive" hidden>
+                </div>
 
 
                 <!-- EMAIL -->
@@ -128,18 +120,18 @@
 
                     <label for="email">
 
-                        <i class="ph ph-envelope" aria-hidden="true"></i>
+                        <i class="ph ph-envelope" aria-hidden="true">
+                        </i>
 
                         Correo electrónico
 
                     </label>
 
-
                     <input id="email" name="email" type="email" autocomplete="username" inputmode="email"
                         placeholder="tuemail@ejemplo.com" required autofocus aria-describedby="emailError">
 
-
-                    <small id="emailError" class="form-error" hidden></small>
+                    <small id="emailError" class="form-error" hidden>
+                    </small>
 
                 </div>
 
@@ -152,12 +144,12 @@
 
                         <label for="password">
 
-                            <i class="ph ph-lock" aria-hidden="true"></i>
+                            <i class="ph ph-lock" aria-hidden="true">
+                            </i>
 
                             Contraseña
 
                         </label>
-
 
                         <a href="password-reset.html" class="password-reset-link">
                             ¿La has olvidado?
@@ -176,7 +168,8 @@
                         <button type="button" class="password-toggle" id="passwordToggle"
                             aria-label="Mostrar contraseña" aria-controls="password" aria-pressed="false">
 
-                            <i class="ph ph-eye" aria-hidden="true"></i>
+                            <i class="ph ph-eye" aria-hidden="true">
+                            </i>
 
                         </button>
 
@@ -184,14 +177,21 @@
 
 
                     <div id="passwordHelp" class="password-hint">
+
                         <span id="capsLockWarning" hidden>
-                            <i class="ph ph-warning" aria-hidden="true"></i>
+
+                            <i class="ph ph-warning" aria-hidden="true">
+                            </i>
+
                             Caps Lock está activado
+
                         </span>
+
                     </div>
 
 
-                    <small id="passwordError" class="form-error" hidden></small>
+                    <small id="passwordError" class="form-error" hidden>
+                    </small>
 
                 </div>
 
@@ -200,7 +200,7 @@
 
                 <label class="remember-me">
 
-                    <input type="checkbox" id="remember" name="remember">
+                    <input type="checkbox" id="remember" name="remember" checked>
 
                     <span>
                         Mantener la sesión iniciada
@@ -213,7 +213,8 @@
 
                 <button class="login-btn" id="loginBtn" type="submit">
 
-                    <i class="ph ph-sign-in" id="loginBtnIcon" aria-hidden="true"></i>
+                    <i class="ph ph-sign-in" id="loginBtnIcon" aria-hidden="true">
+                    </i>
 
                     <span id="loginBtnText">
                         Iniciar sesión
@@ -247,10 +248,10 @@
 
                 <div class="athlete-access-icon">
 
-                    <i class="ph ph-user" aria-hidden="true"></i>
+                    <i class="ph ph-user" aria-hidden="true">
+                    </i>
 
                 </div>
-
 
                 <div>
 
@@ -267,7 +268,8 @@
 
                         Acceso para atletas
 
-                        <i class="ph ph-arrow-right" aria-hidden="true"></i>
+                        <i class="ph ph-arrow-right" aria-hidden="true">
+                        </i>
 
                     </a>
 
@@ -282,7 +284,8 @@
 
             <div class="login-security">
 
-                <i class="ph ph-shield-check" aria-hidden="true"></i>
+                <i class="ph ph-shield-check" aria-hidden="true">
+                </i>
 
                 <span>
                     Tu acceso está protegido y tus datos se gestionan
@@ -296,7 +299,8 @@
 
             <a href="../index.html" class="login-back">
 
-                <i class="ph ph-arrow-left" aria-hidden="true"></i>
+                <i class="ph ph-arrow-left" aria-hidden="true">
+                </i>
 
                 Volver a WodIO
 
@@ -313,13 +317,11 @@
 
     <footer class="footer">
 
-
         <div class="footer-bottom">
 
             <p>
                 © 2026 WodIO. Todos los derechos reservados.
             </p>
-
 
             <div class="footer-links">
 
@@ -347,450 +349,12 @@
 
         </div>
 
-
     </footer>
 
 
     <!-- =====================================================
-     JAVASCRIPT
+     SUPABASE
 ====================================================== -->
-
-    <script>
-
-        document.addEventListener("DOMContentLoaded", () => {
-
-            const form =
-                document.getElementById("loginForm");
-
-            const email =
-                document.getElementById("email");
-
-            const password =
-                document.getElementById("password");
-
-            const remember =
-                document.getElementById("remember");
-
-            const loginBtn =
-                document.getElementById("loginBtn");
-
-            const loginBtnText =
-                document.getElementById("loginBtnText");
-
-            const loginBtnIcon =
-                document.getElementById("loginBtnIcon");
-
-            const loginMessage =
-                document.getElementById("loginMessage");
-
-            const passwordToggle =
-                document.getElementById("passwordToggle");
-
-            const capsLockWarning =
-                document.getElementById("capsLockWarning");
-
-            const emailError =
-                document.getElementById("emailError");
-
-            const passwordError =
-                document.getElementById("passwordError");
-
-
-            let isSubmitting = false;
-
-
-            /* =================================================
-               MENSAJES
-            ================================================== */
-
-            function showMessage(message, type = "error") {
-
-                loginMessage.textContent = message;
-
-                loginMessage.classList.remove(
-                    "success",
-                    "error"
-                );
-
-                loginMessage.classList.add(type);
-
-                loginMessage.hidden = false;
-
-            }
-
-
-            function hideMessage() {
-
-                loginMessage.hidden = true;
-
-                loginMessage.textContent = "";
-
-            }
-
-
-            /* =================================================
-               ERRORES DE CAMPOS
-            ================================================== */
-
-            function clearFieldErrors() {
-
-                emailError.hidden = true;
-                passwordError.hidden = true;
-
-                emailError.textContent = "";
-                passwordError.textContent = "";
-
-                email.classList.remove("input-error");
-                password.classList.remove("input-error");
-
-            }
-
-
-            function validateForm() {
-
-                clearFieldErrors();
-
-                let valid = true;
-
-
-                /* EMAIL */
-
-                const emailValue =
-                    email.value.trim();
-
-
-                if (!emailValue) {
-
-                    emailError.textContent =
-                        "Introduce tu correo electrónico.";
-
-                    emailError.hidden = false;
-
-                    email.classList.add("input-error");
-
-                    valid = false;
-
-                } else if (!email.validity.valid) {
-
-                    emailError.textContent =
-                        "Introduce un correo electrónico válido.";
-
-                    emailError.hidden = false;
-
-                    email.classList.add("input-error");
-
-                    valid = false;
-
-                }
-
-
-                /* PASSWORD */
-
-                if (!password.value) {
-
-                    passwordError.textContent =
-                        "Introduce tu contraseña.";
-
-                    passwordError.hidden = false;
-
-                    password.classList.add("input-error");
-
-                    valid = false;
-
-                } else if (password.value.length < 6) {
-
-                    passwordError.textContent =
-                        "La contraseña debe tener al menos 6 caracteres.";
-
-                    passwordError.hidden = false;
-
-                    password.classList.add("input-error");
-
-                    valid = false;
-
-                }
-
-
-                return valid;
-
-            }
-
-
-            /* =================================================
-               MOSTRAR / OCULTAR CONTRASEÑA
-            ================================================== */
-
-            passwordToggle.addEventListener(
-                "click",
-                () => {
-
-                    const showing =
-                        password.type === "text";
-
-
-                    password.type =
-                        showing ? "password" : "text";
-
-
-                    passwordToggle.setAttribute(
-                        "aria-pressed",
-                        String(!showing)
-                    );
-
-
-                    passwordToggle.setAttribute(
-                        "aria-label",
-                        showing
-                            ? "Mostrar contraseña"
-                            : "Ocultar contraseña"
-                    );
-
-
-                    passwordToggle.innerHTML =
-                        showing
-                            ? '<i class="ph ph-eye" aria-hidden="true"></i>'
-                            : '<i class="ph ph-eye-slash" aria-hidden="true"></i>';
-
-                }
-            );
-
-
-            /* =================================================
-               CAPS LOCK
-            ================================================== */
-
-            password.addEventListener(
-                "keydown",
-                event => {
-
-                    if (
-                        event.getModifierState &&
-                        event.getModifierState("CapsLock")
-                    ) {
-
-                        capsLockWarning.hidden = false;
-
-                    } else {
-
-                        capsLockWarning.hidden = true;
-
-                    }
-
-                }
-            );
-
-
-            password.addEventListener(
-                "keyup",
-                event => {
-
-                    if (
-                        event.getModifierState &&
-                        event.getModifierState("CapsLock")
-                    ) {
-
-                        capsLockWarning.hidden = false;
-
-                    } else {
-
-                        capsLockWarning.hidden = true;
-
-                    }
-
-                }
-            );
-
-
-            password.addEventListener(
-                "blur",
-                () => {
-
-                    capsLockWarning.hidden = true;
-
-                }
-            );
-
-
-            /* =================================================
-               LIMPIAR ERRORES AL ESCRIBIR
-            ================================================== */
-
-            email.addEventListener(
-                "input",
-                () => {
-
-                    email.classList.remove("input-error");
-
-                    emailError.hidden = true;
-
-                    hideMessage();
-
-                }
-            );
-
-
-            password.addEventListener(
-                "input",
-                () => {
-
-                    password.classList.remove("input-error");
-
-                    passwordError.hidden = true;
-
-                    hideMessage();
-
-                }
-            );
-
-
-            /* =================================================
-               SUBMIT
-            ================================================== */
-
-            form.addEventListener(
-                "submit",
-                async event => {
-
-                    event.preventDefault();
-
-
-                    if (isSubmitting) {
-                        return;
-                    }
-
-
-                    hideMessage();
-
-
-                    if (!validateForm()) {
-
-                        return;
-
-                    }
-
-
-                    isSubmitting = true;
-
-                    loginBtn.disabled = true;
-
-                    loginBtn.setAttribute(
-                        "aria-busy",
-                        "true"
-                    );
-
-
-                    loginBtnText.textContent =
-                        "Iniciando sesión...";
-
-
-                    loginBtnIcon.className =
-                        "ph ph-spinner-gap";
-
-
-                    const emailValue =
-                        email.value.trim();
-
-                    const passwordValue =
-                        password.value;
-
-
-                    /*
-                     * =================================================
-                     * SUPABASE AUTH
-                     * =================================================
-                     *
-                     * Este bloque se conectará posteriormente
-                     * con src/js/auth.js.
-                     *
-                     * Ejemplo:
-                     *
-                     * const { data, error } =
-                     *     await signIn(
-                     *         emailValue,
-                     *         passwordValue,
-                     *         remember.checked
-                     *     );
-                     *
-                     * if (error) {
-                     *     showMessage(error.message);
-                     *     return;
-                     * }
-                     *
-                     * window.location.href =
-                     *     "dashboard.html";
-                     *
-                     * =================================================
-                     */
-
-
-                    try {
-
-                        /*
-                         * Temporal mientras no esté conectado
-                         * Supabase.
-                         */
-
-                        console.info(
-                            "Login preparado:",
-                            {
-                                email: emailValue,
-                                remember: remember.checked
-                            }
-                        );
-
-
-                        await new Promise(
-                            resolve =>
-                                setTimeout(resolve, 700)
-                        );
-
-
-                        showMessage(
-                            "El sistema de acceso está preparado para conectarse con Supabase.",
-                            "success"
-                        );
-
-
-                    } catch (error) {
-
-                        console.error(
-                            "Error de login:",
-                            error
-                        );
-
-
-                        showMessage(
-                            "No se ha podido iniciar sesión. Comprueba tus datos e inténtalo de nuevo.",
-                            "error"
-                        );
-
-
-                    } finally {
-
-                        isSubmitting = false;
-
-                        loginBtn.disabled = false;
-
-                        loginBtn.removeAttribute(
-                            "aria-busy"
-                        );
-
-
-                        loginBtnText.textContent =
-                            "Iniciar sesión";
-
-
-                        loginBtnIcon.className =
-                            "ph ph-sign-in";
-
-                    }
-
-                }
-            );
-
-        });
-
-    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -799,6 +363,7 @@
     <script src="../src/js/supabase.js"></script>
 
     <script src="../src/js/auth.js"></script>
+
 
 </body>
 
