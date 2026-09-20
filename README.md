@@ -38,7 +38,7 @@ Este repositorio contiene la página oficial de WodIO, desarrollada como una lan
 
 ## Despliegue
 
-El sitio está configurado para desplegarse en Netlify utilizando la carpeta public como directorio de publicación.
+El sitio está configurado para desplegarse en Netlify utilizando la carpeta `public` como directorio de publicación. La carpeta `public` contiene el HTML, CSS, JavaScript y configuración pública necesarios para ejecutar la aplicación.
 Cada actualización en la rama main genera un nuevo despliegue automático.
 
 ## Contribución
