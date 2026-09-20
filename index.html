@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    ```
     <title>WodIO — Gestión inteligente para boxes y atletas</title>
 
     <meta name="description"
@@ -16,23 +15,23 @@
     <meta name="theme-color" content="#000000">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
-    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
-    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="public/assets/icons/favicon/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="public/assets/icons/favicon/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="public/assets/icons/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="public/assets/icons/favicon/site.webmanifest">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="/src/css/wodio.css">
+    <link rel="stylesheet" href="src/css/wodio.css">
 
-    <!-- Iconos -->
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/phosphor-icons" defer></script>
-    ```
+
 
 </head>
 
 <body>
 
-    ```
+
     <!-- =========================================================
      NAVBAR
 ========================================================== -->
@@ -42,7 +41,7 @@
         <nav class="navbar" aria-label="Navegación principal">
 
             <a href="#hero" class="navbar-left" aria-label="WodIO - Inicio">
-                <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO" class="logo logo-dark">
+                <img src="public/assets/icons/Logo-WodIO_white.png" alt="WodIO" class="logo logo-dark">
             </a>
 
             <span class="navbar-title">
@@ -50,22 +49,20 @@
             </span>
 
             <div class="nav-links">
-
                 <a href="#about">Plataforma</a>
                 <a href="#features">Funciones</a>
                 <a href="#benefits">Ventajas</a>
                 <a href="#pricing">Precios</a>
-
             </div>
 
             <div class="nav-actions">
 
-                <a href="/public/login.html" class="nav-login">
+                <a href="public/login.html" class="nav-login">
                     <i class="ph ph-sign-in"></i>
                     Entrar
                 </a>
 
-                <a href="/public/register.html" class="nav-register">
+                <a href="public/register.html" class="nav-register">
                     Crear cuenta
                 </a>
 
@@ -80,6 +77,7 @@
 
         </nav>
 
+
         <!-- MENÚ MÓVIL -->
 
         <div class="mobile-menu" id="mobileMenu">
@@ -92,12 +90,12 @@
 
             <div class="mobile-menu-actions">
 
-                <a href="/public/login.html" class="mobile-login">
+                <a href="public/login.html" class="mobile-login">
                     <i class="ph ph-sign-in"></i>
                     Iniciar sesión
                 </a>
 
-                <a href="/public/register.html" class="btn-primary">
+                <a href="public/register.html" class="btn-primary">
                     Crear cuenta
                 </a>
 
@@ -125,7 +123,7 @@
                         Gestión inteligente para tu box
                     </span>
 
-                    <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO" class="hero-logo">
+                    <img src="public/assets/icons/Logo-WodIO_white.png" alt="WodIO" class="hero-logo">
 
                     <h1 class="hero-title">
                         Gestiona tu box.
@@ -139,7 +137,7 @@
 
                     <div class="hero-actions">
 
-                        <a href="/public/register.html" class="btn-primary hero-cta">
+                        <a href="public/register.html" class="btn-primary hero-cta">
                             <i class="ph ph-rocket-launch"></i>
                             Empezar ahora
                         </a>
@@ -179,7 +177,7 @@
 
                         <video id="heroVideo" class="hero-video" autoplay muted loop playsinline preload="metadata">
 
-                            <source src="/public/assets/videos/video-index.mp4" type="video/mp4">
+                            <source src="public/assets/videos/video-index.mp4" type="video/mp4">
 
                             Tu navegador no soporta vídeo HTML5.
 
@@ -195,7 +193,7 @@
 
 
         <!-- =====================================================
-         INTRODUCCIÓN
+         PLATAFORMA
     ====================================================== -->
 
         <section class="container mt-64" id="about">
@@ -224,7 +222,7 @@
 
                 <video class="video-demo" autoplay muted loop playsinline preload="metadata">
 
-                    <source src="/public/assets/videos/WodIO-video.mp4" type="video/mp4">
+                    <source src="public/assets/videos/WodIO-video.mp4" type="video/mp4">
 
                     Tu navegador no soporta vídeo HTML5.
 
@@ -298,7 +296,7 @@
                         registra resultados y sigue tu evolución.
                     </p>
 
-                    <a href="/public/login-user.html" class="card-link">
+                    <a href="public/login-user.html" class="card-link">
                         Acceso atleta
                         <i class="ph ph-arrow-right"></i>
                     </a>
@@ -496,7 +494,8 @@
 
                 <article class="card benefit-card">
 
-                    <i class="ph ph-devices"></i>
+
+                    <i class="ph ph-device-mobile"></i>
 
                     <div>
                         <h3>Multidispositivo</h3>
@@ -505,10 +504,11 @@
                             Accede desde ordenador, tablet o móvil
                             cuando lo necesites.
                         </p>
-
                     </div>
 
+
                 </article>
+
 
 
                 <article class="card benefit-card">
@@ -516,14 +516,12 @@
                     <i class="ph ph-chart-line-up"></i>
 
                     <div>
-
                         <h3>Decisiones basadas en datos</h3>
 
                         <p class="card-meta">
                             Convierte la actividad de tu box en información
                             útil para mejorar su gestión.
                         </p>
-
                     </div>
 
                 </article>
@@ -604,7 +602,7 @@
 
                     </ul>
 
-                    <a href="/public/register.html" class="btn-primary">
+                    <a href="public/register.html" class="btn-primary">
                         Empezar
                     </a>
 
@@ -661,7 +659,7 @@
 
                     </ul>
 
-                    <a href="/public/register.html" class="btn-primary">
+                    <a href="public/register.html" class="btn-primary">
                         Empezar
                     </a>
 
@@ -709,7 +707,7 @@
 
                     </ul>
 
-                    <a href="/public/register.html" class="btn-primary">
+                    <a href="public/register.html" class="btn-primary">
                         Empezar
                     </a>
 
@@ -749,12 +747,12 @@
 
                 <div class="cta-actions">
 
-                    <a href="/public/register.html" class="btn-primary">
+                    <a href="public/register.html" class="btn-primary">
                         <i class="ph ph-rocket-launch"></i>
                         Crear mi cuenta
                     </a>
 
-                    <a href="/public/login.html" class="btn-secondary">
+                    <a href="public/login.html" class="btn-secondary">
                         Ya tengo una cuenta
                     </a>
 
@@ -777,7 +775,7 @@
 
             <div class="footer-brand">
 
-                <img src="/public/assets/icons/Logo-WodIO_white.png" alt="WodIO" class="footer-logo">
+                <img src="public/assets/icons/Logo-WodIO_white.png" alt="WodIO" class="footer-logo">
 
                 <p>
                     Plataforma de gestión para boxes,
@@ -802,15 +800,15 @@
 
                 <h3>Acceso</h3>
 
-                <a href="/public/login.html">
+                <a href="public/login.html">
                     Iniciar sesión
                 </a>
 
-                <a href="/public/register.html">
+                <a href="public/register.html">
                     Crear cuenta
                 </a>
 
-                <a href="/public/login-user.html">
+                <a href="public/login-user.html">
                     Acceso atleta
                 </a>
 
@@ -877,18 +875,23 @@
             const scrollTopBtn = document.getElementById("scrollTopBtn");
             const heroVideo = document.getElementById("heroVideo");
 
-            /* ---------------------------------------------
+
+            /* =====================================================
                MENÚ MÓVIL
-            --------------------------------------------- */
+            ====================================================== */
 
             navToggle?.addEventListener("click", () => {
 
-                const isOpen =
-                    mobileMenu.classList.toggle("open");
+                const isOpen = mobileMenu.classList.toggle("open");
 
                 navToggle.setAttribute(
                     "aria-expanded",
                     String(isOpen)
+                );
+
+                navToggle.setAttribute(
+                    "aria-label",
+                    isOpen ? "Cerrar menú" : "Abrir menú"
                 );
 
                 navToggle.innerHTML = isOpen
@@ -898,9 +901,9 @@
             });
 
 
-            /* ---------------------------------------------
+            /* =====================================================
                CERRAR MENÚ AL NAVEGAR
-            --------------------------------------------- */
+            ====================================================== */
 
             mobileMenu
                 ?.querySelectorAll("a")
@@ -915,6 +918,11 @@
                             "false"
                         );
 
+                        navToggle.setAttribute(
+                            "aria-label",
+                            "Abrir menú"
+                        );
+
                         navToggle.innerHTML =
                             '<i class="ph ph-list"></i>';
 
@@ -923,9 +931,9 @@
                 });
 
 
-            /* ---------------------------------------------
+            /* =====================================================
                VELOCIDAD DEL HERO
-            --------------------------------------------- */
+            ====================================================== */
 
             if (heroVideo) {
 
@@ -934,11 +942,15 @@
             }
 
 
-            /* ---------------------------------------------
+            /* =====================================================
                SCROLL TOP
-            --------------------------------------------- */
+            ====================================================== */
 
             const updateScrollButton = () => {
+
+                if (!scrollTopBtn) {
+                    return;
+                }
 
                 if (window.scrollY > 500) {
 
@@ -972,10 +984,13 @@
                 }
             );
 
+
+            updateScrollButton();
+
         });
 
     </script>
-    ```
+
 
 </body>
 

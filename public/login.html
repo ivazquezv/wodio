@@ -1,7 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
+
 
     <meta charset="UTF-8">
 
@@ -12,50 +14,50 @@
     <meta name="description" content="Accede a WodIO para gestionar tu box, clases, atletas, programación y actividad.">
 
     <meta name="robots" content="noindex, nofollow">
+
     <meta name="theme-color" content="#0b0b0f">
 
-    <!-- =====================================================
-         FAVICON
-    ====================================================== -->
 
-    <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
+    <!-- FAVICON -->
 
-    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
+    <link rel="alternate icon" type="image/png" href="assets/icons/favicon/favicon-96x96.png">
 
-    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
 
-    <!-- =====================================================
-         CSS
-    ====================================================== -->
+    <link rel="manifest" href="assets/icons/favicon/site.webmanifest">
 
-    <link rel="stylesheet" href="/src/css/wodio.css">
 
-    <!-- =====================================================
-         ICONOS
-    ====================================================== -->
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="../src/css/wodio.css">
+
+
+    <!-- ICONOS -->
 
     <script src="https://unpkg.com/phosphor-icons" defer></script>
 
+
 </head>
 
+<body class="auth-page">
 
-<body>
 
     <!-- =====================================================
-         HEADER
-    ====================================================== -->
+     HEADER
+====================================================== -->
 
     <header class="site-header">
 
         <nav class="navbar" aria-label="Navegación principal">
 
-            <a href="/public/index.html" class="navbar-left" aria-label="Volver a WodIO">
+            <a href="../index.html" class="navbar-left" aria-label="Volver a WodIO">
 
-                <img src="/public/assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO">
+                <img src="assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO">
 
             </a>
+
 
             <div class="nav-actions">
 
@@ -63,7 +65,7 @@
                     ¿No tienes una cuenta?
                 </span>
 
-                <a href="/public/register.html" class="nav-register">
+                <a href="register.html" class="nav-register">
                     Crear cuenta
                 </a>
 
@@ -75,19 +77,20 @@
 
 
     <!-- =====================================================
-         LOGIN
-    ====================================================== -->
+     LOGIN
+====================================================== -->
 
     <main>
 
         <section class="login-wrapper" aria-labelledby="login-title">
 
-            <!-- Logo -->
 
-            <img src="/public/assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
+            <!-- LOGO -->
+
+            <img src="assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
 
 
-            <!-- Cabecera -->
+            <!-- CABECERA -->
 
             <div class="login-heading">
 
@@ -100,23 +103,26 @@
                 </h1>
 
                 <p class="text-muted">
-                    Accede a tu cuenta para gestionar tu box
-                    y consultar toda tu actividad.
+                    Accede a tu cuenta para gestionar tu box,
+                    tus clases y toda tu actividad.
                 </p>
 
             </div>
 
 
-            <!-- Formulario -->
+            <!-- =================================================
+             FORMULARIO
+        ================================================== -->
 
             <form class="login-card" id="loginForm" novalidate>
 
-                <!-- Mensaje de error -->
 
-                <div id="loginMessage" class="login-message" role="alert" aria-live="polite" hidden></div>
+                <!-- MENSAJE -->
+
+                <div id="loginMessage" class="login-message" role="alert" aria-live="assertive" hidden></div>
 
 
-                <!-- Email -->
+                <!-- EMAIL -->
 
                 <div class="form-field">
 
@@ -128,13 +134,17 @@
 
                     </label>
 
-                    <input id="email" name="email" type="email" autocomplete="email" placeholder="tuemail@ejemplo.com"
-                        required autofocus>
+
+                    <input id="email" name="email" type="email" autocomplete="username" inputmode="email"
+                        placeholder="tuemail@ejemplo.com" required autofocus aria-describedby="emailError">
+
+
+                    <small id="emailError" class="form-error" hidden></small>
 
                 </div>
 
 
-                <!-- Password -->
+                <!-- CONTRASEÑA -->
 
                 <div class="form-field">
 
@@ -148,7 +158,8 @@
 
                         </label>
 
-                        <a href="/public/password-reset.html" class="password-reset-link">
+
+                        <a href="password-reset.html" class="password-reset-link">
                             ¿La has olvidado?
                         </a>
 
@@ -158,7 +169,9 @@
                     <div class="password-field">
 
                         <input id="password" name="password" type="password" autocomplete="current-password"
-                            placeholder="Introduce tu contraseña" required>
+                            placeholder="Introduce tu contraseña" required minlength="6"
+                            aria-describedby="passwordHelp passwordError">
+
 
                         <button type="button" class="password-toggle" id="passwordToggle"
                             aria-label="Mostrar contraseña" aria-controls="password" aria-pressed="false">
@@ -169,10 +182,21 @@
 
                     </div>
 
+
+                    <div id="passwordHelp" class="password-hint">
+                        <span id="capsLockWarning" hidden>
+                            <i class="ph ph-warning" aria-hidden="true"></i>
+                            Caps Lock está activado
+                        </span>
+                    </div>
+
+
+                    <small id="passwordError" class="form-error" hidden></small>
+
                 </div>
 
 
-                <!-- Recordarme -->
+                <!-- RECORDAR -->
 
                 <label class="remember-me">
 
@@ -185,11 +209,11 @@
                 </label>
 
 
-                <!-- Submit -->
+                <!-- BOTÓN -->
 
                 <button class="login-btn" id="loginBtn" type="submit">
 
-                    <i class="ph ph-sign-in" aria-hidden="true"></i>
+                    <i class="ph ph-sign-in" id="loginBtnIcon" aria-hidden="true"></i>
 
                     <span id="loginBtnText">
                         Iniciar sesión
@@ -198,7 +222,7 @@
                 </button>
 
 
-                <!-- Registro -->
+                <!-- REGISTRO -->
 
                 <div class="login-register">
 
@@ -206,7 +230,7 @@
                         ¿Todavía no tienes cuenta?
                     </span>
 
-                    <a href="/public/register.html">
+                    <a href="register.html">
                         Crear una cuenta
                     </a>
 
@@ -215,7 +239,9 @@
             </form>
 
 
-            <!-- Acceso atleta -->
+            <!-- =================================================
+             ACCESO ATLETA
+        ================================================== -->
 
             <div class="athlete-access">
 
@@ -225,6 +251,7 @@
 
                 </div>
 
+
                 <div>
 
                     <strong>
@@ -233,12 +260,15 @@
 
                     <p>
                         Accede a tu área personal para consultar
-                        tus clases y progreso.
+                        tus clases, entrenamientos y progreso.
                     </p>
 
-                    <a href="/public/login-user.html">
+                    <a href="login-user.html">
+
                         Acceso para atletas
+
                         <i class="ph ph-arrow-right" aria-hidden="true"></i>
+
                     </a>
 
                 </div>
@@ -246,9 +276,25 @@
             </div>
 
 
-            <!-- Volver -->
+            <!-- =================================================
+             SEGURIDAD
+        ================================================== -->
 
-            <a href="/public/index.html" class="login-back">
+            <div class="login-security">
+
+                <i class="ph ph-shield-check" aria-hidden="true"></i>
+
+                <span>
+                    Tu acceso está protegido y tus datos se gestionan
+                    de forma segura.
+                </span>
+
+            </div>
+
+
+            <!-- VOLVER -->
+
+            <a href="../index.html" class="login-back">
 
                 <i class="ph ph-arrow-left" aria-hidden="true"></i>
 
@@ -262,10 +308,11 @@
 
 
     <!-- =====================================================
-         FOOTER
-    ====================================================== -->
+     FOOTER
+====================================================== -->
 
     <footer class="footer">
+
 
         <div class="footer-bottom">
 
@@ -273,33 +320,56 @@
                 © 2026 WodIO. Todos los derechos reservados.
             </p>
 
-            <div>
+
+            <div class="footer-links">
 
                 <a href="#">
                     Privacidad
                 </a>
 
+                <span aria-hidden="true">
+                    ·
+                </span>
+
                 <a href="#">
                     Términos
+                </a>
+
+                <span aria-hidden="true">
+                    ·
+                </span>
+
+                <a href="#">
+                    Cookies
                 </a>
 
             </div>
 
         </div>
 
+
     </footer>
 
 
     <!-- =====================================================
-         JAVASCRIPT
-    ====================================================== -->
+     JAVASCRIPT
+====================================================== -->
 
     <script>
 
         document.addEventListener("DOMContentLoaded", () => {
 
-            const loginForm =
+            const form =
                 document.getElementById("loginForm");
+
+            const email =
+                document.getElementById("email");
+
+            const password =
+                document.getElementById("password");
+
+            const remember =
+                document.getElementById("remember");
 
             const loginBtn =
                 document.getElementById("loginBtn");
@@ -307,134 +377,428 @@
             const loginBtnText =
                 document.getElementById("loginBtnText");
 
+            const loginBtnIcon =
+                document.getElementById("loginBtnIcon");
+
             const loginMessage =
                 document.getElementById("loginMessage");
-
-            const password =
-                document.getElementById("password");
 
             const passwordToggle =
                 document.getElementById("passwordToggle");
 
+            const capsLockWarning =
+                document.getElementById("capsLockWarning");
+
+            const emailError =
+                document.getElementById("emailError");
+
+            const passwordError =
+                document.getElementById("passwordError");
+
+
+            let isSubmitting = false;
+
+
+            /* =================================================
+               MENSAJES
+            ================================================== */
+
+            function showMessage(message, type = "error") {
+
+                loginMessage.textContent = message;
+
+                loginMessage.classList.remove(
+                    "success",
+                    "error"
+                );
+
+                loginMessage.classList.add(type);
+
+                loginMessage.hidden = false;
+
+            }
+
+
+            function hideMessage() {
+
+                loginMessage.hidden = true;
+
+                loginMessage.textContent = "";
+
+            }
+
+
+            /* =================================================
+               ERRORES DE CAMPOS
+            ================================================== */
+
+            function clearFieldErrors() {
+
+                emailError.hidden = true;
+                passwordError.hidden = true;
+
+                emailError.textContent = "";
+                passwordError.textContent = "";
+
+                email.classList.remove("input-error");
+                password.classList.remove("input-error");
+
+            }
+
+
+            function validateForm() {
+
+                clearFieldErrors();
+
+                let valid = true;
+
+
+                /* EMAIL */
+
+                const emailValue =
+                    email.value.trim();
+
+
+                if (!emailValue) {
+
+                    emailError.textContent =
+                        "Introduce tu correo electrónico.";
+
+                    emailError.hidden = false;
+
+                    email.classList.add("input-error");
+
+                    valid = false;
+
+                } else if (!email.validity.valid) {
+
+                    emailError.textContent =
+                        "Introduce un correo electrónico válido.";
+
+                    emailError.hidden = false;
+
+                    email.classList.add("input-error");
+
+                    valid = false;
+
+                }
+
+
+                /* PASSWORD */
+
+                if (!password.value) {
+
+                    passwordError.textContent =
+                        "Introduce tu contraseña.";
+
+                    passwordError.hidden = false;
+
+                    password.classList.add("input-error");
+
+                    valid = false;
+
+                } else if (password.value.length < 6) {
+
+                    passwordError.textContent =
+                        "La contraseña debe tener al menos 6 caracteres.";
+
+                    passwordError.hidden = false;
+
+                    password.classList.add("input-error");
+
+                    valid = false;
+
+                }
+
+
+                return valid;
+
+            }
+
 
             /* =================================================
                MOSTRAR / OCULTAR CONTRASEÑA
-            ================================================= */
+            ================================================== */
 
-            passwordToggle?.addEventListener("click", () => {
+            passwordToggle.addEventListener(
+                "click",
+                () => {
 
-                const isPassword =
-                    password.type === "password";
+                    const showing =
+                        password.type === "text";
 
-                password.type =
-                    isPassword ? "text" : "password";
 
-                passwordToggle.setAttribute(
-                    "aria-pressed",
-                    String(isPassword)
-                );
+                    password.type =
+                        showing ? "password" : "text";
 
-                passwordToggle.setAttribute(
-                    "aria-label",
-                    isPassword
-                        ? "Ocultar contraseña"
-                        : "Mostrar contraseña"
-                );
 
-                passwordToggle.innerHTML =
-                    isPassword
-                        ? '<i class="ph ph-eye-slash" aria-hidden="true"></i>'
-                        : '<i class="ph ph-eye" aria-hidden="true"></i>';
+                    passwordToggle.setAttribute(
+                        "aria-pressed",
+                        String(!showing)
+                    );
 
-            });
+
+                    passwordToggle.setAttribute(
+                        "aria-label",
+                        showing
+                            ? "Mostrar contraseña"
+                            : "Ocultar contraseña"
+                    );
+
+
+                    passwordToggle.innerHTML =
+                        showing
+                            ? '<i class="ph ph-eye" aria-hidden="true"></i>'
+                            : '<i class="ph ph-eye-slash" aria-hidden="true"></i>';
+
+                }
+            );
 
 
             /* =================================================
-               FORMULARIO
-            ================================================= */
+               CAPS LOCK
+            ================================================== */
 
-            loginForm?.addEventListener("submit", async (event) => {
+            password.addEventListener(
+                "keydown",
+                event => {
 
-                event.preventDefault();
+                    if (
+                        event.getModifierState &&
+                        event.getModifierState("CapsLock")
+                    ) {
 
-                loginMessage.hidden = true;
-                loginMessage.textContent = "";
+                        capsLockWarning.hidden = false;
 
-                if (!loginForm.checkValidity()) {
+                    } else {
 
-                    loginForm.reportValidity();
+                        capsLockWarning.hidden = true;
 
-                    return;
+                    }
 
                 }
+            );
 
 
-                /* Estado de carga */
+            password.addEventListener(
+                "keyup",
+                event => {
 
-                loginBtn.disabled = true;
+                    if (
+                        event.getModifierState &&
+                        event.getModifierState("CapsLock")
+                    ) {
 
-                loginBtnText.textContent =
-                    "Iniciando sesión...";
+                        capsLockWarning.hidden = false;
 
-                loginBtn.querySelector("i").className =
-                    "ph ph-spinner-gap";
+                    } else {
 
+                        capsLockWarning.hidden = true;
 
-                /*
-                 * Aquí se conectará Supabase Auth.
-                 *
-                 * Ejemplo futuro:
-                 *
-                 * const { data, error } =
-                 *     await supabase.auth.signInWithPassword({
-                 *         email,
-                 *         password
-                 *     });
-                 */
+                    }
+
+                }
+            );
 
 
-                try {
+            password.addEventListener(
+                "blur",
+                () => {
 
-                    /*
-                     * Temporalmente simulamos la petición.
-                     *
-                     * Este bloque deberá sustituirse
-                     * por auth.js cuando conectemos Supabase.
-                     */
+                    capsLockWarning.hidden = true;
 
-                    await new Promise(resolve =>
-                        setTimeout(resolve, 700)
+                }
+            );
+
+
+            /* =================================================
+               LIMPIAR ERRORES AL ESCRIBIR
+            ================================================== */
+
+            email.addEventListener(
+                "input",
+                () => {
+
+                    email.classList.remove("input-error");
+
+                    emailError.hidden = true;
+
+                    hideMessage();
+
+                }
+            );
+
+
+            password.addEventListener(
+                "input",
+                () => {
+
+                    password.classList.remove("input-error");
+
+                    passwordError.hidden = true;
+
+                    hideMessage();
+
+                }
+            );
+
+
+            /* =================================================
+               SUBMIT
+            ================================================== */
+
+            form.addEventListener(
+                "submit",
+                async event => {
+
+                    event.preventDefault();
+
+
+                    if (isSubmitting) {
+                        return;
+                    }
+
+
+                    hideMessage();
+
+
+                    if (!validateForm()) {
+
+                        return;
+
+                    }
+
+
+                    isSubmitting = true;
+
+                    loginBtn.disabled = true;
+
+                    loginBtn.setAttribute(
+                        "aria-busy",
+                        "true"
                     );
 
-                    console.info(
-                        "Login preparado para conectar con Supabase."
-                    );
-
-
-                } catch (error) {
-
-                    loginMessage.textContent =
-                        "No se ha podido iniciar sesión. Comprueba tus datos e inténtalo de nuevo.";
-
-                    loginMessage.hidden = false;
-
-                } finally {
-
-                    loginBtn.disabled = false;
 
                     loginBtnText.textContent =
-                        "Iniciar sesión";
+                        "Iniciando sesión...";
 
-                    loginBtn.querySelector("i").className =
-                        "ph ph-sign-in";
+
+                    loginBtnIcon.className =
+                        "ph ph-spinner-gap";
+
+
+                    const emailValue =
+                        email.value.trim();
+
+                    const passwordValue =
+                        password.value;
+
+
+                    /*
+                     * =================================================
+                     * SUPABASE AUTH
+                     * =================================================
+                     *
+                     * Este bloque se conectará posteriormente
+                     * con src/js/auth.js.
+                     *
+                     * Ejemplo:
+                     *
+                     * const { data, error } =
+                     *     await signIn(
+                     *         emailValue,
+                     *         passwordValue,
+                     *         remember.checked
+                     *     );
+                     *
+                     * if (error) {
+                     *     showMessage(error.message);
+                     *     return;
+                     * }
+                     *
+                     * window.location.href =
+                     *     "dashboard.html";
+                     *
+                     * =================================================
+                     */
+
+
+                    try {
+
+                        /*
+                         * Temporal mientras no esté conectado
+                         * Supabase.
+                         */
+
+                        console.info(
+                            "Login preparado:",
+                            {
+                                email: emailValue,
+                                remember: remember.checked
+                            }
+                        );
+
+
+                        await new Promise(
+                            resolve =>
+                                setTimeout(resolve, 700)
+                        );
+
+
+                        showMessage(
+                            "El sistema de acceso está preparado para conectarse con Supabase.",
+                            "success"
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error de login:",
+                            error
+                        );
+
+
+                        showMessage(
+                            "No se ha podido iniciar sesión. Comprueba tus datos e inténtalo de nuevo.",
+                            "error"
+                        );
+
+
+                    } finally {
+
+                        isSubmitting = false;
+
+                        loginBtn.disabled = false;
+
+                        loginBtn.removeAttribute(
+                            "aria-busy"
+                        );
+
+
+                        loginBtnText.textContent =
+                            "Iniciar sesión";
+
+
+                        loginBtnIcon.className =
+                            "ph ph-sign-in";
+
+                    }
 
                 }
-
-            });
+            );
 
         });
 
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="../config/supabase-config.js"></script>
+
+    <script src="../src/js/supabase.js"></script>
+
+    <script src="../src/js/auth.js"></script>
 
 </body>
 

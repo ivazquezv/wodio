@@ -1,138 +1,979 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
+
+
     <meta charset="UTF-8">
-    <title>WodIO - Crear cuenta</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/public/assets/icons/favicon/favicon.svg">
-    <link rel="alternate icon" type="image/png" href="/public/assets/icons/favicon/favicon-96x96.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/public/assets/icons/favicon/apple-touch-icon.png">
-    <link rel="manifest" href="/public/assets/icons/favicon/site.webmanifest">
-    <meta name="theme-color" content="#000000">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS global -->
-    <link rel="stylesheet" href="../src/css/base.css">
-    <link rel="stylesheet" href="../src/css/layout.css">
-    <link rel="stylesheet" href="../src/css/components.css">
-    <link rel="stylesheet" href="../src/css/theme.css">
+    <title>Crear cuenta | WodIO</title>
 
-    <script src="https://unpkg.com/phosphor-icons"></script>
+    <meta name="description"
+        content="Crea tu cuenta de WodIO y empieza a gestionar tu box, atletas, clases y actividad.">
 
-    <style>
-        .register-wrapper {
-            max-width: 420px;
-            margin: 60px auto;
-            text-align: center;
-        }
+    <meta name="robots" content="noindex, nofollow">
 
-        .register-logo {
-            height: clamp(80px, 12vw, 140px);
-            margin: 0 auto 20px auto;
-            display: block;
-        }
+    <meta name="theme-color" content="#0b0b0f">
 
-        .register-card {
-            padding: 28px;
-            border-radius: 20px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-soft);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            text-align: left;
-        }
 
-        .register-card label {
-            font-weight: 600;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-main);
-        }
+    <!-- =====================================================
+     FAVICON
+====================================================== -->
 
-        .register-card input {
-            margin-top: 6px;
-        }
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
 
-        .register-btn {
-            margin-top: 10px;
-            width: 100%;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border-radius: var(--radius-full);
-            background: linear-gradient(135deg, var(--primary), var(--primary-soft));
-            color: #fff;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
+    <link rel="alternate icon" type="image/png" href="assets/icons/favicon/favicon-96x96.png">
 
-        .register-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
-        }
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
 
-        .register-links {
-            margin-top: 18px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
+    <link rel="manifest" href="assets/icons/favicon/site.webmanifest">
 
-        .register-links a {
-            color: var(--primary-soft);
-            font-weight: 600;
-        }
-    </style>
+
+    <!-- =====================================================
+     CSS
+====================================================== -->
+
+    <link rel="stylesheet" href="../src/css/wodio.css">
+
+
+    <!-- =====================================================
+     ICONOS
+====================================================== -->
+
+    <script src="https://unpkg.com/phosphor-icons" defer></script>
+
+
 </head>
 
-<body>
+<body class="auth-page">
 
-    <nav class="navbar">
-        <div class="navbar-left">
-            <img src="/public/assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO logo">
+
+    <!-- =====================================================
+     HEADER
+====================================================== -->
+
+    <header class="site-header">
+
+        <nav class="navbar" aria-label="Navegación principal">
+
+            <a href="../index.html" class="navbar-left" aria-label="Volver a WodIO">
+
+                <img src="assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO">
+
+            </a>
+
+
+            <div class="nav-actions">
+
+                <span class="navbar-title">
+                    ¿Ya tienes una cuenta?
+                </span>
+
+                <a href="login.html" class="nav-register">
+                    Iniciar sesión
+                </a>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =====================================================
+     REGISTRO
+====================================================== -->
+
+    <main>
+
+        <section class="login-wrapper register-wrapper" aria-labelledby="register-title">
+
+
+            <!-- LOGO -->
+
+            <img src="assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
+
+
+            <!-- CABECERA -->
+
+            <div class="login-heading">
+
+                <span class="section-eyebrow">
+                    EMPIEZA CON WODIO
+                </span>
+
+                <h1 id="register-title">
+                    Crea tu cuenta
+                </h1>
+
+                <p class="text-muted">
+                    Configura tu cuenta y empieza a gestionar
+                    tu box desde un único lugar.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+             FORMULARIO
+        ================================================== -->
+
+            <form class="login-card register-card" id="registerForm" novalidate>
+
+
+                <!-- MENSAJE -->
+
+                <div id="registerMessage" class="login-message" role="alert" aria-live="assertive" hidden></div>
+
+
+                <!-- NOMBRE -->
+
+                <div class="form-field">
+
+                    <label for="name">
+
+                        <i class="ph ph-user" aria-hidden="true"></i>
+
+                        Nombre completo
+
+                    </label>
+
+
+                    <input id="name" name="name" type="text" autocomplete="name" placeholder="Tu nombre" required
+                        minlength="2" aria-describedby="nameError">
+
+
+                    <small id="nameError" class="form-error" hidden></small>
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="form-field">
+
+                    <label for="email">
+
+                        <i class="ph ph-envelope" aria-hidden="true"></i>
+
+                        Correo electrónico
+
+                    </label>
+
+
+                    <input id="email" name="email" type="email" autocomplete="email" inputmode="email"
+                        placeholder="tuemail@ejemplo.com" required aria-describedby="emailError">
+
+
+                    <small id="emailError" class="form-error" hidden></small>
+
+                </div>
+
+
+                <!-- CONTRASEÑA -->
+
+                <div class="form-field">
+
+                    <label for="password">
+
+                        <i class="ph ph-lock" aria-hidden="true"></i>
+
+                        Contraseña
+
+                    </label>
+
+
+                    <div class="password-field">
+
+                        <input id="password" name="password" type="password" autocomplete="new-password"
+                            placeholder="Crea una contraseña" required minlength="8"
+                            aria-describedby="passwordRequirements passwordError">
+
+
+                        <button type="button" class="password-toggle" id="passwordToggle"
+                            aria-label="Mostrar contraseña" aria-controls="password" aria-pressed="false">
+
+                            <i class="ph ph-eye" aria-hidden="true"></i>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- SEGURIDAD -->
+
+                    <div class="password-strength" id="passwordStrength">
+
+                        <div class="password-strength-bar">
+
+                            <span id="strengthBar"></span>
+
+                        </div>
+
+
+                        <span id="strengthText" class="password-strength-text">
+                            Mínimo 8 caracteres
+                        </span>
+
+                    </div>
+
+
+                    <small id="passwordError" class="form-error" hidden></small>
+
+                </div>
+
+
+                <!-- CONFIRMAR CONTRASEÑA -->
+
+                <div class="form-field">
+
+                    <label for="confirmPassword">
+
+                        <i class="ph ph-lock-key" aria-hidden="true"></i>
+
+                        Confirmar contraseña
+
+                    </label>
+
+
+                    <div class="password-field">
+
+                        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password"
+                            placeholder="Repite tu contraseña" required aria-describedby="confirmPasswordError">
+
+
+                        <button type="button" class="password-toggle" id="confirmPasswordToggle"
+                            aria-label="Mostrar contraseña" aria-controls="confirmPassword" aria-pressed="false">
+
+                            <i class="ph ph-eye" aria-hidden="true"></i>
+
+                        </button>
+
+                    </div>
+
+
+                    <small id="confirmPasswordError" class="form-error" hidden></small>
+
+                </div>
+
+
+                <!-- TÉRMINOS -->
+
+                <label class="remember-me register-terms">
+
+                    <input type="checkbox" id="terms" name="terms" required>
+
+                    <span>
+                        Acepto los
+                        <a href="#">
+                            términos y condiciones
+                        </a>
+                        y la
+                        <a href="#">
+                            política de privacidad
+                        </a>.
+                    </span>
+
+                </label>
+
+
+                <!-- BOTÓN -->
+
+                <button class="login-btn register-btn" id="registerBtn" type="submit">
+
+                    <i class="ph ph-user-plus" id="registerBtnIcon" aria-hidden="true"></i>
+
+                    <span id="registerBtnText">
+                        Crear cuenta
+                    </span>
+
+                </button>
+
+
+                <!-- LOGIN -->
+
+                <div class="login-register">
+
+                    <span>
+                        ¿Ya tienes una cuenta?
+                    </span>
+
+                    <a href="login.html">
+                        Iniciar sesión
+                    </a>
+
+                </div>
+
+            </form>
+
+
+            <!-- =================================================
+             INFORMACIÓN
+        ================================================== -->
+
+            <div class="login-security">
+
+                <i class="ph ph-shield-check" aria-hidden="true"></i>
+
+                <span>
+                    Tus datos se gestionan de forma segura.
+                </span>
+
+            </div>
+
+
+            <!-- VOLVER -->
+
+            <a href="../index.html" class="login-back">
+
+                <i class="ph ph-arrow-left" aria-hidden="true"></i>
+
+                Volver a WodIO
+
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+     FOOTER
+====================================================== -->
+
+    <footer class="footer">
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 WodIO. Todos los derechos reservados.
+            </p>
+
+
+            <div class="footer-links">
+
+                <a href="#">
+                    Privacidad
+                </a>
+
+                <span aria-hidden="true">
+                    ·
+                </span>
+
+                <a href="#">
+                    Términos
+                </a>
+
+                <span aria-hidden="true">
+                    ·
+                </span>
+
+                <a href="#">
+                    Cookies
+                </a>
+
+            </div>
+
         </div>
-    </nav>
 
-    <div class="register-wrapper">
+    </footer>
 
-        <img src="/public/assets/icons/Logo-WodIO_white.png" class="register-logo" alt="WodIO logo">
 
-        <h1 class="hero-title"><i class="ph ph-user-plus"></i> Crear cuenta</h1>
+    <!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
 
-        <div class="register-card">
+    <script>
 
-            <label><i class="ph ph-user"></i> Nombre completo</label>
-            <input type="text" placeholder="Tu nombre">
+        document.addEventListener("DOMContentLoaded", () => {
 
-            <label><i class="ph ph-envelope"></i> Correo electrónico</label>
-            <input type="email" placeholder="tuemail@ejemplo.com">
+            const form =
+                document.getElementById("registerForm");
 
-            <label><i class="ph ph-lock"></i> Contraseña</label>
-            <input type="password" placeholder="••••••••">
+            const name =
+                document.getElementById("name");
 
-            <label><i class="ph ph-lock-key"></i> Confirmar contraseña</label>
-            <input type="password" placeholder="••••••••">
+            const email =
+                document.getElementById("email");
 
-            <button class="register-btn">
-                <i class="ph ph-check-circle"></i>
-                Crear cuenta
-            </button>
+            const password =
+                document.getElementById("password");
 
-        </div>
+            const confirmPassword =
+                document.getElementById("confirmPassword");
 
-        <div class="register-links">
-            ¿Ya tienes cuenta?
-            <a href="login.html">Iniciar sesión</a>
-        </div>
+            const terms =
+                document.getElementById("terms");
 
-    </div>
+            const registerBtn =
+                document.getElementById("registerBtn");
+
+            const registerBtnText =
+                document.getElementById("registerBtnText");
+
+            const registerBtnIcon =
+                document.getElementById("registerBtnIcon");
+
+            const registerMessage =
+                document.getElementById("registerMessage");
+
+            const passwordToggle =
+                document.getElementById("passwordToggle");
+
+            const confirmPasswordToggle =
+                document.getElementById("confirmPasswordToggle");
+
+            const strengthBar =
+                document.getElementById("strengthBar");
+
+            const strengthText =
+                document.getElementById("strengthText");
+
+
+            let isSubmitting = false;
+
+
+            /* =================================================
+               MENSAJES
+            ================================================== */
+
+            function showMessage(message, type = "error") {
+
+                registerMessage.textContent =
+                    message;
+
+                registerMessage.classList.remove(
+                    "success",
+                    "error"
+                );
+
+                registerMessage.classList.add(type);
+
+                registerMessage.hidden = false;
+
+            }
+
+
+            function hideMessage() {
+
+                registerMessage.hidden = true;
+
+                registerMessage.textContent = "";
+
+            }
+
+
+            /* =================================================
+               MOSTRAR / OCULTAR PASSWORD
+            ================================================== */
+
+            function setupPasswordToggle(
+                button,
+                input
+            ) {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const showing =
+                            input.type === "text";
+
+
+                        input.type =
+                            showing
+                                ? "password"
+                                : "text";
+
+
+                        button.setAttribute(
+                            "aria-pressed",
+                            String(!showing)
+                        );
+
+
+                        button.setAttribute(
+                            "aria-label",
+                            showing
+                                ? "Mostrar contraseña"
+                                : "Ocultar contraseña"
+                        );
+
+
+                        button.innerHTML =
+                            showing
+                                ? '<i class="ph ph-eye" aria-hidden="true"></i>'
+                                : '<i class="ph ph-eye-slash" aria-hidden="true"></i>';
+
+                    }
+                );
+
+            }
+
+
+            setupPasswordToggle(
+                passwordToggle,
+                password
+            );
+
+
+            setupPasswordToggle(
+                confirmPasswordToggle,
+                confirmPassword
+            );
+
+
+            /* =================================================
+               FUERZA DE CONTRASEÑA
+            ================================================== */
+
+            function updatePasswordStrength() {
+
+                const value =
+                    password.value;
+
+
+                if (!value) {
+
+                    strengthBar.style.width =
+                        "0%";
+
+                    strengthText.textContent =
+                        "Mínimo 8 caracteres";
+
+                    return;
+
+                }
+
+
+                let score = 0;
+
+
+                if (value.length >= 8) {
+                    score++;
+                }
+
+                if (value.length >= 12) {
+                    score++;
+                }
+
+                if (/[A-Z]/.test(value)) {
+                    score++;
+                }
+
+                if (/[0-9]/.test(value)) {
+                    score++;
+                }
+
+                if (/[^A-Za-z0-9]/.test(value)) {
+                    score++;
+                }
+
+
+                const percentages = [
+                    "20%",
+                    "40%",
+                    "60%",
+                    "80%",
+                    "100%"
+                ];
+
+
+                strengthBar.style.width =
+                    percentages[Math.max(0, score - 1)] || "0%";
+
+
+                if (score <= 1) {
+
+                    strengthText.textContent =
+                        "Contraseña débil";
+
+                } else if (score <= 3) {
+
+                    strengthText.textContent =
+                        "Contraseña media";
+
+                } else {
+
+                    strengthText.textContent =
+                        "Contraseña segura";
+
+                }
+
+            }
+
+
+            password.addEventListener(
+                "input",
+                updatePasswordStrength
+            );
+
+
+            /* =================================================
+               ERRORES
+            ================================================== */
+
+            function clearErrors() {
+
+                document
+                    .querySelectorAll(".form-error")
+                    .forEach(error => {
+
+                        error.hidden = true;
+                        error.textContent = "";
+
+                    });
+
+
+                document
+                    .querySelectorAll(".input-error")
+                    .forEach(input => {
+
+                        input.classList.remove(
+                            "input-error"
+                        );
+
+                    });
+
+            }
+
+
+            function setError(
+                input,
+                errorElement,
+                message
+            ) {
+
+                input.classList.add(
+                    "input-error"
+                );
+
+                errorElement.textContent =
+                    message;
+
+                errorElement.hidden =
+                    false;
+
+            }
+
+
+            function validateForm() {
+
+                clearErrors();
+
+                let valid = true;
+
+
+                const nameError =
+                    document.getElementById("nameError");
+
+                const emailError =
+                    document.getElementById("emailError");
+
+                const passwordError =
+                    document.getElementById("passwordError");
+
+                const confirmPasswordError =
+                    document.getElementById(
+                        "confirmPasswordError"
+                    );
+
+
+                /* NOMBRE */
+
+                if (
+                    !name.value.trim() ||
+                    name.value.trim().length < 2
+                ) {
+
+                    setError(
+                        name,
+                        nameError,
+                        "Introduce tu nombre completo."
+                    );
+
+                    valid = false;
+
+                }
+
+
+                /* EMAIL */
+
+                if (!email.value.trim()) {
+
+                    setError(
+                        email,
+                        emailError,
+                        "Introduce tu correo electrónico."
+                    );
+
+                    valid = false;
+
+                } else if (!email.validity.valid) {
+
+                    setError(
+                        email,
+                        emailError,
+                        "Introduce un correo electrónico válido."
+                    );
+
+                    valid = false;
+
+                }
+
+
+                /* PASSWORD */
+
+                if (!password.value) {
+
+                    setError(
+                        password,
+                        passwordError,
+                        "Crea una contraseña."
+                    );
+
+                    valid = false;
+
+                } else if (password.value.length < 8) {
+
+                    setError(
+                        password,
+                        passwordError,
+                        "La contraseña debe tener al menos 8 caracteres."
+                    );
+
+                    valid = false;
+
+                }
+
+
+                /* CONFIRMACIÓN */
+
+                if (!confirmPassword.value) {
+
+                    setError(
+                        confirmPassword,
+                        confirmPasswordError,
+                        "Confirma tu contraseña."
+                    );
+
+                    valid = false;
+
+                } else if (
+                    password.value !==
+                    confirmPassword.value
+                ) {
+
+                    setError(
+                        confirmPassword,
+                        confirmPasswordError,
+                        "Las contraseñas no coinciden."
+                    );
+
+                    valid = false;
+
+                }
+
+
+                /* TÉRMINOS */
+
+                if (!terms.checked) {
+
+                    showMessage(
+                        "Debes aceptar los términos y condiciones para crear la cuenta."
+                    );
+
+                    valid = false;
+
+                }
+
+
+                return valid;
+
+            }
+
+
+            /* =================================================
+               LIMPIAR ERRORES AL ESCRIBIR
+            ================================================== */
+
+            [
+                name,
+                email,
+                password,
+                confirmPassword
+            ].forEach(input => {
+
+                input.addEventListener(
+                    "input",
+                    () => {
+
+                        input.classList.remove(
+                            "input-error"
+                        );
+
+                        hideMessage();
+
+                    }
+                );
+
+            });
+
+
+            /* =================================================
+               SUBMIT
+            ================================================== */
+
+            form.addEventListener(
+                "submit",
+                async event => {
+
+                    event.preventDefault();
+
+
+                    if (isSubmitting) {
+                        return;
+                    }
+
+
+                    hideMessage();
+
+
+                    if (!validateForm()) {
+                        return;
+                    }
+
+
+                    isSubmitting = true;
+
+                    registerBtn.disabled =
+                        true;
+
+                    registerBtn.setAttribute(
+                        "aria-busy",
+                        "true"
+                    );
+
+
+                    registerBtnText.textContent =
+                        "Creando cuenta...";
+
+
+                    registerBtnIcon.className =
+                        "ph ph-spinner-gap";
+
+
+                    const userData = {
+
+                        name:
+                            name.value.trim(),
+
+                        email:
+                            email.value.trim(),
+
+                        password:
+                            password.value
+
+                    };
+
+
+                    /*
+                     * =================================================
+                     * SUPABASE AUTH
+                     * =================================================
+                     *
+                     * Posteriormente:
+                     *
+                     * const { data, error } =
+                     *     await registerUser(userData);
+                     *
+                     * if (error) {
+                     *     showMessage(...);
+                     *     return;
+                     * }
+                     *
+                     * window.location.href =
+                     *     "dashboard.html";
+                     *
+                     * =================================================
+                     */
+
+
+                    try {
+
+                        console.info(
+                            "Registro preparado:",
+                            {
+                                name:
+                                    userData.name,
+
+                                email:
+                                    userData.email
+                            }
+                        );
+
+
+                        await new Promise(
+                            resolve =>
+                                setTimeout(
+                                    resolve,
+                                    700
+                                )
+                        );
+
+
+                        showMessage(
+                            "El sistema de registro está preparado para conectarse con Supabase.",
+                            "success"
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error de registro:",
+                            error
+                        );
+
+
+                        showMessage(
+                            "No se ha podido crear la cuenta. Inténtalo de nuevo.",
+                            "error"
+                        );
+
+
+                    } finally {
+
+                        isSubmitting =
+                            false;
+
+                        registerBtn.disabled =
+                            false;
+
+                        registerBtn.removeAttribute(
+                            "aria-busy"
+                        );
+
+
+                        registerBtnText.textContent =
+                            "Crear cuenta";
+
+
+                        registerBtnIcon.className =
+                            "ph ph-user-plus";
+
+                    }
+
+                }
+            );
+
+        });
+
+    </script>
+
 
 </body>
 
