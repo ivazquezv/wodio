@@ -392,6 +392,16 @@
 
     <script src="js/supabase.js"></script>
 
+    <script>
+        window.addEventListener("error", (event) => {
+            console.error("[WodIO] Error JavaScript:", event.error || event.message);
+        });
+
+        window.addEventListener("unhandledrejection", (event) => {
+            console.error("[WodIO] Promise rechazada:", event.reason);
+        });
+    </script>
+
 
     <!-- =====================================================
      JAVASCRIPT
@@ -950,43 +960,39 @@
 
                         if (error) {
 
-                            console.error(
-                                "Error de Supabase:",
-                                error
-                            );
+                            console.error("[WodIO] Error de Supabase:", error);
 
+                            const message =
+                                error.message || "";
 
-                            const errorMessage =
-                                error.message?.toLowerCase()
-                                || "";
-
+                            const normalizedMessage =
+                                message.toLowerCase();
 
                             if (
-                                errorMessage.includes(
-                                    "password"
-                                )
+                                normalizedMessage.includes("already registered") ||
+                                normalizedMessage.includes("user already registered")
                             ) {
-
                                 showMessage(
+                                    "Este correo electrónico ya está registrado. Si ya tienes una cuenta, inicia sesión."
+                                );
+                            } else if (
+                                normalizedMessage.includes("password")
+                            ) {
+                                showMessage(
+                                    message ||
                                     "La contraseña no cumple los requisitos de seguridad."
                                 );
-
                             } else if (
-                                errorMessage.includes(
-                                    "email"
-                                )
+                                normalizedMessage.includes("rate limit")
                             ) {
-
                                 showMessage(
-                                    "No se ha podido registrar ese correo electrónico. Comprueba los datos e inténtalo de nuevo."
+                                    "Se han realizado demasiados intentos. Espera unos minutos y vuelve a intentarlo."
                                 );
-
                             } else {
-
                                 showMessage(
+                                    message ||
                                     "No se ha podido crear la cuenta. Inténtalo de nuevo."
                                 );
-
                             }
 
                             return;
