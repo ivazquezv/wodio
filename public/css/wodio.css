@@ -1781,7 +1781,7 @@ LOGIN — WODIO
   box-shadow: none;
 }
 
-/* MENSAJE DE ERROR */
+/* MENSAJES DE ESTADO */
 
 .login-message {
   padding: 11px 13px;
@@ -1795,6 +1795,14 @@ LOGIN — WODIO
 
   font-size: 0.85rem;
   line-height: 1.5;
+}
+
+.login-message.success {
+  border-color: rgba(34, 197, 94, 0.35);
+
+  color: #86efac;
+
+  background: rgba(34, 197, 94, 0.08);
 }
 
 /* REGISTRO */
