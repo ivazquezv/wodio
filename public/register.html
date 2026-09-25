@@ -383,6 +383,17 @@
 
 
     <!-- =====================================================
+     SUPABASE
+====================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="config/supabase-config.js"></script>
+
+    <script src="js/supabase.js"></script>
+
+
+    <!-- =====================================================
      JAVASCRIPT
 ====================================================== -->
 
@@ -880,70 +891,142 @@
                     };
 
 
-                    /*
-                     * =================================================
-                     * SUPABASE AUTH
-                     * =================================================
-                     *
-                     * Posteriormente:
-                     *
-                     * const { data, error } =
-                     *     await registerUser(userData);
-                     *
-                     * if (error) {
-                     *     showMessage(...);
-                     *     return;
-                     * }
-                     *
-                     * window.location.href =
-                     *     "dashboard.html";
-                     *
-                     * =================================================
-                     */
+                    const fullName =
+                        userData.name
+                            .replace(/\s+/g, " ")
+                            .trim();
+
+                    const nameParts =
+                        fullName.split(" ");
+
+                    const firstName =
+                        nameParts.shift() || "";
+
+                    const lastName =
+                        nameParts.join(" ").trim();
 
 
                     try {
 
-                        console.info(
-                            "Registro preparado:",
-                            {
-                                name:
-                                    userData.name,
+                        if (
+                            typeof supabaseClient === "undefined"
+                        ) {
+
+                            throw new Error(
+                                "Supabase no está disponible."
+                            );
+
+                        }
+
+
+                        const {
+                            data,
+                            error
+                        } =
+                            await supabaseClient.auth.signUp({
 
                                 email:
-                                    userData.email
-                            }
-                        );
+                                    userData.email,
+
+                                password:
+                                    userData.password,
+
+                                options: {
+
+                                    data: {
+
+                                        first_name:
+                                            firstName,
+
+                                        last_name:
+                                            lastName
+
+                                    }
+
+                                }
+
+                            });
 
 
-                        await new Promise(
-                            resolve =>
-                                setTimeout(
-                                    resolve,
-                                    700
+                        if (error) {
+
+                            console.error(
+                                "Error de Supabase:",
+                                error
+                            );
+
+
+                            const errorMessage =
+                                error.message?.toLowerCase()
+                                || "";
+
+
+                            if (
+                                errorMessage.includes(
+                                    "password"
                                 )
+                            ) {
+
+                                showMessage(
+                                    "La contraseña no cumple los requisitos de seguridad."
+                                );
+
+                            } else if (
+                                errorMessage.includes(
+                                    "email"
+                                )
+                            ) {
+
+                                showMessage(
+                                    "No se ha podido registrar ese correo electrónico. Comprueba los datos e inténtalo de nuevo."
+                                );
+
+                            } else {
+
+                                showMessage(
+                                    "No se ha podido crear la cuenta. Inténtalo de nuevo."
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+
+                        console.info(
+                            "Usuario registrado:",
+                            data?.user?.id
                         );
+
+
+                        if (data?.session) {
+
+                            showMessage(
+                                "Cuenta creada correctamente. Entrando en WodIO...",
+                                "success"
+                            );
+
+
+                            window.setTimeout(
+                                () => {
+
+                                    window.location.href =
+                                        "dashboard.html";
+
+                                },
+                                500
+                            );
+
+                            return;
+
+                        }
 
 
                         showMessage(
-                            "El sistema de registro está preparado para conectarse con Supabase.",
+                            "Cuenta creada. Revisa tu correo electrónico para confirmar la cuenta antes de iniciar sesión.",
                             "success"
                         );
-
-
-                    } catch (error) {
-
-                        console.error(
-                            "Error de registro:",
-                            error
-                        );
-
-
-                        showMessage(
-                            "No se ha podido crear la cuenta. Inténtalo de nuevo.",
-                            "error"
-                        );
-
 
                     } finally {
 
