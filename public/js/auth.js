@@ -56,18 +56,23 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (error) {
-        console.error("Error de Supabase:", error);
+        console.error("[WodIO] Error de Supabase:", error);
 
-        if (error.message === "Invalid login credentials") {
+        const message = error.message || "";
+        const normalizedMessage = message.toLowerCase();
+
+        if (normalizedMessage === "invalid login credentials") {
           showMessage(
             "El correo electrónico o la contraseña no son correctos.",
           );
         } else if (
-          error.message.toLowerCase().includes("email not confirmed")
+          normalizedMessage.includes("email not confirmed")
         ) {
           showMessage("Tu correo electrónico todavía no está confirmado.");
         } else {
-          showMessage("No se ha podido iniciar sesión. Inténtalo de nuevo.");
+          showMessage(
+            message || "No se ha podido iniciar sesión. Inténtalo de nuevo."
+          );
         }
 
         return;
@@ -83,9 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "dashboard.html";
       }, 500);
     } catch (error) {
-      console.error("Error inesperado:", error);
+      console.error("[WodIO] Error inesperado:", error);
 
-      showMessage("Se ha producido un error inesperado.");
+      showMessage(
+        error?.message || "Se ha producido un error inesperado."
+      );
     } finally {
       loginBtn.disabled = false;
 
