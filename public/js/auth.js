@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const PENDING_EMAIL_KEY = "wodio.pendingConfirmationEmail";
 
   function getAuthRedirectUrl() {
-    return new URL("login.html", window.location.href).href;
+    return new URL("confirm-email.html", window.location.href).href;
   }
 
   function showMessage(message, type = "error") {
