@@ -251,6 +251,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function finalizeBox(data) {
+    const { data: activeSession } = await supabaseClient.auth.getSession();
+    const activeEmail = activeSession?.session?.user?.email?.trim().toLowerCase();
+
+    if (!activeEmail || activeEmail !== data.email.trim().toLowerCase()) {
+      localStorage.removeItem(pendingKey);
+      throw new Error("La cuenta activa no coincide con el correo usado para crear el box. Inicia sesión con la cuenta correcta.");
+    }
+
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
     buttonText.textContent = "Configurando tu box...";
