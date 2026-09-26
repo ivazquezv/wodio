@@ -98,6 +98,18 @@
 </section>
 </div>
 
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h2>Coaches</h2><p>Asigna o retira el rol de coach a usuarios registrados.</p></div></div>
+<form id="coachForm" class="app-form">
+<div class="app-form-grid">
+<div class="app-field"><label>Usuario</label><select id="coachUser" required><option value="">Selecciona un usuario</option></select></div>
+<div class="app-field"><label>Rol</label><select id="coachRole"><option value="coach">Coach</option><option value="athlete">Atleta</option></select></div>
+</div>
+<button class="app-btn primary" type="submit"><i class="ph ph-user-gear"></i> Actualizar rol</button>
+</form>
+<div id="adminCoaches" class="app-table-wrap" style="margin-top:18px"></div>
+</section>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config/supabase-config.js"></script>
 <script src="js/supabase.js"></script>
@@ -108,6 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const msg=document.getElementById("pageMessage");
   const coachSelect=document.getElementById("classCoach");
   const paymentUser=document.getElementById("paymentUser");
+  const coachUser=document.getElementById("coachUser");
 
   function localDateTime(value){return value?new Date(value).toISOString().slice(0,16):"";}
 
@@ -129,6 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const coaches=rows.filter(u=>["coach","box_admin","super_admin"].includes(u.role));
     coachSelect.innerHTML='<option value="">Sin coach asignado</option>'+coaches.map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</option>').join("");
     paymentUser.innerHTML='<option value="">Selecciona un usuario</option>'+rows.map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</option>').join("");
+    coachUser.innerHTML='<option value="">Selecciona un usuario</option>'+rows.filter(u=>u.role==="athlete"||u.role==="coach").map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+' · '+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</option>').join("");
 
     document.getElementById("adminClasses").innerHTML=(classes||[]).length?classes.map(c=>{
       const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
@@ -145,6 +159,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("adminUsers").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Alta</th></tr></thead><tbody>'+
       rows.map(u=>'<tr><td>'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</span></td><td>'+WodIOApp.formatDate(u.created_at,{withYear:true})+'</td></tr>').join("")+
       '</tbody></table>':'<div class="app-empty">No hay usuarios.</div>';
+
+    const coachesList=rows.filter(u=>u.role==="coach"||u.role==="box_admin"||u.role==="super_admin");
+    document.getElementById("adminCoaches").innerHTML=coachesList.length?'<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th><th>Alta</th></tr></thead><tbody>'+coachesList.map(u=>'<tr><td>'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</span></td><td>'+WodIOApp.formatDate(u.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay coaches.</div>';
   }
 
   document.getElementById("classForm").addEventListener("submit",async e=>{
@@ -161,6 +178,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     const {error}=await supabaseClient.from("events").insert(payload);
     if(error){WodIOApp.message(msg,error.message);return;}
     e.target.reset();WodIOApp.message(msg,"Evento creado correctamente.","success");await load();
+  });
+
+  document.getElementById("coachForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const userId=coachUser.value;
+    const role=document.getElementById("coachRole").value;
+    if(!userId)return;
+    const {error}=await supabaseClient.from("profiles").update({role}).eq("id",userId);
+    if(error){WodIOApp.message(msg,error.message);return;}
+    WodIOApp.message(msg,role==="coach"?"Coach actualizado correctamente.":"Rol de atleta restaurado.","success");
+    e.target.reset();
+    await load();
   });
 
   document.getElementById("paymentForm").addEventListener("submit",async e=>{
