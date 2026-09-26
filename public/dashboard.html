@@ -930,12 +930,10 @@
 
                         </div>
 
-                        <div class="stat-value">
-                            12
-                        </div>
+                        <div class="stat-value" id="statClassesMonth">—</div>
 
                         <div class="stat-description">
-                            <strong>+3</strong>
+                            <strong id="statClassesDelta">—</strong>
                             respecto al mes anterior
                         </div>
 
@@ -956,9 +954,7 @@
 
                         </div>
 
-                        <div class="stat-value">
-                            92%
-                        </div>
+                        <div class="stat-value" id="statAttendance">—</div>
 
                         <div class="stat-description">
                             Últimos 30 días
@@ -981,9 +977,7 @@
 
                         </div>
 
-                        <div class="stat-value">
-                            7
-                        </div>
+                        <div class="stat-value" id="statStreak">—</div>
 
                         <div class="stat-description">
                             Días consecutivos
@@ -1006,12 +1000,10 @@
 
                         </div>
 
-                        <div class="stat-value">
-                            18:00
-                        </div>
+                        <div class="stat-value" id="statNextClass">—</div>
 
-                        <div class="stat-description">
-                            Hoy · CrossTraining
+                        <div class="stat-description" id="statNextClassMeta">
+                            —
                         </div>
 
                     </article>
@@ -1204,71 +1196,12 @@
                             </div>
 
 
-                            <div class="announcement">
-
-                                <div class="announcement-icon">
-                                    ✓
+                            <div id="dashboardActivity">
+                                <div class="announcement">
+                                    <div class="announcement-icon">…</div>
+                                    <div><strong>Cargando actividad</strong><p>Consultando tus últimos movimientos.</p></div>
                                 </div>
-
-                                <div>
-
-                                    <strong>
-                                        Clase completada
-                                    </strong>
-
-                                    <p>
-                                        Has completado CrossTraining ·
-                                        16 septiembre.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="announcement">
-
-                                <div class="announcement-icon">
-                                    ↗
-                                </div>
-
-                                <div>
-
-                                    <strong>
-                                        Nuevo récord personal
-                                    </strong>
-
-                                    <p>
-                                        Has mejorado tu marca en Back Squat.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="announcement">
-
-                                <div class="announcement-icon">
-                                    €
-                                </div>
-
-                                <div>
-
-                                    <strong>
-                                        Pago realizado
-                                    </strong>
-
-                                    <p>
-                                        Tu cuota mensual ha sido procesada
-                                        correctamente.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </section>
+                            </div></section>
 
                     </div>
 
@@ -1413,16 +1346,14 @@
                                             Clases mensuales
                                         </span>
 
-                                        <span>
-                                            12 / 16
-                                        </span>
+                                        <span id="goalClassesText">—</span>
 
                                     </div>
 
 
                                     <div class="progress-bar">
 
-                                        <div class="progress-fill" style="width:75%;"></div>
+                                        <div class="progress-fill" id="goalClassesFill" style="width:0%;"></div>
 
                                     </div>
 
@@ -1437,16 +1368,14 @@
                                             Asistencia
                                         </span>
 
-                                        <span>
-                                            92%
-                                        </span>
+                                        <span id="goalAttendanceText">—</span>
 
                                     </div>
 
 
                                     <div class="progress-bar">
 
-                                        <div class="progress-fill" style="width:92%;"></div>
+                                        <div class="progress-fill" id="goalAttendanceFill" style="width:0%;"></div>
 
                                     </div>
 
@@ -1461,16 +1390,14 @@
                                             Racha mensual
                                         </span>
 
-                                        <span>
-                                            7 / 10
-                                        </span>
+                                        <span id="goalStreakText">—</span>
 
                                     </div>
 
 
                                     <div class="progress-bar">
 
-                                        <div class="progress-fill" style="width:70%;"></div>
+                                        <div class="progress-fill" id="goalStreakFill" style="width:0%;"></div>
 
                                     </div>
 
@@ -1545,341 +1472,119 @@
 ========================================================== -->
 
     <script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const sidebar = document.getElementById("dashboardSidebar");
+    const menuButton = document.getElementById("mobileMenuButton");
+    const overlay = document.getElementById("sidebarOverlay");
+    const logoutButton = document.getElementById("logoutButton");
+    const adminLink = document.querySelector('a[href="box-admin.html"]');
 
-        const sidebar =
-            document.getElementById("dashboardSidebar");
+    menuButton?.addEventListener("click", () => sidebar.classList.add("open"));
+    overlay?.addEventListener("click", () => sidebar.classList.remove("open"));
+    document.querySelectorAll(".sidebar-link").forEach(link => link.addEventListener("click", () => {
+        if (window.innerWidth <= 800) sidebar.classList.remove("open");
+    }));
 
-        const menuButton =
-            document.getElementById("mobileMenuButton");
+    function formatCurrentDate() {
+        const el = document.getElementById("currentDate");
+        if (!el) return;
+        const value = new Date().toLocaleDateString("es-ES", {
+            weekday:"long", day:"numeric", month:"long"
+        });
+        el.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+    }
 
-        const overlay =
-            document.getElementById("sidebarOverlay");
+    function initials(first,last) {
+        return ((first?.trim()?.[0] || "") + (last?.trim()?.[0] || "")).toUpperCase() || "U";
+    }
 
-        const logoutButton =
-            document.getElementById("logoutButton");
+    async function loadDashboard() {
+        const {data:{user},error:sessionError} = await supabaseClient.auth.getUser();
+        if (sessionError || !user) { window.location.href="login.html"; return; }
 
+        const [{data:profile}, {data:classes}, {data:bookings}, {data:payments}, {data:progress}] = await Promise.all([
+            supabaseClient.from("profiles").select("first_name,last_name,role").eq("id",user.id).maybeSingle(),
+            supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8),
+            supabaseClient.from("class_bookings").select("id,class_id,status,created_at").eq("user_id",user.id),
+            supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at").eq("user_id",user.id).order("created_at",{ascending:false}).limit(10),
+            supabaseClient.from("progress_entries").select("id,exercise,value,unit,recorded_at").eq("user_id",user.id).order("recorded_at",{ascending:false}).limit(10)
+        ]);
 
-        function openSidebar() {
+        const firstName = profile?.first_name || user.email?.split("@")[0] || "Usuario";
+        const fullName = [profile?.first_name,profile?.last_name].filter(Boolean).join(" ") || firstName;
+        document.getElementById("profileName").textContent=fullName;
+        document.getElementById("welcomeName").textContent=firstName;
+        document.getElementById("profileAvatar").textContent=initials(profile?.first_name,profile?.last_name);
+        document.getElementById("profileRole").textContent=({
+            athlete:"Atleta",coach:"Coach",box_admin:"Administrador",super_admin:"Super administrador"
+        })[profile?.role] || "Usuario";
 
-            sidebar.classList.add("open");
+        if (adminLink && !["box_admin","super_admin"].includes(profile?.role)) adminLink.style.display="none";
 
+        const futureClasses=classes||[];
+        const booked=new Set((bookings||[]).filter(b=>b.status==="booked").map(b=>b.class_id));
+        const monthStart=new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+        const monthEnd=new Date(monthStart); monthEnd.setMonth(monthEnd.getMonth()+1);
+        const previousStart=new Date(monthStart); previousStart.setMonth(previousStart.getMonth()-1);
+
+        const {count:monthBookings}=await supabaseClient.from("class_bookings")
+            .select("*",{count:"exact",head:true}).eq("user_id",user.id).eq("status","booked")
+            .gte("created_at",monthStart.toISOString()).lt("created_at",monthEnd.toISOString());
+
+        const {count:previousBookings}=await supabaseClient.from("class_bookings")
+            .select("*",{count:"exact",head:true}).eq("user_id",user.id).eq("status","booked")
+            .gte("created_at",previousStart.toISOString()).lt("created_at",monthStart.toISOString());
+
+        const last30=new Date(); last30.setDate(last30.getDate()-30);
+        const attendanceRows=(bookings||[]).filter(b=>new Date(b.created_at)>=last30);
+        const attended=attendanceRows.filter(b=>["booked","attended"].includes(b.status)).length;
+        const attendance=attendanceRows.length ? Math.round(attended/attendanceRows.length*100) : 0;
+
+        document.getElementById("statClassesMonth").textContent=monthBookings||0;
+        const delta=(monthBookings||0)-(previousBookings||0);
+        document.getElementById("statClassesDelta").textContent=(delta>=0?"+":"")+delta;
+        document.getElementById("statAttendance").textContent=attendance+"%";
+
+        const bookedDates=[...new Set((bookings||[]).filter(b=>b.status==="booked").map(b=>new Date(b.created_at).toISOString().slice(0,10)))].sort();
+        let streak=0, cursor=new Date(); cursor.setHours(0,0,0,0);
+        for(let i=0;i<365;i++){
+            const key=cursor.toISOString().slice(0,10);
+            if(bookedDates.includes(key)){streak++;cursor.setDate(cursor.getDate()-1);}
+            else break;
         }
-
-
-        function closeSidebar() {
-
-            sidebar.classList.remove("open");
-
-        }
-
-
-        menuButton?.addEventListener(
-            "click",
-            openSidebar
-        );
-
-
-        overlay?.addEventListener(
-            "click",
-            closeSidebar
-        );
-
-
-        document
-            .querySelectorAll(".sidebar-link")
-            .forEach(link => {
-
-                link.addEventListener(
-                    "click",
-                    () => {
-
-                        if (window.innerWidth <= 800) {
-                            closeSidebar();
-                        }
-
-                    }
-                );
-
-            });
-
-
-        function formatCurrentDate() {
-
-            const dateElement =
-                document.getElementById("currentDate");
-
-            if (!dateElement) {
-                return;
-            }
-
-
-            const today =
-                new Date();
-
-
-            const formatted =
-                today.toLocaleDateString(
-                    "es-ES",
-                    {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long"
-                    }
-                );
-
-
-            dateElement.textContent =
-                formatted.charAt(0).toUpperCase()
-                + formatted.slice(1);
-
-        }
-
-
-        function getInitials(
-            firstName,
-            lastName
-        ) {
-
-            const first =
-                firstName?.trim()?.charAt(0)
-                || "";
-
-            const last =
-                lastName?.trim()?.charAt(0)
-                || "";
-
-
-            return (
-                first + last
-            ).toUpperCase()
-                || "U";
-
-        }
-
-
-        async function loadUserProfile() {
-
-            if (
-                typeof supabaseClient === "undefined"
-            ) {
-
-                console.warn(
-                    "Supabase no está disponible."
-                );
-
-                return;
-
-            }
-
-
-            try {
-
-                const {
-                    data: { user },
-                    error: sessionError
-                } =
-                    await supabaseClient.auth.getUser();
-
-
-                if (
-                    sessionError ||
-                    !user
-                ) {
-
-                    window.location.href =
-                        "login.html";
-
-                    return;
-
-                }
-
-
-                const {
-                    data: profile,
-                    error
-                } =
-                    await supabaseClient
-                        .from("profiles")
-                        .select(
-                            "first_name, last_name, role"
-                        )
-                        .eq(
-                            "id",
-                            user.id
-                        )
-                        .single();
-
-
-                if (error) {
-
-                    console.warn(
-                        "No se pudo cargar el perfil:",
-                        error.message
-                    );
-
-
-                    const emailName =
-                        user.email?.split("@")[0]
-                        || "Usuario";
-
-
-                    document
-                        .getElementById("profileName")
-                        .textContent =
-                        emailName;
-
-
-                    document
-                        .getElementById("welcomeName")
-                        .textContent =
-                        emailName;
-
-
-                    document
-                        .getElementById("profileAvatar")
-                        .textContent =
-                        emailName
-                            .substring(0, 2)
-                            .toUpperCase();
-
-
-                    return;
-
-                }
-
-
-                const firstName =
-                    profile?.first_name || "";
-
-
-                const lastName =
-                    profile?.last_name || "";
-
-
-                const fullName =
-                    `${firstName} ${lastName}`.trim()
-                    ||
-                    user.email?.split("@")[0]
-                    ||
-                    "Usuario";
-
-
-                document
-                    .getElementById("profileName")
-                    .textContent =
-                    fullName;
-
-
-                document
-                    .getElementById("welcomeName")
-                    .textContent =
-                    firstName || fullName;
-
-
-                document
-                    .getElementById("profileAvatar")
-                    .textContent =
-                    getInitials(
-                        firstName,
-                        lastName
-                    );
-
-
-                const roleLabels = {
-
-                    athlete:
-                        "Atleta",
-
-                    coach:
-                        "Coach",
-
-                    box_admin:
-                        "Administrador",
-
-                    super_admin:
-                        "Super administrador"
-
-                };
-
-
-                document
-                    .getElementById("profileRole")
-                    .textContent =
-                    roleLabels[
-                    profile?.role
-                    ]
-                    || "Usuario";
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error cargando el usuario:",
-                    error
-                );
-
-            }
-
-        }
-
-
-        async function logout() {
-
-            if (
-                typeof supabaseClient === "undefined"
-            ) {
-
-                window.location.href =
-                    "login.html";
-
-                return;
-
-            }
-
-
-            logoutButton.disabled =
-                true;
-
-
-            const {
-                error
-            } =
-                await supabaseClient.auth.signOut();
-
-
-            if (error) {
-
-                console.error(
-                    "Error cerrando sesión:",
-                    error
-                );
-
-
-                logoutButton.disabled =
-                    false;
-
-                return;
-
-            }
-
-
-            window.location.href =
-                "login.html";
-
-        }
-
-
-        logoutButton?.addEventListener(
-            "click",
-            logout
-        );
-
-
-        formatCurrentDate();
-
-        loadUserProfile();
-
-    </script>
+        document.getElementById("statStreak").textContent=streak;
+
+        const next=futureClasses[0];
+        document.getElementById("statNextClass").textContent=next?new Date(next.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"—";
+        document.getElementById("statNextClassMeta").textContent=next?new Date(next.starts_at).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})+" · "+next.title:"Sin clases próximas";
+
+        const classList=document.getElementById("dashboardClassList");
+        classList.innerHTML=futureClasses.length?futureClasses.slice(0,4).map(c=>{
+            const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
+            const isBooked=booked.has(c.id);
+            const open=Math.max(0,c.capacity);
+            return '<article class="class-item"><div class="class-time"><strong>'+new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</strong><span>'+new Date(c.starts_at).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})+'</span></div><div class="class-info"><div class="class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="class-meta"><span>'+c.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(coach)+'</span></div></div><span class="class-status '+(isBooked?"status-confirmed":"status-available")+'">'+(isBooked?"Reservada":open+" plazas")+'</span></article>';
+        }).join(""):'<div class="announcement"><div class="announcement-icon">—</div><div><strong>No hay clases próximas</strong><p>Cuando el box programe nuevas sesiones aparecerán aquí.</p></div></div>';
+
+        document.getElementById("goalClassesText").textContent=(monthBookings||0)+" / 16";
+        document.getElementById("goalClassesFill").style.width=Math.min(100,((monthBookings||0)/16)*100)+"%";
+        document.getElementById("goalAttendanceText").textContent=attendance+"%";
+        document.getElementById("goalAttendanceFill").style.width=Math.min(100,attendance)+"%";
+        document.getElementById("goalStreakText").textContent=streak+" / 10";
+        document.getElementById("goalStreakFill").style.width=Math.min(100,(streak/10)*100)+"%";
+
+        const activity=[];
+        (progress||[]).slice(0,2).forEach(p=>activity.push({icon:"↗",title:"Nuevo registro de progreso",text:p.exercise+" · "+p.value+" "+p.unit+" · "+p.recorded_at}));
+        (payments||[]).filter(p=>p.status==="paid").slice(0,1).forEach(p=>activity.push({icon:"€",title:"Pago realizado",text:p.concept+" · "+WodIOApp.euro(p.amount_cents)}));
+        (bookings||[]).filter(b=>b.status==="booked").slice(0,2).forEach(b=>activity.push({icon:"✓",title:"Reserva de clase",text:"Has reservado una próxima sesión."}));
+        document.getElementById("dashboardActivity").innerHTML=activity.length?activity.slice(0,4).map(a=>'<div class="announcement"><div class="announcement-icon">'+a.icon+'</div><div><strong>'+WodIOApp.escapeHtml(a.title)+'</strong><p>'+WodIOApp.escapeHtml(a.text)+'</p></div></div>').join(""):'<div class="announcement"><div class="announcement-icon">—</div><div><strong>Sin actividad reciente</strong><p>Tu actividad aparecerá aquí cuando registres entrenamientos, reservas o pagos.</p></div></div>';
+    }
+
+    logoutButton?.addEventListener("click",async()=>{await supabaseClient.auth.signOut();window.location.href="login.html";});
+    formatCurrentDate();
+    await loadDashboard();
+});
+</script>
 
 </body>
 
