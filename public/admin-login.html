@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso administración | WodIO</title>
+<meta name="description" content="Acceso privado para administradores y responsables del box en WodIO.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
+</head>
+<body class="auth-page">
+<header class="site-header">
+<nav class="navbar" aria-label="Navegación principal">
+<a href="../index.html" class="navbar-left"><img src="assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO"></a>
+<div class="nav-actions"><span class="navbar-title">Acceso privado del box</span><a href="login.html" class="nav-register">Acceso atleta</a></div>
+</nav>
+</header>
+
+<main>
+<section class="login-wrapper" aria-labelledby="admin-login-title">
+<img src="assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
+
+<div class="login-heading">
+<span class="section-eyebrow">ÁREA DE GESTIÓN</span>
+<h1 id="admin-login-title">Acceso de administración</h1>
+<p class="text-muted">Gestiona clases, coaches, usuarios, eventos y pagos del box.</p>
+</div>
+
+<form class="login-card" id="adminLoginForm" novalidate>
+<div id="adminLoginMessage" class="login-message" role="alert" aria-live="assertive" hidden></div>
+
+<div class="form-field">
+<label for="adminEmail"><i class="ph ph-envelope" aria-hidden="true"></i> Correo electrónico</label>
+<input id="adminEmail" type="email" autocomplete="username" placeholder="admin@tubox.com" required autofocus>
+</div>
+
+<div class="form-field">
+<div class="form-label-row">
+<label for="adminPassword"><i class="ph ph-lock" aria-hidden="true"></i> Contraseña</label>
+<a href="password-reset.html" class="password-reset-link">¿La has olvidado?</a>
+</div>
+<div class="password-field">
+<input id="adminPassword" type="password" autocomplete="current-password" placeholder="Introduce tu contraseña" required>
+<button type="button" class="password-toggle" id="adminPasswordToggle" aria-label="Mostrar contraseña" aria-controls="adminPassword" aria-pressed="false">
+<i class="ph ph-eye" aria-hidden="true"></i>
+</button>
+</div>
+</div>
+
+<label class="remember-me">
+<input type="checkbox" id="adminRemember" checked>
+<span>Mantener la sesión iniciada</span>
+</label>
+
+<button class="login-btn" id="adminLoginBtn" type="submit">
+<i class="ph ph-shield-check" id="adminLoginIcon" aria-hidden="true"></i>
+<span id="adminLoginText">Entrar en administración</span>
+</button>
+
+<div class="login-register">
+<span>¿Eres atleta?</span>
+<a href="login.html">Acceder como atleta</a>
+</div>
+</form>
+
+<div class="login-security">
+<i class="ph ph-lock-key-open" aria-hidden="true"></i>
+<span>Solo las cuentas con rol de administrador pueden acceder a esta área.</span>
+</div>
+
+<a href="../index.html" class="login-back"><i class="ph ph-arrow-left" aria-hidden="true"></i> Volver a WodIO</a>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const form = document.getElementById("adminLoginForm");
+  const email = document.getElementById("adminEmail");
+  const password = document.getElementById("adminPassword");
+  const message = document.getElementById("adminLoginMessage");
+  const button = document.getElementById("adminLoginBtn");
+  const buttonText = document.getElementById("adminLoginText");
+  const icon = document.getElementById("adminLoginIcon");
+
+  function showMessage(text, type = "error") {
+    message.textContent = text;
+    message.hidden = false;
+    message.classList.remove("success", "error");
+    message.classList.add(type);
+  }
+
+  function togglePassword() {
+    const visible = password.type === "text";
+    password.type = visible ? "password" : "text";
+    document.getElementById("adminPasswordToggle").setAttribute("aria-pressed", String(!visible));
+    document.getElementById("adminPasswordToggle").setAttribute("aria-label", visible ? "Mostrar contraseña" : "Ocultar contraseña");
+    document.getElementById("adminPasswordToggle").innerHTML = visible
+      ? '<i class="ph ph-eye" aria-hidden="true"></i>'
+      : '<i class="ph ph-eye-slash" aria-hidden="true"></i>';
+  }
+
+  document.getElementById("adminPasswordToggle").addEventListener("click", togglePassword);
+
+  const { data: existing } = await supabaseClient.auth.getUser();
+  if (existing?.user) {
+    const { data: profile } = await supabaseClient.from("profiles").select("role").eq("id", existing.user.id).maybeSingle();
+    if (["box_admin", "super_admin"].includes(profile?.role)) {
+      window.location.href = "box-admin.html";
+      return;
+    }
+    await supabaseClient.auth.signOut();
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    message.hidden = true;
+
+    if (!email.value.trim() || !password.value) {
+      showMessage("Introduce tu correo electrónico y contraseña.");
+      return;
+    }
+
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    buttonText.textContent = "Comprobando acceso...";
+    icon.className = "ph ph-spinner-gap";
+
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email.value.trim(),
+        password: password.value
+      });
+
+      if (error) {
+        showMessage(error.message?.toLowerCase().includes("invalid login credentials")
+          ? "El correo electrónico o la contraseña no son correctos."
+          : (error.message || "No se ha podido iniciar sesión."));
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("id, first_name, last_name, role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        await supabaseClient.auth.signOut();
+        showMessage("No se ha podido comprobar el rol de la cuenta.");
+        return;
+      }
+
+      if (!["box_admin", "super_admin"].includes(profile?.role)) {
+        await supabaseClient.auth.signOut();
+        showMessage("Esta cuenta no tiene permisos de administración.");
+        return;
+      }
+
+      showMessage("Acceso autorizado. Entrando en administración...", "success");
+      window.setTimeout(() => { window.location.href = "box-admin.html"; }, 300);
+    } catch (error) {
+      showMessage(error?.message || "Se ha producido un error inesperado.");
+    } finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      buttonText.textContent = "Entrar en administración";
+      icon.className = "ph ph-shield-check";
+    }
+  });
+});
+</script>
+</body>
+</html>
