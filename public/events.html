@@ -1,34 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>WodIO - Eventos</title>
-
-    <link rel="stylesheet" href="css/wodio.css">
-    <link rel="stylesheet" href="">
-    <link rel="stylesheet" href="">
-
-    <script src="https://unpkg.com/phosphor-icons"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eventos | WodIO</title>
+<meta name="description" content="Eventos y actividades especiales del box en WodIO.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
+<body class="app-page">
+<div class="app-shell">
+<header class="app-topbar">
+<a class="app-brand" href="dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO</span></a>
+<a class="app-back" href="dashboard.html"><i class="ph ph-arrow-left"></i> Dashboard</a>
+</header>
 
-<body>
+<section class="app-hero">
+<div><div class="app-eyebrow">Comunidad</div><h1>Eventos</h1><p>Competiciones, actividades y encuentros organizados por tu box.</p></div>
+</section>
+<div id="pageMessage" class="app-message"></div>
+<section class="app-card">
+<div class="app-card-head"><div><h2>Próximos eventos</h2><p>Consulta los detalles y confirma tu asistencia.</p></div></div>
+<div id="eventList" class="app-list"><div class="app-loading">Cargando eventos…</div></div>
+</section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/wodio-app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const ctx = await WodIOApp.requireUser();
+  if (!ctx) return;
+  const list = document.getElementById("eventList");
+  const message = document.getElementById("pageMessage");
 
-    <nav class="navbar">
-        <h2><i class="ph ph-trophy"></i> Eventos</h2>
-        <a href="dashboard.html"><i class="ph ph-arrow-left"></i> Volver</a>
-    </nav>
+  async function load() {
+    list.innerHTML = '<div class="app-loading">Cargando eventos…</div>';
+    const from = new Date().toISOString();
+    const [{ data: events, error }, { data: registrations, error: regError }] = await Promise.all([
+      supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents,currency").gte("starts_at", from).order("starts_at").limit(50),
+      supabaseClient.from("event_registrations").select("id,event_id,status").eq("user_id", ctx.user.id)
+    ]);
+    if (error || regError) {
+      WodIOApp.message(message, error?.message || regError?.message || "No se pudieron cargar los eventos.");
+      return;
+    }
+    if (!events?.length) {
+      list.innerHTML = '<div class="app-empty">No hay eventos próximos.</div>';
+      return;
+    }
 
-    <div class="container">
-        <h1><i class="ph ph-medal"></i> Eventos del Box</h1>
+    const counts = await Promise.all(events.map(async ev => {
+      const { count } = await supabaseClient.from("event_registrations").select("*", {count:"exact",head:true}).eq("event_id",ev.id).eq("status","registered");
+      return [ev.id,count||0];
+    }));
+    const countMap = new Map(counts);
 
-        <div class="card">
-            <h3><i class="ph ph-medal"></i> Throwdown 2026</h3>
-            <p class="card-meta"><i class="ph ph-calendar"></i> 12 Octubre · 30 plazas</p>
-            <button><i class="ph ph-arrow-right"></i> Inscribirme</button>
-        </div>
-    </div>
+    list.innerHTML = events.map(ev => {
+      const registered = registrations?.some(r => r.event_id === ev.id && r.status === "registered");
+      const count = countMap.get(ev.id) || 0;
+      const open = ev.capacity == null ? null : Math.max(0, ev.capacity - count);
+      return '<article class="app-item"><div class="app-item-main">' +
+        '<div class="app-item-title">' + WodIOApp.escapeHtml(ev.title) + '</div>' +
+        '<div class="app-item-meta"><span><i class="ph ph-calendar"></i> ' + WodIOApp.formatDateTime(ev.starts_at) + '</span>' +
+        (ev.location ? '<span><i class="ph ph-map-pin"></i> ' + WodIOApp.escapeHtml(ev.location) + '</span>' : '') +
+        '<span><i class="ph ph-ticket"></i> ' + (ev.price_cents ? WodIOApp.euro(ev.price_cents) : "Gratis") + '</span>' +
+        (ev.capacity != null ? '<span>' + open + ' plazas libres</span>' : '<span>Sin límite de plazas</span>') + '</div>' +
+        (ev.description ? '<div class="app-help" style="margin-top:7px">' + WodIOApp.escapeHtml(ev.description) + '</div>' : '') +
+        '</div><div class="app-item-actions"><span class="app-badge ' + (registered ? "success" : open === 0 ? "danger" : "primary") + '">' +
+        (registered ? "Inscrito" : open === 0 ? "Completo" : "Disponible") + '</span>' +
+        (registered ? '<button class="app-btn" data-cancel="' + ev.id + '">Cancelar</button>' :
+          '<button class="app-btn primary" data-register="' + ev.id + '" ' + (open === 0 ? "disabled" : "") + '>Inscribirme</button>') +
+        '</div></article>';
+    }).join("");
+  }
 
+  list.addEventListener("click", async e => {
+    const register = e.target.closest("[data-register]")?.dataset.register;
+    const cancel = e.target.closest("[data-cancel]")?.dataset.cancel;
+    if (!register && !cancel) return;
+    const id = register || cancel;
+    const btn = e.target.closest("button");
+    if (btn) btn.disabled = true;
+    const result = cancel
+      ? await supabaseClient.from("event_registrations").update({status:"cancelled"}).eq("event_id",id).eq("user_id",ctx.user.id)
+      : await supabaseClient.from("event_registrations").upsert({event_id:id,user_id:ctx.user.id,status:"registered"},{onConflict:"event_id,user_id"});
+    if (result.error) WodIOApp.message(message,result.error.message);
+    else WodIOApp.message(message,cancel ? "Inscripción cancelada." : "Te has inscrito correctamente.","success");
+    await load();
+  });
+
+  await load();
+});
+</script>
 </body>
-
 </html>
