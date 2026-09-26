@@ -1964,6 +1964,63 @@ LOGIN — WODIO
   gap: 10px;
 }
 
+/* CONFIRMACIÓN DE CORREO */
+
+.confirmation-wrapper {
+  width: min(100% - 32px, 460px);
+}
+
+.confirmation-card {
+  align-items: center;
+  text-align: center;
+}
+
+.confirmation-icon {
+  width: 64px;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 2px;
+
+  border: 1px solid var(--border-primary);
+  border-radius: 50%;
+
+  color: var(--primary-soft);
+
+  background: rgba(255, 107, 0, 0.08);
+
+  font-size: 1.8rem;
+}
+
+.confirmation-icon .ph-spinner-gap {
+  animation: wodio-confirmation-spin 1s linear infinite;
+}
+
+.confirmation-actions {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirmation-primary {
+  text-decoration: none;
+}
+
+.confirmation-secondary {
+  padding-top: 4px;
+}
+
+@keyframes wodio-confirmation-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* LOGIN MOBILE */
 
 @media (max-width: 767px) {
