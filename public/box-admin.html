@@ -1,42 +1,199 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>WodIO - Admin Box</title>
-
-    <link rel="stylesheet" href="css/wodio.css">
-    <link rel="stylesheet" href="">
-    <link rel="stylesheet" href="">
-
-    <script src="https://unpkg.com/phosphor-icons"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración | WodIO</title>
+<meta name="description" content="Administración del box en WodIO.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
+<body class="app-page">
+<div class="app-shell">
+<header class="app-topbar">
+<a class="app-brand" href="dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO</span></a>
+<a class="app-back" href="dashboard.html"><i class="ph ph-arrow-left"></i> Dashboard</a>
+</header>
 
-<body>
+<section class="app-hero">
+<div><div class="app-eyebrow">Gestión del box</div><h1>Administración</h1><p>Gestiona clases, eventos, usuarios y cuotas desde un único panel.</p></div>
+<div class="app-actions">
+<button class="app-btn primary" id="refreshBtn"><i class="ph ph-arrows-clockwise"></i> Actualizar</button>
+</div>
+</section>
+<div id="pageMessage" class="app-message"></div>
 
-    <nav class="navbar">
-        <h2><i class="ph ph-gear"></i> Admin Box</h2>
-        <a href="dashboard.html"><i class="ph ph-arrow-left"></i> Volver</a>
-    </nav>
+<section class="app-grid app-grid-3">
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div class="app-stat-value" id="usersCount">—</div><div class="app-stat-label">Usuarios</div></div></div>
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-calendar"></i></div><div><div class="app-stat-value" id="classesCount">—</div><div class="app-stat-label">Clases futuras</div></div></div>
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-warning-circle"></i></div><div><div class="app-stat-value" id="pendingCount">—</div><div class="app-stat-label">Pagos pendientes</div></div></div>
+</section>
 
-    <div class="container">
-        <h1><i class="ph ph-gear-six"></i> Gestión del Box</h1>
+<div class="app-grid app-grid-2" style="margin-top:18px">
+<section class="app-card">
+<div class="app-card-head"><div><h2>Nueva clase</h2><p>Programa una sesión para el box.</p></div></div>
+<form id="classForm" class="app-form">
+<div class="app-form-grid">
+<div class="app-field"><label>Título</label><input id="classTitle" required placeholder="CrossTraining"></div>
+<div class="app-field"><label>Inicio</label><input id="classStart" type="datetime-local" required></div>
+<div class="app-field"><label>Duración (min)</label><input id="classDuration" type="number" min="15" value="60"></div>
+<div class="app-field"><label>Plazas</label><input id="classCapacity" type="number" min="1" value="12"></div>
+<div class="app-field"><label>Coach</label><select id="classCoach"><option value="">Sin coach asignado</option></select></div>
+<div class="app-field"><label>Ubicación</label><input id="classLocation" placeholder="Sala principal"></div>
+<div class="app-field full"><label>WOD</label><input id="classWorkout" placeholder="Fran · 21-15-9 Thrusters + Pull-ups"></div>
+<div class="app-field full"><label>Descripción</label><textarea id="classDescription" placeholder="Indicaciones para los atletas…"></textarea></div>
+</div>
+<button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear clase</button>
+</form>
+</section>
 
-        <div class="grid grid-2">
+<section class="app-card">
+<div class="app-card-head"><div><h2>Nuevo evento</h2><p>Crea una actividad especial para la comunidad.</p></div></div>
+<form id="eventForm" class="app-form">
+<div class="app-form-grid">
+<div class="app-field full"><label>Título</label><input id="eventTitle" required placeholder="Throwdown WodIO 2026"></div>
+<div class="app-field"><label>Inicio</label><input id="eventStart" type="datetime-local" required></div>
+<div class="app-field"><label>Fin</label><input id="eventEnd" type="datetime-local"></div>
+<div class="app-field"><label>Plazas</label><input id="eventCapacity" type="number" min="1" placeholder="30"></div>
+<div class="app-field"><label>Precio (€)</label><input id="eventPrice" type="number" min="0" step="0.01" value="0"></div>
+<div class="app-field full"><label>Ubicación</label><input id="eventLocation" placeholder="Box WodIO"></div>
+<div class="app-field full"><label>Descripción</label><textarea id="eventDescription" placeholder="Información del evento…"></textarea></div>
+</div>
+<button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear evento</button>
+</form>
+</section>
+</div>
 
-            <div class="card">
-                <h3><i class="ph ph-calendar-plus"></i> Subir clases</h3>
-                <button><i class="ph ph-arrow-right"></i> Gestionar</button>
-            </div>
+<div class="app-grid app-grid-2" style="margin-top:18px">
+<section class="app-card">
+<div class="app-card-head"><div><h2>Clases programadas</h2><p>Próximas sesiones y reservas.</p></div></div>
+<div id="adminClasses" class="app-list"><div class="app-loading">Cargando…</div></div>
+</section>
 
-            <div class="card">
-                <h3><i class="ph ph-users"></i> Usuarios</h3>
-                <button><i class="ph ph-arrow-right"></i> Ver usuarios</button>
-            </div>
+<section class="app-card">
+<div class="app-card-head"><div><h2>Eventos</h2><p>Próximas actividades.</p></div></div>
+<div id="adminEvents" class="app-list"><div class="app-loading">Cargando…</div></div>
+</section>
+</div>
 
-        </div>
-    </div>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h2>Pagos</h2><p>Registra cuotas y actualiza su estado.</p></div></div>
+<form id="paymentForm" class="app-form" style="margin-bottom:22px">
+<div class="app-form-grid">
+<div class="app-field"><label>Usuario</label><select id="paymentUser" required><option value="">Selecciona un usuario</option></select></div>
+<div class="app-field"><label>Concepto</label><input id="paymentConcept" required placeholder="Cuota mensual"></div>
+<div class="app-field"><label>Importe (€)</label><input id="paymentAmount" type="number" min="0" step="0.01" required placeholder="45"></div>
+<div class="app-field"><label>Vencimiento</label><input id="paymentDue" type="date"></div>
+</div>
+<button class="app-btn primary" type="submit"><i class="ph ph-receipt"></i> Crear cuota</button>
+</form>
+<div id="adminPayments" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div>
+</section>
 
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h2>Usuarios</h2><p>Perfiles registrados en WodIO.</p></div></div>
+<div id="adminUsers" class="app-table-wrap"><div class="app-loading">Cargando usuarios…</div></div>
+</section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/wodio-app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const ctx=await WodIOApp.requireUser({roles:["box_admin","super_admin"]}); if(!ctx)return;
+  const msg=document.getElementById("pageMessage");
+  const coachSelect=document.getElementById("classCoach");
+  const paymentUser=document.getElementById("paymentUser");
+
+  function localDateTime(value){return value?new Date(value).toISOString().slice(0,16):"";}
+
+  async function load(){
+    const now=new Date().toISOString();
+    const [{data:users,error:uErr},{data:classes,error:cErr},{data:events,error:eErr},{data:payments,error:pErr}] = await Promise.all([
+      supabaseClient.from("profiles").select("id,first_name,last_name,role,created_at").order("created_at",{ascending:false}),
+      supabaseClient.from("classes").select("id,title,starts_at,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",now).order("starts_at").limit(12),
+      supabaseClient.from("events").select("id,title,starts_at,capacity,price_cents").gte("starts_at",now).order("starts_at").limit(12),
+      supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,created_at,user:profiles!payments_user_id_fkey(first_name,last_name)").order("created_at",{ascending:false}).limit(30)
+    ]);
+    if(uErr||cErr||eErr||pErr){WodIOApp.message(msg,uErr?.message||cErr?.message||eErr?.message||pErr?.message);return;}
+
+    const rows=users||[];
+    document.getElementById("usersCount").textContent=rows.length;
+    document.getElementById("classesCount").textContent=(classes||[]).length;
+    document.getElementById("pendingCount").textContent=(payments||[]).filter(p=>p.status==="pending").length;
+
+    const coaches=rows.filter(u=>["coach","box_admin","super_admin"].includes(u.role));
+    coachSelect.innerHTML='<option value="">Sin coach asignado</option>'+coaches.map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</option>').join("");
+    paymentUser.innerHTML='<option value="">Selecciona un usuario</option>'+rows.map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</option>').join("");
+
+    document.getElementById("adminClasses").innerHTML=(classes||[]).length?classes.map(c=>{
+      const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
+      return '<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(c.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(c.starts_at)+'</span><span>'+WodIOApp.escapeHtml(coach)+'</span><span>'+c.capacity+' plazas</span></div></div><div class="app-item-actions"><button class="app-btn danger" data-delete-class="'+c.id+'"><i class="ph ph-trash"></i></button></div></article>';
+    }).join(""):'<div class="app-empty">No hay clases futuras.</div>';
+
+    document.getElementById("adminEvents").innerHTML=(events||[]).length?events.map(ev=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(ev.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(ev.starts_at)+'</span><span>'+ (ev.capacity==null?"Sin límite":ev.capacity+" plazas")+'</span><span>'+ (ev.price_cents?WodIOApp.euro(ev.price_cents):"Gratis")+'</span></div></div><div class="app-item-actions"><button class="app-btn danger" data-delete-event="'+ev.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
+
+    const labels={pending:["Pendiente","warning"],paid:["Pagado","success"],failed:["Fallido","danger"],cancelled:["Cancelado","danger"],refunded:["Reembolsado","primary"]};
+    document.getElementById("adminPayments").innerHTML=(payments||[]).length?'<table class="app-table"><thead><tr><th>Usuario</th><th>Concepto</th><th>Importe</th><th>Estado</th><th>Acción</th></tr></thead><tbody>'+
+      payments.map(p=>'<tr><td>'+WodIOApp.escapeHtml([p.user?.first_name,p.user?.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+(p.status==="pending"?'<button class="app-btn" data-pay="'+p.id+'">Marcar pagado</button>':'—')+'</td></tr>').join("")+
+      '</tbody></table>':'<div class="app-empty">No hay pagos registrados.</div>';
+
+    document.getElementById("adminUsers").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Alta</th></tr></thead><tbody>'+
+      rows.map(u=>'<tr><td>'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</span></td><td>'+WodIOApp.formatDate(u.created_at,{withYear:true})+'</td></tr>').join("")+
+      '</tbody></table>':'<div class="app-empty">No hay usuarios.</div>';
+  }
+
+  document.getElementById("classForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const payload={title:document.getElementById("classTitle").value.trim(),starts_at:new Date(document.getElementById("classStart").value).toISOString(),duration_minutes:Number(document.getElementById("classDuration").value),capacity:Number(document.getElementById("classCapacity").value),coach_id:coachSelect.value||null,location:document.getElementById("classLocation").value.trim()||null,workout:document.getElementById("classWorkout").value.trim()||null,description:document.getElementById("classDescription").value.trim()||null,created_by:ctx.user.id};
+    const {error}=await supabaseClient.from("classes").insert(payload);
+    if(error){WodIOApp.message(msg,error.message);return;}
+    e.target.reset();WodIOApp.message(msg,"Clase creada correctamente.","success");await load();
+  });
+
+  document.getElementById("eventForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const payload={title:document.getElementById("eventTitle").value.trim(),starts_at:new Date(document.getElementById("eventStart").value).toISOString(),ends_at:document.getElementById("eventEnd").value?new Date(document.getElementById("eventEnd").value).toISOString():null,capacity:document.getElementById("eventCapacity").value?Number(document.getElementById("eventCapacity").value):null,price_cents:Math.round(Number(document.getElementById("eventPrice").value||0)*100),location:document.getElementById("eventLocation").value.trim()||null,description:document.getElementById("eventDescription").value.trim()||null,created_by:ctx.user.id};
+    const {error}=await supabaseClient.from("events").insert(payload);
+    if(error){WodIOApp.message(msg,error.message);return;}
+    e.target.reset();WodIOApp.message(msg,"Evento creado correctamente.","success");await load();
+  });
+
+  document.getElementById("paymentForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const payload={user_id:paymentUser.value,concept:document.getElementById("paymentConcept").value.trim(),amount_cents:Math.round(Number(document.getElementById("paymentAmount").value)*100),due_date:document.getElementById("paymentDue").value||null};
+    const {error}=await supabaseClient.from("payments").insert(payload);
+    if(error){WodIOApp.message(msg,error.message);return;}
+    e.target.reset();WodIOApp.message(msg,"Cuota creada correctamente.","success");await load();
+  });
+
+  document.addEventListener("click",async e=>{
+    const classId=e.target.closest("[data-delete-class]")?.dataset.deleteClass;
+    const eventId=e.target.closest("[data-delete-event]")?.dataset.deleteEvent;
+    const paymentId=e.target.closest("[data-pay]")?.dataset.pay;
+    if(classId){
+      if(!confirm("¿Eliminar esta clase y sus reservas?"))return;
+      const {error}=await supabaseClient.from("classes").delete().eq("id",classId);
+      if(error)WodIOApp.message(msg,error.message);else await load();
+    }
+    if(eventId){
+      if(!confirm("¿Eliminar este evento y sus inscripciones?"))return;
+      const {error}=await supabaseClient.from("events").delete().eq("id",eventId);
+      if(error)WodIOApp.message(msg,error.message);else await load();
+    }
+    if(paymentId){
+      const {error}=await supabaseClient.from("payments").update({status:"paid",paid_at:new Date().toISOString()}).eq("id",paymentId);
+      if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Pago actualizado.","success");await load();}
+    }
+  });
+
+  document.getElementById("refreshBtn").addEventListener("click",load);
+  await load();
+});
+</script>
 </body>
-
 </html>
