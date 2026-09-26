@@ -1,46 +1,163 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>WodIO - Clases</title>
-
-    <link rel="stylesheet" href="css/wodio.css">
-    <link rel="stylesheet" href="">
-    <link rel="stylesheet" href="">
-
-    <script src="https://unpkg.com/phosphor-icons"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clases | WodIO</title>
+<meta name="description" content="Consulta y reserva tus próximas clases en WodIO.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
+<body class="app-page">
+<div class="app-shell">
+<header class="app-topbar">
+<a class="app-brand" href="dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO</span></a>
+<a class="app-back" href="dashboard.html"><i class="ph ph-arrow-left"></i> Dashboard</a>
+</header>
 
-<body>
+<section class="app-hero">
+<div>
+<div class="app-eyebrow">Entrenamiento</div>
+<h1>Clases</h1>
+<p>Consulta el horario, revisa las plazas y reserva tu próximo entrenamiento.</p>
+</div>
+<div class="app-actions">
+<button class="app-btn" id="todayBtn"><i class="ph ph-calendar"></i> Hoy</button>
+</div>
+</section>
 
-    <nav class="navbar">
-        <h2><i class="ph ph-calendar"></i> Clases</h2>
-        <a href="dashboard.html"><i class="ph ph-arrow-left"></i> Volver</a>
-    </nav>
+<div id="pageMessage" class="app-message"></div>
 
-    <div class="container">
-        <h1><i class="ph ph-calendar-check"></i> Clases de la semana</h1>
+<section class="app-grid app-grid-3" id="classStats">
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-calendar"></i></div><div><div class="app-stat-value" id="statClasses">—</div><div class="app-stat-label">Próximas clases</div></div></div>
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-check-circle"></i></div><div><div class="app-stat-value" id="statBooked">—</div><div class="app-stat-label">Mis reservas</div></div></div>
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div class="app-stat-value" id="statOpen">—</div><div class="app-stat-label">Plazas disponibles</div></div></div>
+</section>
 
-        <div class="grid grid-2">
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head">
+<div><h2>Próximas sesiones</h2><p>Las clases se muestran desde hoy en adelante.</p></div>
+</div>
+<div id="classList" class="app-list"><div class="app-loading">Cargando clases…</div></div>
+</section>
+</div>
 
-            <div class="card">
-                <h3><i class="ph ph-calendar"></i> Lunes</h3>
-                <p>WOD: Fran</p>
-                <p><i class="ph ph-barbell"></i> Material: Pull-ups, Thrusters</p>
-                <button><i class="ph ph-plus-circle"></i> Apuntarme</button>
-            </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/wodio-app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const ctx = await WodIOApp.requireUser();
+  if (!ctx) return;
+  WodIOApp.bindLogout();
 
-            <div class="card">
-                <h3><i class="ph ph-calendar"></i> Martes</h3>
-                <p>WOD: Cindy</p>
-                <p><i class="ph ph-barbell"></i> Material: Pull-ups, Push-ups</p>
-                <button><i class="ph ph-plus-circle"></i> Apuntarme</button>
-            </div>
+  const list = document.getElementById("classList");
+  const message = document.getElementById("pageMessage");
+  let classes = [];
+  let bookings = [];
 
-        </div>
-    </div>
+  async function load() {
+    list.innerHTML = '<div class="app-loading">Cargando clases…</div>';
 
+    const from = new Date();
+    from.setHours(0,0,0,0);
+
+    const [{ data: classRows, error: classError }, { data: bookingRows, error: bookingError }] =
+      await Promise.all([
+        supabaseClient.from("classes")
+          .select("id,title,description,starts_at,duration_minutes,capacity,workout,equipment,location,coach_id,coach:profiles!classes_coach_id_fkey(first_name,last_name)")
+          .gte("starts_at", from.toISOString())
+          .order("starts_at")
+          .limit(50),
+        supabaseClient.from("class_bookings")
+          .select("id,class_id,status")
+          .eq("user_id", ctx.user.id)
+      ]);
+
+    if (classError || bookingError) {
+      WodIOApp.message(message, classError?.message || bookingError?.message || "No se pudieron cargar las clases.");
+      list.innerHTML = '<div class="app-empty">No se pudieron cargar las clases.</div>';
+      return;
+    }
+
+    classes = classRows || [];
+    bookings = bookingRows || [];
+
+    const activeBookings = new Set(bookings.filter(b => b.status === "booked").map(b => b.class_id));
+    document.getElementById("statClasses").textContent = classes.length;
+    document.getElementById("statBooked").textContent = activeBookings.size;
+    document.getElementById("statOpen").textContent = classes.reduce((sum, c) => sum + Math.max(0, c.capacity - bookings.filter(b => b.class_id === c.id && b.status === "booked").length), 0);
+
+    if (!classes.length) {
+      list.innerHTML = '<div class="app-empty">No hay clases programadas todavía.</div>';
+      return;
+    }
+
+    const counts = await Promise.all(classes.map(async c => {
+      const { count } = await supabaseClient.from("class_bookings")
+        .select("*", { count:"exact", head:true })
+        .eq("class_id", c.id)
+        .eq("status", "booked");
+      return [c.id, count || 0];
+    }));
+    const countMap = new Map(counts);
+
+    list.innerHTML = classes.map(c => {
+      const count = countMap.get(c.id) || 0;
+      const open = Math.max(0, c.capacity - count);
+      const booking = bookings.find(b => b.class_id === c.id && b.status === "booked");
+      const coach = [c.coach?.first_name, c.coach?.last_name].filter(Boolean).join(" ") || "Sin coach asignado";
+      return '<article class="app-item">' +
+        '<div class="app-item-main">' +
+        '<div class="app-item-title">' + WodIOApp.escapeHtml(c.title) + '</div>' +
+        '<div class="app-item-meta"><span><i class="ph ph-calendar"></i> ' + WodIOApp.formatDateTime(c.starts_at) + '</span>' +
+        '<span><i class="ph ph-timer"></i> ' + c.duration_minutes + ' min</span><span><i class="ph ph-user"></i> ' + WodIOApp.escapeHtml(coach) + '</span>' +
+        (c.location ? '<span><i class="ph ph-map-pin"></i> ' + WodIOApp.escapeHtml(c.location) + '</span>' : '') + '</div>' +
+        (c.description ? '<div class="app-help" style="margin-top:7px">' + WodIOApp.escapeHtml(c.description) + '</div>' : '') +
+        '<div class="app-item-meta"><span>' + open + ' / ' + c.capacity + ' plazas</span>' +
+        (c.workout ? '<span>WOD: ' + WodIOApp.escapeHtml(c.workout) + '</span>' : '') + '</div>' +
+        '</div>' +
+        '<div class="app-item-actions">' +
+        '<span class="app-badge ' + (booking ? "success" : open ? "primary" : "danger") + '">' + (booking ? "Reservada" : open ? "Disponible" : "Completa") + '</span>' +
+        (booking
+          ? '<button class="app-btn" data-cancel="' + c.id + '"><i class="ph ph-x"></i> Cancelar</button>'
+          : '<button class="app-btn primary" data-book="' + c.id + '" ' + (open === 0 ? "disabled" : "") + '><i class="ph ph-check"></i> Reservar</button>') +
+        '</div></article>';
+    }).join("");
+  }
+
+  list.addEventListener("click", async e => {
+    const book = e.target.closest("[data-book]")?.dataset.book;
+    const cancel = e.target.closest("[data-cancel]")?.dataset.cancel;
+    if (!book && !cancel) return;
+
+    const classId = book || cancel;
+    const status = cancel ? "cancelled" : "booked";
+    const button = e.target.closest("button");
+    if (button) button.disabled = true;
+    WodIOApp.clearMessage(message);
+
+    if (cancel) {
+      const { error } = await supabaseClient.from("class_bookings")
+        .update({ status }).eq("class_id", classId).eq("user_id", ctx.user.id);
+      if (error) WodIOApp.message(message, error.message);
+    } else {
+      const { error } = await supabaseClient.from("class_bookings")
+        .upsert({ class_id: classId, user_id: ctx.user.id, status:"booked" }, { onConflict:"class_id,user_id" });
+      if (error) WodIOApp.message(message, error.message);
+    }
+    await load();
+  });
+
+  document.getElementById("todayBtn").addEventListener("click", () => {
+    document.getElementById("classList").scrollIntoView({behavior:"smooth", block:"start"});
+  });
+
+  await load();
+});
+</script>
 </body>
-
 </html>
