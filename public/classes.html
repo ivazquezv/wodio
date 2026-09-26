@@ -89,9 +89,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const activeBookings = new Set(bookings.filter(b => b.status === "booked").map(b => b.class_id));
     document.getElementById("statClasses").textContent = classes.length;
     document.getElementById("statBooked").textContent = activeBookings.size;
-    document.getElementById("statOpen").textContent = classes.reduce((sum, c) => sum + Math.max(0, c.capacity - bookings.filter(b => b.class_id === c.id && b.status === "booked").length), 0);
 
     if (!classes.length) {
+      document.getElementById("statOpen").textContent = 0;
       list.innerHTML = '<div class="app-empty">No hay clases programadas todavía.</div>';
       return;
     }
@@ -104,6 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return [c.id, count || 0];
     }));
     const countMap = new Map(counts);
+    document.getElementById("statOpen").textContent = classes.reduce((sum, c) => sum + Math.max(0, c.capacity - (countMap.get(c.id) || 0)), 0);
 
     list.innerHTML = classes.map(c => {
       const count = countMap.get(c.id) || 0;
