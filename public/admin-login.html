@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const { data: existing } = await supabaseClient.auth.getUser();
   if (existing?.user) {
-    const { data: profile } = await supabaseClient.from("profiles").select("role").eq("id", existing.user.id).maybeSingle();
+    const { data: profile } = await supabaseClient.rpc("get_my_profile").maybeSingle();
     if (["box_admin", "super_admin"].includes(profile?.role)) {
       window.location.href = "box-admin.html";
       return;
