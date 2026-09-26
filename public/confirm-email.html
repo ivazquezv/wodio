@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Confirmación de correo | WodIO</title>
+
+    <meta
+        name="description"
+        content="Confirma tu correo electrónico para activar tu cuenta de WodIO."
+    >
+
+    <meta name="robots" content="noindex, nofollow">
+
+    <meta name="theme-color" content="#0b0b0f">
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="assets/icons/favicon/favicon.svg"
+    >
+
+    <link
+        rel="alternate icon"
+        type="image/png"
+        href="assets/icons/favicon/favicon-96x96.png"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="assets/icons/favicon/apple-touch-icon.png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/wodio.css"
+    >
+
+    <script src="https://unpkg.com/phosphor-icons" defer></script>
+
+</head>
+
+<body class="auth-page">
+
+    <header class="site-header">
+
+        <nav class="navbar" aria-label="Navegación principal">
+
+            <a
+                href="../index.html"
+                class="navbar-left"
+                aria-label="Volver a WodIO"
+            >
+
+                <img
+                    src="assets/icons/Logo-WodIO_white.png"
+                    class="logo"
+                    alt="WodIO"
+                >
+
+            </a>
+
+            <div class="nav-actions">
+
+                <span class="navbar-title">
+                    ¿Ya tienes una cuenta?
+                </span>
+
+                <a
+                    href="login.html"
+                    class="nav-register"
+                >
+                    Iniciar sesión
+                </a>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+    <main>
+
+        <section
+            class="login-wrapper confirmation-wrapper"
+            aria-labelledby="confirmation-title"
+        >
+
+            <img
+                src="assets/icons/Logo-WodIO_white.png"
+                class="login-logo"
+                alt="WodIO"
+            >
+
+            <div class="login-heading">
+
+                <span class="section-eyebrow">
+                    CONFIRMACIÓN DE CUENTA
+                </span>
+
+                <h1 id="confirmation-title">
+                    Confirmando tu correo
+                </h1>
+
+                <p
+                    id="confirmationDescription"
+                    class="text-muted"
+                >
+                    Estamos verificando tu correo electrónico.
+                </p>
+
+            </div>
+
+            <div
+                class="login-card confirmation-card"
+                aria-live="polite"
+            >
+
+                <div
+                    id="confirmationIcon"
+                    class="confirmation-icon"
+                    aria-hidden="true"
+                >
+                    <i class="ph ph-spinner-gap"></i>
+                </div>
+
+                <div
+                    id="confirmationMessage"
+                    class="login-message"
+                    hidden
+                    role="alert"
+                ></div>
+
+                <div
+                    id="confirmationActions"
+                    class="confirmation-actions"
+                    hidden
+                >
+
+                    <a
+                        href="login.html"
+                        class="login-btn confirmation-primary"
+                    >
+                        <i
+                            class="ph ph-sign-in"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span>
+                            Ir a iniciar sesión
+                        </span>
+                    </a>
+
+                    <a
+                        href="register.html"
+                        class="login-register confirmation-secondary"
+                    >
+                        Crear otra cuenta
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="login-security">
+
+                <i
+                    class="ph ph-shield-check"
+                    aria-hidden="true"
+                ></i>
+
+                <span>
+                    La confirmación se procesa de forma segura mediante Supabase.
+                </span>
+
+            </div>
+
+            <a
+                href="../index.html"
+                class="login-back"
+            >
+
+                <i
+                    class="ph ph-arrow-left"
+                    aria-hidden="true"
+                ></i>
+
+                Volver a WodIO
+
+            </a>
+
+        </section>
+
+    </main>
+
+    <footer class="footer">
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 WodIO. Todos los derechos reservados.
+            </p>
+
+            <div class="footer-links">
+
+                <a href="#">
+                    Privacidad
+                </a>
+
+                <span aria-hidden="true">
+                    ·
+                </span>
+
+                <a href="#">
+                    Términos
+                </a>
+
+                <span aria-hidden="true">
+                    ·
+                </span>
+
+                <a href="#">
+                    Cookies
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="config/supabase-config.js"></script>
+
+    <script src="js/supabase.js"></script>
+
+    <script src="js/confirm-email.js"></script>
+
+</body>
+
+</html>
