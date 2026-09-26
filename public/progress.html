@@ -1,40 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>WodIO - Progreso</title>
-
-    <link rel="stylesheet" href="css/wodio.css">
-    <link rel="stylesheet" href="">
-    <link rel="stylesheet" href="">
-
-    <script src="https://unpkg.com/phosphor-icons"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progreso | WodIO</title>
+<meta name="description" content="Registra y consulta tu progreso de entrenamiento en WodIO.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
+<body class="app-page">
+<div class="app-shell">
+<header class="app-topbar">
+<a class="app-brand" href="dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO</span></a>
+<a class="app-back" href="dashboard.html"><i class="ph ph-arrow-left"></i> Dashboard</a>
+</header>
+<section class="app-hero">
+<div><div class="app-eyebrow">Rendimiento</div><h1>Mi progreso</h1><p>Registra marcas, controla tu evolución y conserva un historial de tus entrenamientos.</p></div>
+</section>
+<div id="pageMessage" class="app-message"></div>
 
-<body>
+<div class="app-grid app-grid-3">
+<div class="app-card app-kpi"><strong id="totalEntries">—</strong><span>Registros totales</span></div>
+<div class="app-card app-kpi"><strong id="exerciseCount">—</strong><span>Ejercicios registrados</span></div>
+<div class="app-card app-kpi"><strong id="latestDate">—</strong><span>Último registro</span></div>
+</div>
 
-    <nav class="navbar">
-        <h2><i class="ph ph-chart-line-up"></i> Progreso</h2>
-        <a href="dashboard.html"><i class="ph ph-arrow-left"></i> Volver</a>
-    </nav>
+<div class="app-grid app-grid-2" style="margin-top:18px">
+<section class="app-card">
+<div class="app-card-head"><div><h2>Nuevo registro</h2><p>Guarda una marca de fuerza, peso, repeticiones o tiempo.</p></div></div>
+<form id="progressForm" class="app-form">
+<div class="app-form-grid">
+<div class="app-field"><label for="exercise">Ejercicio</label><input id="exercise" required placeholder="Back Squat"></div>
+<div class="app-field"><label for="value">Valor</label><input id="value" type="number" step="0.01" min="0" required placeholder="100"></div>
+<div class="app-field"><label for="unit">Unidad</label><select id="unit"><option value="kg">kg</option><option value="lb">lb</option><option value="reps">repeticiones</option><option value="seg">segundos</option><option value="min">minutos</option></select></div>
+<div class="app-field"><label for="reps">Repeticiones</label><input id="reps" type="number" min="1" placeholder="5"></div>
+<div class="app-field"><label for="recordedAt">Fecha</label><input id="recordedAt" type="date" required></div>
+<div class="app-field full"><label for="notes">Notas</label><textarea id="notes" placeholder="Sensaciones, técnica, contexto…"></textarea></div>
+</div>
+<button class="app-btn primary" type="submit"><i class="ph ph-plus-circle"></i> Guardar registro</button>
+</form>
+</section>
 
-    <div class="container">
-        <h1><i class="ph ph-barbell"></i> Tu progreso</h1>
+<section class="app-card">
+<div class="app-card-head"><div><h2>Evolución</h2><p>Últimos registros de tus ejercicios.</p></div></div>
+<div id="chart" class="app-chart"></div>
+</section>
+</div>
 
-        <div class="card">
-            <h3><i class="ph ph-plus-circle"></i> Nuevo registro</h3>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h2>Historial</h2><p>Puedes eliminar registros introducidos por ti.</p></div></div>
+<div id="progressList" class="app-table-wrap"><div class="app-loading">Cargando progreso…</div></div>
+</section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/wodio-app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const ctx=await WodIOApp.requireUser(); if(!ctx)return;
+  const form=document.getElementById("progressForm"), list=document.getElementById("progressList"), chart=document.getElementById("chart"), msg=document.getElementById("pageMessage");
+  const dateInput=document.getElementById("recordedAt");
+  dateInput.value=new Date().toISOString().slice(0,10);
 
-            <label><i class="ph ph-dumbbell"></i> Ejercicio</label>
-            <input type="text">
+  async function load(){
+    const {data,error}=await supabaseClient.from("progress_entries")
+      .select("id,exercise,value,unit,reps,recorded_at,notes")
+      .eq("user_id",ctx.user.id).order("recorded_at",{ascending:false}).order("created_at",{ascending:false}).limit(100);
+    if(error){WodIOApp.message(msg,error.message);return;}
+    const rows=data||[];
+    document.getElementById("totalEntries").textContent=rows.length;
+    document.getElementById("exerciseCount").textContent=new Set(rows.map(r=>r.exercise.toLowerCase())).size;
+    document.getElementById("latestDate").textContent=rows[0]?WodIOApp.formatDate(rows[0].recorded_at):"—";
+    if(!rows.length){
+      list.innerHTML='<div class="app-empty">Todavía no has registrado ningún progreso.</div>';
+      chart.innerHTML='<div class="app-empty">Registra tu primera marca para ver la evolución.</div>';
+      return;
+    }
+    const chartRows=[...rows].slice(0,10).reverse();
+    const max=Math.max(...chartRows.map(r=>Number(r.value)),1);
+    chart.innerHTML=chartRows.map(r=>'<div class="app-chart-bar" style="--height:'+Math.max(8,(Number(r.value)/max)*100)+'%"><span>'+WodIOApp.escapeHtml(r.exercise.slice(0,10))+'</span></div>').join("");
+    list.innerHTML='<table class="app-table"><thead><tr><th>Fecha</th><th>Ejercicio</th><th>Marca</th><th>Reps</th><th>Notas</th><th></th></tr></thead><tbody>'+
+      rows.map(r=>'<tr><td>'+WodIOApp.formatDate(r.recorded_at,{withYear:true})+'</td><td>'+WodIOApp.escapeHtml(r.exercise)+'</td><td>'+r.value+' '+WodIOApp.escapeHtml(r.unit)+'</td><td>'+ (r.reps||"—")+'</td><td>'+WodIOApp.escapeHtml(r.notes||"—")+'</td><td><button class="app-btn danger" data-delete="'+r.id+'"><i class="ph ph-trash"></i></button></td></tr>').join("")+
+      '</tbody></table>';
+  }
 
-            <label><i class="ph ph-gauge"></i> Peso / Tiempo</label>
-            <input type="number">
+  form.addEventListener("submit",async e=>{
+    e.preventDefault(); WodIOApp.clearMessage(msg);
+    const payload={user_id:ctx.user.id,exercise:document.getElementById("exercise").value.trim(),value:Number(document.getElementById("value").value),unit:document.getElementById("unit").value,reps:document.getElementById("reps").value?Number(document.getElementById("reps").value):null,recorded_at:dateInput.value,notes:document.getElementById("notes").value.trim()||null};
+    if(!payload.exercise||!Number.isFinite(payload.value)||payload.value<0){WodIOApp.message(msg,"Completa el ejercicio y un valor válido.");return;}
+    const {error}=await supabaseClient.from("progress_entries").insert(payload);
+    if(error){WodIOApp.message(msg,error.message);return;}
+    form.reset();dateInput.value=new Date().toISOString().slice(0,10);WodIOApp.message(msg,"Registro guardado correctamente.","success");await load();
+  });
 
-            <button><i class="ph ph-check-circle"></i> Guardar</button>
-        </div>
-    </div>
-
+  list.addEventListener("click",async e=>{
+    const id=e.target.closest("[data-delete]")?.dataset.delete;if(!id)return;
+    if(!confirm("¿Eliminar este registro?"))return;
+    const {error}=await supabaseClient.from("progress_entries").delete().eq("id",id).eq("user_id",ctx.user.id);
+    if(error)WodIOApp.message(msg,error.message);else await load();
+  });
+  await load();
+});
+</script>
 </body>
-
 </html>
