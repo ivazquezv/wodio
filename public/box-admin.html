@@ -2,226 +2,225 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administración | WodIO</title>
-<meta name="description" content="Administración del box en WodIO.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel del box | WodIO</title>
+<meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
 <link rel="stylesheet" href="css/wodio.css">
 <link rel="stylesheet" href="css/wodio-app.css">
 <script src="https://unpkg.com/phosphor-icons" defer></script>
+<style>
+.admin-layout{min-height:100vh;display:grid;grid-template-columns:245px 1fr}
+.admin-side{position:fixed;inset:0 auto 0 0;width:245px;padding:22px 14px;background:#111116;border-right:1px solid var(--border-soft);display:flex;flex-direction:column;z-index:20}
+.admin-logo{display:flex;align-items:center;gap:10px;padding:4px 10px 25px;color:var(--text-main);font-weight:850;font-size:1.15rem}
+.admin-logo img{width:38px;height:38px;object-fit:contain}
+.admin-box{margin:0 6px 20px;padding:13px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}
+.admin-box small{display:block;color:var(--text-muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
+.admin-box strong{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-nav{display:grid;gap:4px}
+.admin-nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--text-muted);font-weight:650;font-size:.86rem}
+.admin-nav a:hover,.admin-nav a.active{color:var(--primary-soft);background:rgba(255,107,0,.09)}
+.admin-nav i{width:21px;text-align:center}
+.admin-side-bottom{margin-top:auto;border-top:1px solid var(--border-soft);padding-top:14px}
+.admin-side-bottom button,.admin-side-bottom a{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;background:none;color:var(--text-muted);cursor:pointer;text-align:left}
+.admin-main{grid-column:2;min-width:0;padding:28px clamp(18px,3vw,42px) 60px}
+.admin-header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:25px}
+.admin-header h1{margin-top:5px;font-size:clamp(1.7rem,3vw,2.45rem)}
+.admin-header p{color:var(--text-muted);margin-top:6px}
+.admin-section{scroll-margin-top:20px;margin-top:20px}
+.admin-section-title{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:12px}
+.admin-section-title h2{font-size:1.25rem}
+.admin-section-title p{color:var(--text-muted);font-size:.8rem;margin-top:3px}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.admin-stat{padding:17px;border:1px solid var(--border-soft);border-radius:14px;background:var(--bg-surface)}
+.admin-stat strong{display:block;font-size:1.55rem}
+.admin-stat span{display:block;margin-top:5px;color:var(--text-muted);font-size:.72rem}
+.admin-actions{display:flex;flex-wrap:wrap;gap:8px}
+.admin-mini{font-size:.72rem;color:var(--text-muted)}
+@media(max-width:1050px){.admin-stat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.admin-layout{display:block}.admin-side{position:relative;width:100%;height:auto}.admin-nav{grid-template-columns:repeat(3,1fr)}.admin-side-bottom{display:none}.admin-main{padding-top:20px}.admin-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.admin-nav{grid-template-columns:repeat(2,1fr)}.admin-stat-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body class="app-page">
-<div class="app-shell">
-<header class="app-topbar">
-<a class="app-brand" href="dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO</span></a>
-<a class="app-back" href="dashboard.html"><i class="ph ph-arrow-left"></i> Dashboard</a>
-</header>
-
-<section class="app-hero">
-<div><div class="app-eyebrow">Gestión del box</div><h1>Administración</h1><p>Gestiona clases, eventos, usuarios y cuotas desde un único panel.</p></div>
-<div class="app-actions">
-<button class="app-btn primary" id="refreshBtn"><i class="ph ph-arrows-clockwise"></i> Actualizar</button>
+<div class="admin-layout">
+<aside class="admin-side">
+<a href="box-admin.html" class="admin-logo"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO Admin</span></a>
+<div class="admin-box"><small>Box activo</small><strong id="boxName">Cargando…</strong></div>
+<nav class="admin-nav" aria-label="Administración">
+<a href="#inicio" class="active"><i class="ph ph-squares-four"></i> Inicio</a>
+<a href="#clientes"><i class="ph ph-users-three"></i> Clientes</a>
+<a href="#clases"><i class="ph ph-barbell"></i> Clases</a>
+<a href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
+<a href="#eventos"><i class="ph ph-calendar-star"></i> Eventos</a>
+<a href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
+<a href="#configuracion"><i class="ph ph-gear"></i> Configuración</a>
+</nav>
+<div class="admin-side-bottom">
+<a href="dashboard.html"><i class="ph ph-user"></i> Área de atleta</a>
+<button id="logoutButton"><i class="ph ph-sign-out"></i> Cerrar sesión</button>
 </div>
-</section>
+</aside>
+
+<main class="admin-main">
+<header class="admin-header" id="inicio">
+<div><div class="app-eyebrow">Administración del box</div><h1 id="welcomeTitle">Panel de gestión</h1><p>Clientes, equipo, programación, eventos y contabilidad desde un único lugar.</p></div>
+<div class="admin-actions"><button class="app-btn primary" id="refreshBtn"><i class="ph ph-arrows-clockwise"></i> Actualizar</button></div>
+</header>
 <div id="pageMessage" class="app-message"></div>
 
-<section class="app-grid app-grid-3">
-<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div class="app-stat-value" id="usersCount">—</div><div class="app-stat-label">Usuarios</div></div></div>
-<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-calendar"></i></div><div><div class="app-stat-value" id="classesCount">—</div><div class="app-stat-label">Clases futuras</div></div></div>
-<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-warning-circle"></i></div><div><div class="app-stat-value" id="pendingCount">—</div><div class="app-stat-label">Pagos pendientes</div></div></div>
+<section class="admin-stat-grid">
+<div class="admin-stat"><strong id="statClients">—</strong><span>Clientes</span></div>
+<div class="admin-stat"><strong id="statCoaches">—</strong><span>Coaches</span></div>
+<div class="admin-stat"><strong id="statClasses">—</strong><span>Clases próximas</span></div>
+<div class="admin-stat"><strong id="statPending">—</strong><span>Pagos pendientes</span></div>
+<div class="admin-stat"><strong id="statBalance">—</strong><span>Balance del mes</span></div>
 </section>
 
-<div class="app-grid app-grid-2" style="margin-top:18px">
+<section class="admin-section" id="clientes">
+<div class="admin-section-title"><div><h2>Clientes</h2><p>Personas vinculadas al box y sus roles.</p></div></div>
 <section class="app-card">
-<div class="app-card-head"><div><h2>Nueva clase</h2><p>Programa una sesión para el box.</p></div></div>
-<form id="classForm" class="app-form">
-<div class="app-form-grid">
+<div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div>
+</section>
+</section>
+
+<section class="admin-section" id="clases">
+<div class="admin-section-title"><div><h2>Clases</h2><p>Programa nuevas sesiones y controla las próximas reservas.</p></div></div>
+<div class="app-grid app-grid-2">
+<section class="app-card">
+<div class="app-card-head"><div><h3>Nueva clase</h3><p>Programa una sesión.</p></div></div>
+<form id="classForm" class="app-form"><div class="app-form-grid">
 <div class="app-field"><label>Título</label><input id="classTitle" required placeholder="CrossTraining"></div>
 <div class="app-field"><label>Inicio</label><input id="classStart" type="datetime-local" required></div>
-<div class="app-field"><label>Duración (min)</label><input id="classDuration" type="number" min="15" value="60"></div>
+<div class="app-field"><label>Duración</label><input id="classDuration" type="number" min="15" value="60"></div>
 <div class="app-field"><label>Plazas</label><input id="classCapacity" type="number" min="1" value="12"></div>
-<div class="app-field"><label>Coach</label><select id="classCoach"><option value="">Sin coach asignado</option></select></div>
-<div class="app-field"><label>Ubicación</label><input id="classLocation" placeholder="Sala principal"></div>
-<div class="app-field full"><label>WOD</label><input id="classWorkout" placeholder="Fran · 21-15-9 Thrusters + Pull-ups"></div>
-<div class="app-field full"><label>Descripción</label><textarea id="classDescription" placeholder="Indicaciones para los atletas…"></textarea></div>
+<div class="app-field"><label>Coach</label><select id="classCoach"><option value="">Sin asignar</option></select></div>
+<div class="app-field"><label>Sala</label><input id="classLocation" placeholder="Sala principal"></div>
+<div class="app-field full"><label>WOD</label><input id="classWorkout" placeholder="Fran · 21-15-9"></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear clase</button></form>
+</section>
+<section class="app-card"><div class="app-card-head"><div><h3>Próximas clases</h3><p>Sesiones programadas.</p></div></div><div id="classesList" class="app-list"></div></section>
 </div>
-<button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear clase</button>
-</form>
 </section>
 
+<section class="admin-section" id="coaches">
+<div class="admin-section-title"><div><h2>Coaches y roles</h2><p>Gestiona quién puede impartir clases y administrar el box.</p></div></div>
 <section class="app-card">
-<div class="app-card-head"><div><h2>Nuevo evento</h2><p>Crea una actividad especial para la comunidad.</p></div></div>
-<form id="eventForm" class="app-form">
-<div class="app-form-grid">
-<div class="app-field full"><label>Título</label><input id="eventTitle" required placeholder="Throwdown WodIO 2026"></div>
+<form id="roleForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Usuario</label><select id="roleUser" required><option value="">Selecciona un usuario</option></select></div>
+<div class="app-field"><label>Rol</label><select id="roleValue"><option value="athlete">Cliente / atleta</option><option value="coach">Coach</option></select></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-user-gear"></i> Guardar rol</button></form>
+<div id="coachesTable" class="app-table-wrap" style="margin-top:18px"></div>
+</section>
+</section>
+
+<section class="admin-section" id="eventos">
+<div class="admin-section-title"><div><h2>Eventos</h2><p>Competiciones, seminarios y actividades especiales.</p></div></div>
+<div class="app-grid app-grid-2">
+<section class="app-card"><div class="app-card-head"><div><h3>Nuevo evento</h3><p>Crea una actividad para la comunidad.</p></div></div>
+<form id="eventForm" class="app-form"><div class="app-form-grid">
+<div class="app-field full"><label>Título</label><input id="eventTitle" required placeholder="Throwdown WodIO"></div>
 <div class="app-field"><label>Inicio</label><input id="eventStart" type="datetime-local" required></div>
 <div class="app-field"><label>Fin</label><input id="eventEnd" type="datetime-local"></div>
-<div class="app-field"><label>Plazas</label><input id="eventCapacity" type="number" min="1" placeholder="30"></div>
-<div class="app-field"><label>Precio (€)</label><input id="eventPrice" type="number" min="0" step="0.01" value="0"></div>
+<div class="app-field"><label>Plazas</label><input id="eventCapacity" type="number" min="1"></div>
+<div class="app-field"><label>Precio (€)</label><input id="eventPrice" type="number" min="0" step=".01" value="0"></div>
 <div class="app-field full"><label>Ubicación</label><input id="eventLocation" placeholder="Box WodIO"></div>
-<div class="app-field full"><label>Descripción</label><textarea id="eventDescription" placeholder="Información del evento…"></textarea></div>
-</div>
-<button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear evento</button>
-</form>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear evento</button></form>
 </section>
+<section class="app-card"><div class="app-card-head"><div><h3>Próximos eventos</h3><p>Eventos publicados.</p></div></div><div id="eventsList" class="app-list"></div></section>
 </div>
+</section>
 
-<div class="app-grid app-grid-2" style="margin-top:18px">
+<section class="admin-section" id="finanzas">
+<div class="admin-section-title"><div><h2>Contabilidad</h2><p>Control básico de ingresos y gastos del box.</p></div></div>
+<div class="app-grid app-grid-2">
 <section class="app-card">
-<div class="app-card-head"><div><h2>Clases programadas</h2><p>Próximas sesiones y reservas.</p></div></div>
-<div id="adminClasses" class="app-list"><div class="app-loading">Cargando…</div></div>
-</section>
-
-<section class="app-card">
-<div class="app-card-head"><div><h2>Eventos</h2><p>Próximas actividades.</p></div></div>
-<div id="adminEvents" class="app-list"><div class="app-loading">Cargando…</div></div>
-</section>
-</div>
-
-<section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h2>Pagos</h2><p>Registra cuotas y actualiza su estado.</p></div></div>
-<form id="paymentForm" class="app-form" style="margin-bottom:22px">
-<div class="app-form-grid">
-<div class="app-field"><label>Usuario</label><select id="paymentUser" required><option value="">Selecciona un usuario</option></select></div>
+<div class="app-card-head"><div><h3>Registrar ingreso</h3><p>Cuotas y otros cobros.</p></div></div>
+<form id="paymentForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Cliente</label><select id="paymentUser" required><option value="">Selecciona</option></select></div>
 <div class="app-field"><label>Concepto</label><input id="paymentConcept" required placeholder="Cuota mensual"></div>
-<div class="app-field"><label>Importe (€)</label><input id="paymentAmount" type="number" min="0" step="0.01" required placeholder="45"></div>
+<div class="app-field"><label>Importe (€)</label><input id="paymentAmount" type="number" min="0" step=".01" required></div>
 <div class="app-field"><label>Vencimiento</label><input id="paymentDue" type="date"></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-receipt"></i> Registrar ingreso</button></form>
+</section>
+<section class="app-card">
+<div class="app-card-head"><div><h3>Registrar gasto</h3><p>Proveedores y gastos operativos.</p></div></div>
+<form id="expenseForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Concepto</label><input id="expenseConcept" required placeholder="Material deportivo"></div>
+<div class="app-field"><label>Importe (€)</label><input id="expenseAmount" type="number" min="0" step=".01" required></div>
+<div class="app-field"><label>Fecha</label><input id="expenseDate" type="date"></div>
+<div class="app-field"><label>Categoría</label><input id="expenseCategory" placeholder="Material"></div>
+<div class="app-field full"><label>Proveedor</label><input id="expenseSupplier" placeholder="Proveedor"></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-minus-circle"></i> Registrar gasto</button></form>
+</section>
 </div>
-<button class="app-btn primary" type="submit"><i class="ph ph-receipt"></i> Crear cuota</button>
-</form>
-<div id="adminPayments" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div>
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div></div><div id="financeTable" class="app-table-wrap"></div></section>
 </section>
 
-<section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h2>Usuarios</h2><p>Perfiles registrados en WodIO.</p></div></div>
-<div id="adminUsers" class="app-table-wrap"><div class="app-loading">Cargando usuarios…</div></div>
+<section class="admin-section" id="configuracion">
+<div class="admin-section-title"><div><h2>Configuración del box</h2><p>Datos básicos de WodIO Demo.</p></div></div>
+<section class="app-card">
+<form id="boxForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Nombre del box</label><input id="boxNameInput" required></div>
+<div class="app-field"><label>Email de contacto</label><input id="boxEmail" type="email"></div>
+<div class="app-field"><label>Teléfono</label><input id="boxPhone"></div>
+<div class="app-field"><label>CIF/NIF</label><input id="boxTax"></div>
+<div class="app-field full"><label>Dirección</label><input id="boxAddress"></div>
+<div class="app-field"><label>Ciudad</label><input id="boxCity"></div>
+<div class="app-field"><label>Código postal</label><input id="boxPostal"></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar configuración</button></form>
 </section>
-</div>
-
-<section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h2>Coaches</h2><p>Asigna o retira el rol de coach a usuarios registrados.</p></div></div>
-<form id="coachForm" class="app-form">
-<div class="app-form-grid">
-<div class="app-field"><label>Usuario</label><select id="coachUser" required><option value="">Selecciona un usuario</option></select></div>
-<div class="app-field"><label>Rol</label><select id="coachRole"><option value="coach">Coach</option><option value="athlete">Atleta</option></select></div>
-</div>
-<button class="app-btn primary" type="submit"><i class="ph ph-user-gear"></i> Actualizar rol</button>
-</form>
-<div id="adminCoaches" class="app-table-wrap" style="margin-top:18px"></div>
 </section>
+</main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config/supabase-config.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/wodio-app.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const ctx=await WodIOApp.requireUser({roles:["box_admin","super_admin"]}); if(!ctx)return;
-  const msg=document.getElementById("pageMessage");
-  const coachSelect=document.getElementById("classCoach");
-  const paymentUser=document.getElementById("paymentUser");
-  const coachUser=document.getElementById("coachUser");
-
-  function localDateTime(value){return value?new Date(value).toISOString().slice(0,16):"";}
-
-  async function load(){
-    const now=new Date().toISOString();
-    const [{data:users,error:uErr},{data:classes,error:cErr},{data:events,error:eErr},{data:payments,error:pErr}] = await Promise.all([
-      supabaseClient.from("profiles").select("id,first_name,last_name,role,created_at").order("created_at",{ascending:false}),
-      supabaseClient.from("classes").select("id,title,starts_at,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",now).order("starts_at").limit(12),
-      supabaseClient.from("events").select("id,title,starts_at,capacity,price_cents").gte("starts_at",now).order("starts_at").limit(12),
-      supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,created_at,user:profiles!payments_user_id_fkey(first_name,last_name)").order("created_at",{ascending:false}).limit(30)
-    ]);
-    if(uErr||cErr||eErr||pErr){WodIOApp.message(msg,uErr?.message||cErr?.message||eErr?.message||pErr?.message);return;}
-
-    const rows=users||[];
-    document.getElementById("usersCount").textContent=rows.length;
-    document.getElementById("classesCount").textContent=(classes||[]).length;
-    document.getElementById("pendingCount").textContent=(payments||[]).filter(p=>p.status==="pending").length;
-
-    const coaches=rows.filter(u=>["coach","box_admin","super_admin"].includes(u.role));
-    coachSelect.innerHTML='<option value="">Sin coach asignado</option>'+coaches.map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</option>').join("");
-    paymentUser.innerHTML='<option value="">Selecciona un usuario</option>'+rows.map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</option>').join("");
-    coachUser.innerHTML='<option value="">Selecciona un usuario</option>'+rows.filter(u=>u.role==="athlete"||u.role==="coach").map(u=>'<option value="'+u.id+'">'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+' · '+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</option>').join("");
-
-    document.getElementById("adminClasses").innerHTML=(classes||[]).length?classes.map(c=>{
-      const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
-      return '<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(c.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(c.starts_at)+'</span><span>'+WodIOApp.escapeHtml(coach)+'</span><span>'+c.capacity+' plazas</span></div></div><div class="app-item-actions"><button class="app-btn danger" data-delete-class="'+c.id+'"><i class="ph ph-trash"></i></button></div></article>';
-    }).join(""):'<div class="app-empty">No hay clases futuras.</div>';
-
-    document.getElementById("adminEvents").innerHTML=(events||[]).length?events.map(ev=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(ev.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(ev.starts_at)+'</span><span>'+ (ev.capacity==null?"Sin límite":ev.capacity+" plazas")+'</span><span>'+ (ev.price_cents?WodIOApp.euro(ev.price_cents):"Gratis")+'</span></div></div><div class="app-item-actions"><button class="app-btn danger" data-delete-event="'+ev.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
-
-    const labels={pending:["Pendiente","warning"],paid:["Pagado","success"],failed:["Fallido","danger"],cancelled:["Cancelado","danger"],refunded:["Reembolsado","primary"]};
-    document.getElementById("adminPayments").innerHTML=(payments||[]).length?'<table class="app-table"><thead><tr><th>Usuario</th><th>Concepto</th><th>Importe</th><th>Estado</th><th>Acción</th></tr></thead><tbody>'+
-      payments.map(p=>'<tr><td>'+WodIOApp.escapeHtml([p.user?.first_name,p.user?.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+(p.status==="pending"?'<button class="app-btn" data-pay="'+p.id+'">Marcar pagado</button>':'—')+'</td></tr>').join("")+
-      '</tbody></table>':'<div class="app-empty">No hay pagos registrados.</div>';
-
-    document.getElementById("adminUsers").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Alta</th></tr></thead><tbody>'+
-      rows.map(u=>'<tr><td>'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</span></td><td>'+WodIOApp.formatDate(u.created_at,{withYear:true})+'</td></tr>').join("")+
-      '</tbody></table>':'<div class="app-empty">No hay usuarios.</div>';
-
-    const coachesList=rows.filter(u=>u.role==="coach"||u.role==="box_admin"||u.role==="super_admin");
-    document.getElementById("adminCoaches").innerHTML=coachesList.length?'<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th><th>Alta</th></tr></thead><tbody>'+coachesList.map(u=>'<tr><td>'+WodIOApp.escapeHtml([u.first_name,u.last_name].filter(Boolean).join(" ")||"Usuario")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(u))+'</span></td><td>'+WodIOApp.formatDate(u.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay coaches.</div>';
-  }
-
-  document.getElementById("classForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    const payload={title:document.getElementById("classTitle").value.trim(),starts_at:new Date(document.getElementById("classStart").value).toISOString(),duration_minutes:Number(document.getElementById("classDuration").value),capacity:Number(document.getElementById("classCapacity").value),coach_id:coachSelect.value||null,location:document.getElementById("classLocation").value.trim()||null,workout:document.getElementById("classWorkout").value.trim()||null,description:document.getElementById("classDescription").value.trim()||null,created_by:ctx.user.id};
-    const {error}=await supabaseClient.from("classes").insert(payload);
-    if(error){WodIOApp.message(msg,error.message);return;}
-    e.target.reset();WodIOApp.message(msg,"Clase creada correctamente.","success");await load();
-  });
-
-  document.getElementById("eventForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    const payload={title:document.getElementById("eventTitle").value.trim(),starts_at:new Date(document.getElementById("eventStart").value).toISOString(),ends_at:document.getElementById("eventEnd").value?new Date(document.getElementById("eventEnd").value).toISOString():null,capacity:document.getElementById("eventCapacity").value?Number(document.getElementById("eventCapacity").value):null,price_cents:Math.round(Number(document.getElementById("eventPrice").value||0)*100),location:document.getElementById("eventLocation").value.trim()||null,description:document.getElementById("eventDescription").value.trim()||null,created_by:ctx.user.id};
-    const {error}=await supabaseClient.from("events").insert(payload);
-    if(error){WodIOApp.message(msg,error.message);return;}
-    e.target.reset();WodIOApp.message(msg,"Evento creado correctamente.","success");await load();
-  });
-
-  document.getElementById("coachForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    const userId=coachUser.value;
-    const role=document.getElementById("coachRole").value;
-    if(!userId)return;
-    const {error}=await supabaseClient.from("profiles").update({role}).eq("id",userId);
-    if(error){WodIOApp.message(msg,error.message);return;}
-    WodIOApp.message(msg,role==="coach"?"Coach actualizado correctamente.":"Rol de atleta restaurado.","success");
-    e.target.reset();
-    await load();
-  });
-
-  document.getElementById("paymentForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    const payload={user_id:paymentUser.value,concept:document.getElementById("paymentConcept").value.trim(),amount_cents:Math.round(Number(document.getElementById("paymentAmount").value)*100),due_date:document.getElementById("paymentDue").value||null};
-    const {error}=await supabaseClient.from("payments").insert(payload);
-    if(error){WodIOApp.message(msg,error.message);return;}
-    e.target.reset();WodIOApp.message(msg,"Cuota creada correctamente.","success");await load();
-  });
-
-  document.addEventListener("click",async e=>{
-    const classId=e.target.closest("[data-delete-class]")?.dataset.deleteClass;
-    const eventId=e.target.closest("[data-delete-event]")?.dataset.deleteEvent;
-    const paymentId=e.target.closest("[data-pay]")?.dataset.pay;
-    if(classId){
-      if(!confirm("¿Eliminar esta clase y sus reservas?"))return;
-      const {error}=await supabaseClient.from("classes").delete().eq("id",classId);
-      if(error)WodIOApp.message(msg,error.message);else await load();
-    }
-    if(eventId){
-      if(!confirm("¿Eliminar este evento y sus inscripciones?"))return;
-      const {error}=await supabaseClient.from("events").delete().eq("id",eventId);
-      if(error)WodIOApp.message(msg,error.message);else await load();
-    }
-    if(paymentId){
-      const {error}=await supabaseClient.from("payments").update({status:"paid",paid_at:new Date().toISOString()}).eq("id",paymentId);
-      if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Pago actualizado.","success");await load();}
-    }
-  });
-
-  document.getElementById("refreshBtn").addEventListener("click",load);
-  await load();
+document.addEventListener("DOMContentLoaded",async()=>{
+ const ctx=await WodIOApp.requireUser({roles:["box_admin","super_admin"]}); if(!ctx)return;
+ const boxId=ctx.profile?.box_id, msg=document.getElementById("pageMessage");
+ if(!boxId){WodIOApp.message(msg,"La cuenta de administración no tiene un box asignado.");return;}
+ const $=id=>document.getElementById(id), name=u=>[u?.first_name,u?.last_name].filter(Boolean).join(" ")||"Usuario";
+ let box=null, users=[], coaches=[];
+ async function load(){
+  const now=new Date().toISOString(), monthStart=new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const [b,u,c,e,p,x]=await Promise.all([
+   supabaseClient.from("boxes").select("*").eq("id",boxId).single(),
+   supabaseClient.from("profiles").select("id,first_name,last_name,role,created_at").eq("box_id",boxId).order("created_at",{ascending:false}),
+   supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
+   supabaseClient.from("events").select("id,title,starts_at,capacity,price_cents").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
+   supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,created_at").eq("box_id",boxId).order("created_at",{ascending:false}).limit(40),
+   supabaseClient.from("expenses").select("id,concept,amount_cents,expense_date,category,supplier").eq("box_id",boxId).order("expense_date",{ascending:false}).limit(40)
+  ]);
+  const err=b.error||u.error||c.error||e.error||p.error||x.error;if(err){WodIOApp.message(msg,err.message);return;}
+  box=b.data;users=u.data||[];coaches=users.filter(v=>v.role==="coach"||v.role==="box_admin");
+  $("boxName").textContent=box.name;$("welcomeTitle").textContent="Hola, "+name(ctx.profile);
+  $("boxNameInput").value=box.name||"";$("boxEmail").value=box.contact_email||"";$("boxPhone").value=box.phone||"";$("boxTax").value=box.tax_id||"";$("boxAddress").value=box.address||"";$("boxCity").value=box.city||"";$("boxPostal").value=box.postal_code||"";
+  const clients=users.filter(v=>v.role==="athlete"), pending=(p.data||[]).filter(v=>v.status==="pending");
+  const income=(p.data||[]).filter(v=>v.status==="paid"&&v.paid_at&&new Date(v.paid_at)>=monthStart).reduce((s,v)=>s+v.amount_cents,0);
+  const expenses=(x.data||[]).filter(v=>new Date(v.expense_date)>=monthStart).reduce((s,v)=>s+v.amount_cents,0);
+  $("statClients").textContent=clients.length;$("statCoaches").textContent=coaches.length;$("statClasses").textContent=(c.data||[]).length;$("statPending").textContent=pending.length;$("statBalance").textContent=WodIOApp.euro(income-expenses);
+  $("classCoach").innerHTML='<option value="">Sin asignar</option>'+coaches.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
+  $("roleUser").innerHTML='<option value="">Selecciona un usuario</option>'+users.filter(v=>v.role==="athlete"||v.role==="coach").map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+" · "+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+"</option>").join("");
+  $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
+  $("clientsTable").innerHTML='<table class="app-table"><thead><tr><th>Cliente</th><th>Rol</th><th>Alta</th></tr></thead><tbody>'+users.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>';
+  $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
+  $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
+  $("eventsList").innerHTML=(e.data||[]).length?(e.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+(v.price_cents?WodIOApp.euro(v.price_cents):"Gratis")+'</span></div></div><button class="app-btn danger" data-del-event="'+v.id+'"><i class="ph ph-trash"></i></button></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
+  const rows=[...(p.data||[]).map(v=>({type:"Ingreso",date:v.paid_at||v.due_date,concept:v.concept,amount:v.amount_cents,status:v.status,id:v.id})),...(x.data||[]).map(v=>({type:"Gasto",date:v.expense_date,concept:v.concept,amount:-v.amount_cents,status:"paid",id:v.id}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  $("financeTable").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Importe</th><th>Estado</th><th></th></tr></thead><tbody>'+rows.slice(0,40).map(v=>'<tr><td>'+WodIOApp.formatDate(v.date,{withYear:true})+'</td><td>'+v.type+'</td><td>'+WodIOApp.escapeHtml(v.concept)+'</td><td>'+WodIOApp.euro(v.amount)+'</td><td><span class="app-badge '+(v.status==="paid"?"success":"warning")+'">'+(v.status==="paid"?"Pagado":"Pendiente")+'</span></td><td>'+(v.type==="Ingreso"&&v.status==="pending"?'<button class="app-btn" data-pay="'+v.id+'">Cobrar</button>':"")+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay movimientos.</div>';
+ }
+ $("classForm").addEventListener("submit",async ev=>{ev.preventDefault();const payload={box_id:boxId,created_by:ctx.user.id,title:$("classTitle").value.trim(),starts_at:new Date($("classStart").value).toISOString(),duration_minutes:+$("classDuration").value,capacity:+$("classCapacity").value,coach_id:$("classCoach").value||null,location:$("classLocation").value.trim()||null,workout:$("classWorkout").value.trim()||null};const {error}=await supabaseClient.from("classes").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Clase creada.","success");await load();}});
+ $("eventForm").addEventListener("submit",async ev=>{ev.preventDefault();const payload={box_id:boxId,created_by:ctx.user.id,title:$("eventTitle").value.trim(),starts_at:new Date($("eventStart").value).toISOString(),ends_at:$("eventEnd").value?new Date($("eventEnd").value).toISOString():null,capacity:$("eventCapacity").value?+$("eventCapacity").value:null,price_cents:Math.round(+$("eventPrice").value*100),location:$("eventLocation").value.trim()||null};const {error}=await supabaseClient.from("events").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Evento creado.","success");await load();}});
+ $("roleForm").addEventListener("submit",async ev=>{ev.preventDefault();const id=$("roleUser").value,role=$("roleValue").value;if(!id)return;const {error}=await supabaseClient.from("profiles").update({role}).eq("id",id).eq("box_id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Rol actualizado.","success");await load();}});
+ $("paymentForm").addEventListener("submit",async ev=>{ev.preventDefault();const payload={box_id:boxId,user_id:$("paymentUser").value,concept:$("paymentConcept").value.trim(),amount_cents:Math.round(+$("paymentAmount").value*100),due_date:$("paymentDue").value||null};const {error}=await supabaseClient.from("payments").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Ingreso registrado.","success");await load();}});
+ $("expenseForm").addEventListener("submit",async ev=>{ev.preventDefault();const payload={box_id:boxId,created_by:ctx.user.id,concept:$("expenseConcept").value.trim(),amount_cents:Math.round(+$("expenseAmount").value*100),expense_date:$("expenseDate").value||new Date().toISOString().slice(0,10),category:$("expenseCategory").value.trim()||null,supplier:$("expenseSupplier").value.trim()||null};const {error}=await supabaseClient.from("expenses").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Gasto registrado.","success");await load();}});
+ $("boxForm").addEventListener("submit",async ev=>{ev.preventDefault();const payload={name:$("boxNameInput").value.trim(),contact_email:$("boxEmail").value.trim()||null,phone:$("boxPhone").value.trim()||null,tax_id:$("boxTax").value.trim()||null,address:$("boxAddress").value.trim()||null,city:$("boxCity").value.trim()||null,postal_code:$("boxPostal").value.trim()||null};const {error}=await supabaseClient.from("boxes").update(payload).eq("id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Configuración guardada.","success");await load();}});
+ document.addEventListener("click",async ev=>{const cls=ev.target.closest("[data-del-class]")?.dataset.delClass,evt=ev.target.closest("[data-del-event]")?.dataset.delEvent,pay=ev.target.closest("[data-pay]")?.dataset.pay;if(cls&&confirm("¿Eliminar esta clase?")){const r=await supabaseClient.from("classes").delete().eq("id",cls).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else await load();}if(evt&&confirm("¿Eliminar este evento?")){const r=await supabaseClient.from("events").delete().eq("id",evt).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else await load();}if(pay){const r=await supabaseClient.from("payments").update({status:"paid",paid_at:new Date().toISOString()}).eq("id",pay).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else{WodIOApp.message(msg,"Pago cobrado.","success");await load();}}});
+ $("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();
 });
 </script>
 </body>
