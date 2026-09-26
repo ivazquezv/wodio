@@ -929,33 +929,38 @@
                         }
 
 
-                        const {
-                            data,
-                            error
-                        } =
-                            await supabaseClient.auth.signUp({
+                            const emailRedirectTo =
+                                new URL("login.html", window.location.href).href;
 
-                                email:
-                                    userData.email,
+                            const {
+                                data,
+                                error
+                            } =
+                                await supabaseClient.auth.signUp({
 
-                                password:
-                                    userData.password,
+                                    email:
+                                        userData.email,
 
-                                options: {
+                                    password:
+                                        userData.password,
 
-                                    data: {
+                                    options: {
 
-                                        first_name:
-                                            firstName,
+                                        emailRedirectTo,
 
-                                        last_name:
-                                            lastName
+                                        data: {
+
+                                            first_name:
+                                                firstName,
+
+                                            last_name:
+                                                lastName
+
+                                        }
 
                                     }
 
-                                }
-
-                            });
+                                });
 
 
                         if (error) {
@@ -1029,8 +1034,20 @@
                         }
 
 
+                        try {
+                            window.localStorage.setItem(
+                                "wodio.pendingConfirmationEmail",
+                                userData.email
+                            );
+                        } catch (storageError) {
+                            console.warn(
+                                "[WodIO] No se pudo guardar el correo pendiente:",
+                                storageError
+                            );
+                        }
+
                         showMessage(
-                            "Cuenta creada. Revisa tu correo electrónico para confirmar la cuenta antes de iniciar sesión.",
+                            "Cuenta creada. Revisa tu correo electrónico y confirma la cuenta. Después volverás a la pantalla de inicio de sesión.",
                             "success"
                         );
 
