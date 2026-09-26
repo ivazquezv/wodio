@@ -346,9 +346,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         "success",
       );
 
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      const destination = ({
+        athlete: "dashboard.html",
+        coach: "coach-dashboard.html",
+        box_admin: "box-admin.html",
+        super_admin: "super-admin.html"
+      })[profile?.role] || "dashboard.html";
+
       setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 500);
+        window.location.href = destination;
+      }, 250);
     } catch (error) {
       console.error("[WodIO] Error inesperado:", error);
 
