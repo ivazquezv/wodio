@@ -13,14 +13,18 @@ window.WodIOApp = (() => {
     }
 
     const user = data.user;
-    const { data: profile } = await supabaseClient
-      .from("profiles")
-      .select("id, first_name, last_name, role, box_id")
-      .eq("id", user.id)
+    const { data: profile, error: profileError } = await supabaseClient
+      .rpc("get_my_profile")
       .maybeSingle();
 
-    if (roles.length && !roles.includes(profile?.role)) {
-      window.location.href = roleHome(profile?.role);
+    if (profileError || !profile) {
+      console.error("[WodIO] Error comprobando perfil:", profileError);
+      window.location.href = "login.html";
+      return null;
+    }
+
+    if (roles.length && !roles.includes(profile.role)) {
+      window.location.href = roleHome(profile.role);
       return null;
     }
 
