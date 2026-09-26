@@ -15,16 +15,25 @@ window.WodIOApp = (() => {
     const user = data.user;
     const { data: profile } = await supabaseClient
       .from("profiles")
-      .select("id, first_name, last_name, role")
+      .select("id, first_name, last_name, role, box_id")
       .eq("id", user.id)
       .maybeSingle();
 
     if (roles.length && !roles.includes(profile?.role)) {
-      window.location.href = "dashboard.html";
+      window.location.href = roleHome(profile?.role);
       return null;
     }
 
     return { user, profile };
+  }
+
+  function roleHome(role) {
+    return ({
+      athlete: "dashboard.html",
+      coach: "coach-dashboard.html",
+      box_admin: "box-admin.html",
+      super_admin: "super-admin.html"
+    })[role] || "login.html";
   }
 
   function nameOf(profile, user) {
@@ -122,6 +131,7 @@ window.WodIOApp = (() => {
     clearMessage,
     logout,
     bindLogout,
-    profileLabel
+    profileLabel,
+    roleHome
   };
 })();
