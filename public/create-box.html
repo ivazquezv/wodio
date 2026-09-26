@@ -257,23 +257,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     buttonIcon.className = "ph ph-spinner-gap";
     clearMessage();
 
-    const { data: result, error } = await supabaseClient.rpc("create_box_for_current_user", {
-      p_name: data.boxName,
-      p_contact_email: data.email,
-      p_phone: data.phone || null,
-      p_address: data.address || null,
-      p_city: data.city || null,
-      p_postal_code: data.postalCode || null,
-      p_tax_id: data.taxId || null
+    const { data: result, error } = await supabaseClient.functions.invoke("create-box", {
+      body: {
+        name: data.boxName,
+        contact_email: data.email,
+        phone: data.phone || null,
+        address: data.address || null,
+        city: data.city || null,
+        postal_code: data.postalCode || null,
+        tax_id: data.taxId || null
+      }
     });
 
     if (error) {
-      if (error.message?.includes("user_already_has_box")) {
+      const detail = error?.context?.json?.error || error.message || "No se ha podido crear el box.";
+      if (detail === "user_already_has_box") {
         localStorage.removeItem(pendingKey);
         window.location.href = "box-admin.html";
         return;
       }
-      throw error;
+      throw new Error(detail);
+    }
+
+    if (result?.error) {
+      if (result.error === "user_already_has_box") {
+        localStorage.removeItem(pendingKey);
+        window.location.href = "box-admin.html";
+        return;
+      }
+      throw new Error(result.error);
     }
 
     localStorage.removeItem(pendingKey);
