@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crea tu box | WodIO</title>
+<meta name="description" content="Crea tu box en WodIO y empieza a gestionar clases, coaches, atletas, eventos y pagos.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0b0f">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="alternate icon" type="image/png" href="assets/icons/favicon/favicon-96x96.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
+<style>
+.box-signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.box-signup-grid .full{grid-column:1/-1}
+.box-section-title{margin:22px 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted,#999)}
+.box-intro{margin:0 0 18px;color:var(--text-muted,#999);line-height:1.6}
+.box-owner-note{display:flex;gap:10px;align-items:flex-start;margin:0 0 18px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;font-size:13px;line-height:1.5;color:var(--text-muted,#aaa)}
+.box-owner-note i{font-size:18px;flex:none}
+@media(max-width:640px){.box-signup-grid{grid-template-columns:1fr}.box-signup-grid .full{grid-column:auto}}
+</style>
+</head>
+<body class="auth-page">
+
+<header class="site-header">
+<nav class="navbar" aria-label="Navegación principal">
+<a href="../index.html" class="navbar-left" aria-label="Volver a WodIO">
+<img src="assets/icons/Logo-WodIO_white.png" class="logo" alt="WodIO">
+</a>
+<div class="nav-actions">
+<span class="navbar-title">¿Ya tienes cuenta?</span>
+<a href="login.html" class="nav-register">Iniciar sesión</a>
+</div>
+</nav>
+</header>
+
+<main>
+<section class="login-wrapper register-wrapper" aria-labelledby="create-box-title">
+<img src="assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
+
+<div class="login-heading">
+<span class="section-eyebrow">WODIO PARA BOXES</span>
+<h1 id="create-box-title">Crea tu box</h1>
+<p class="text-muted">Registra tu box y configura el acceso del responsable. Tendrás un periodo de prueba para empezar a trabajar con WodIO.</p>
+</div>
+
+<form class="login-card register-card" id="createBoxForm" novalidate>
+<div id="createBoxMessage" class="login-message" role="alert" aria-live="assertive" hidden></div>
+
+<div class="box-owner-note">
+<i class="ph ph-shield-check" aria-hidden="true"></i>
+<span>La primera cuenta queda vinculada como <strong>administrador del box</strong>. Los coaches y atletas se añadirán después desde el panel de gestión.</span>
+</div>
+
+<div class="box-section-title">Responsable</div>
+<div class="box-signup-grid">
+<div class="form-field">
+<label for="firstName"><i class="ph ph-user" aria-hidden="true"></i> Nombre</label>
+<input id="firstName" type="text" autocomplete="given-name" placeholder="Tu nombre" required>
+<small id="firstNameError" class="form-error" hidden></small>
+</div>
+
+<div class="form-field">
+<label for="lastName"><i class="ph ph-user" aria-hidden="true"></i> Apellidos</label>
+<input id="lastName" type="text" autocomplete="family-name" placeholder="Tus apellidos" required>
+<small id="lastNameError" class="form-error" hidden></small>
+</div>
+
+<div class="form-field full">
+<label for="email"><i class="ph ph-envelope" aria-hidden="true"></i> Correo profesional</label>
+<input id="email" type="email" autocomplete="email" inputmode="email" placeholder="responsable@tubox.com" required>
+<small id="emailError" class="form-error" hidden></small>
+</div>
+
+<div class="form-field">
+<label for="password"><i class="ph ph-lock" aria-hidden="true"></i> Contraseña</label>
+<div class="password-field">
+<input id="password" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" minlength="8" required>
+<button type="button" class="password-toggle" id="passwordToggle" aria-label="Mostrar contraseña" aria-controls="password" aria-pressed="false"><i class="ph ph-eye" aria-hidden="true"></i></button>
+</div>
+<small id="passwordError" class="form-error" hidden></small>
+</div>
+
+<div class="form-field">
+<label for="confirmPassword"><i class="ph ph-lock-key" aria-hidden="true"></i> Confirmar contraseña</label>
+<div class="password-field">
+<input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="8" required>
+<button type="button" class="password-toggle" id="confirmPasswordToggle" aria-label="Mostrar contraseña" aria-controls="confirmPassword" aria-pressed="false"><i class="ph ph-eye" aria-hidden="true"></i></button>
+</div>
+<small id="confirmPasswordError" class="form-error" hidden></small>
+</div>
+</div>
+
+<div class="box-section-title">Datos del box</div>
+<div class="box-signup-grid">
+<div class="form-field full">
+<label for="boxName"><i class="ph ph-buildings" aria-hidden="true"></i> Nombre del box</label>
+<input id="boxName" type="text" autocomplete="organization" placeholder="Ej. WodIO CrossFit Pamplona" required>
+<small id="boxNameError" class="form-error" hidden></small>
+</div>
+
+<div class="form-field">
+<label for="phone"><i class="ph ph-phone" aria-hidden="true"></i> Teléfono</label>
+<input id="phone" type="tel" autocomplete="tel" placeholder="+34 600 000 000">
+</div>
+
+<div class="form-field">
+<label for="taxId"><i class="ph ph-identification-card" aria-hidden="true"></i> CIF / NIF</label>
+<input id="taxId" type="text" autocomplete="off" placeholder="Opcional">
+</div>
+
+<div class="form-field full">
+<label for="address"><i class="ph ph-map-pin" aria-hidden="true"></i> Dirección</label>
+<input id="address" type="text" autocomplete="street-address" placeholder="Calle, número, local">
+</div>
+
+<div class="form-field">
+<label for="city"><i class="ph ph-city" aria-hidden="true"></i> Ciudad</label>
+<input id="city" type="text" autocomplete="address-level2" placeholder="Pamplona">
+</div>
+
+<div class="form-field">
+<label for="postalCode"><i class="ph ph-map-pin-line" aria-hidden="true"></i> Código postal</label>
+<input id="postalCode" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="31000">
+</div>
+</div>
+
+<label class="remember-me register-terms">
+<input type="checkbox" id="terms" required>
+<span>Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a>.</span>
+</label>
+
+<button class="login-btn register-btn" id="createBoxBtn" type="submit">
+<i class="ph ph-buildings" id="createBoxBtnIcon" aria-hidden="true"></i>
+<span id="createBoxBtnText">Crear mi box</span>
+</button>
+
+<div class="login-register">
+<span>¿Ya tienes una cuenta?</span>
+<a href="login.html">Iniciar sesión</a>
+</div>
+</form>
+
+<div class="login-security">
+<i class="ph ph-shield-check" aria-hidden="true"></i>
+<span>La cuenta y los datos del box se gestionan mediante Supabase con controles de acceso por box.</span>
+</div>
+
+<a href="../index.html" class="login-back"><i class="ph ph-arrow-left" aria-hidden="true"></i> Volver a WodIO</a>
+</section>
+</main>
+
+<footer class="footer">
+<div class="footer-bottom">
+<p>© 2026 WodIO. Todos los derechos reservados.</p>
+<div class="footer-links">
+<a href="#">Privacidad</a><span aria-hidden="true">·</span><a href="#">Términos</a><span aria-hidden="true">·</span><a href="#">Cookies</a>
+</div>
+</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const form = document.getElementById("createBoxForm");
+  const message = document.getElementById("createBoxMessage");
+  const button = document.getElementById("createBoxBtn");
+  const buttonText = document.getElementById("createBoxBtnText");
+  const buttonIcon = document.getElementById("createBoxBtnIcon");
+
+  const fields = {
+    firstName: document.getElementById("firstName"),
+    lastName: document.getElementById("lastName"),
+    email: document.getElementById("email"),
+    password: document.getElementById("password"),
+    confirmPassword: document.getElementById("confirmPassword"),
+    boxName: document.getElementById("boxName"),
+    phone: document.getElementById("phone"),
+    taxId: document.getElementById("taxId"),
+    address: document.getElementById("address"),
+    city: document.getElementById("city"),
+    postalCode: document.getElementById("postalCode"),
+    terms: document.getElementById("terms")
+  };
+
+  const pendingKey = "wodio.pendingBox";
+
+  function showMessage(text, type = "error") {
+    message.textContent = text;
+    message.hidden = false;
+    message.classList.remove("success", "error");
+    message.classList.add(type);
+  }
+
+  function clearMessage() {
+    message.hidden = true;
+    message.textContent = "";
+  }
+
+  function togglePassword(buttonId, inputId) {
+    const btn = document.getElementById(buttonId);
+    const input = document.getElementById(inputId);
+    btn.addEventListener("click", () => {
+      const visible = input.type === "text";
+      input.type = visible ? "password" : "text";
+      btn.setAttribute("aria-pressed", String(!visible));
+      btn.setAttribute("aria-label", visible ? "Mostrar contraseña" : "Ocultar contraseña");
+      btn.innerHTML = visible
+        ? '<i class="ph ph-eye" aria-hidden="true"></i>'
+        : '<i class="ph ph-eye-slash" aria-hidden="true"></i>';
+    });
+  }
+
+  togglePassword("passwordToggle", "password");
+  togglePassword("confirmPasswordToggle", "confirmPassword");
+
+  function pendingData() {
+    return {
+      firstName: fields.firstName.value.trim(),
+      lastName: fields.lastName.value.trim(),
+      email: fields.email.value.trim(),
+      boxName: fields.boxName.value.trim(),
+      phone: fields.phone.value.trim(),
+      taxId: fields.taxId.value.trim(),
+      address: fields.address.value.trim(),
+      city: fields.city.value.trim(),
+      postalCode: fields.postalCode.value.trim()
+    };
+  }
+
+  function savePending() {
+    localStorage.setItem(pendingKey, JSON.stringify(pendingData()));
+  }
+
+  function restorePending() {
+    try {
+      const data = JSON.parse(localStorage.getItem(pendingKey) || "null");
+      if (!data) return false;
+      Object.keys(data).forEach(key => {
+        if (fields[key] && data[key] !== undefined) fields[key].value = data[key];
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function finalizeBox(data) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    buttonText.textContent = "Configurando tu box...";
+    buttonIcon.className = "ph ph-spinner-gap";
+    clearMessage();
+
+    const { data: result, error } = await supabaseClient.rpc("create_box_for_current_user", {
+      p_name: data.boxName,
+      p_contact_email: data.email,
+      p_phone: data.phone || null,
+      p_address: data.address || null,
+      p_city: data.city || null,
+      p_postal_code: data.postalCode || null,
+      p_tax_id: data.taxId || null
+    });
+
+    if (error) {
+      if (error.message?.includes("user_already_has_box")) {
+        localStorage.removeItem(pendingKey);
+        window.location.href = "box-admin.html";
+        return;
+      }
+      throw error;
+    }
+
+    localStorage.removeItem(pendingKey);
+    showMessage("Tu box se ha creado correctamente. Entrando en el panel de administración...", "success");
+    window.setTimeout(() => {
+      window.location.href = "box-admin.html";
+    }, 500);
+  }
+
+  restorePending();
+
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  if (sessionData?.session?.user) {
+    try {
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("box_id, role")
+        .eq("id", sessionData.session.user.id)
+        .maybeSingle();
+
+      if (profile?.box_id && ["box_admin", "super_admin"].includes(profile.role)) {
+        window.location.href = "box-admin.html";
+        return;
+      }
+
+      const pending = JSON.parse(localStorage.getItem(pendingKey) || "null");
+      if (pending) {
+        await finalizeBox(pending);
+        return;
+      }
+    } catch (error) {
+      showMessage(error?.message || "No se ha podido completar la configuración del box.");
+    }
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    clearMessage();
+
+    document.querySelectorAll(".form-error").forEach(el => {
+      el.hidden = true;
+      el.textContent = "";
+    });
+
+    let valid = true;
+    const required = [
+      ["firstName", "firstNameError", "Introduce tu nombre."],
+      ["lastName", "lastNameError", "Introduce tus apellidos."],
+      ["email", "emailError", "Introduce un correo electrónico válido."],
+      ["boxName", "boxNameError", "Introduce el nombre del box."]
+    ];
+
+    required.forEach(([field, errorId, text]) => {
+      const value = fields[field].value.trim();
+      const ok = field === "email" ? fields.email.validity.valid && value : value;
+      if (!ok) {
+        document.getElementById(errorId).textContent = text;
+        document.getElementById(errorId).hidden = false;
+        valid = false;
+      }
+    });
+
+    const { data: currentSession } = await supabaseClient.auth.getSession();
+
+    if (!currentSession?.session?.user) {
+      if (fields.password.value.length < 8) {
+        document.getElementById("passwordError").textContent = "La contraseña debe tener al menos 8 caracteres.";
+        document.getElementById("passwordError").hidden = false;
+        valid = false;
+      }
+      if (fields.password.value !== fields.confirmPassword.value) {
+        document.getElementById("confirmPasswordError").textContent = "Las contraseñas no coinciden.";
+        document.getElementById("confirmPasswordError").hidden = false;
+        valid = false;
+      }
+    }
+
+    if (!fields.terms.checked) {
+      showMessage("Debes aceptar los términos y condiciones.");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const data = pendingData();
+    savePending();
+
+    if (currentSession?.session?.user) {
+      try {
+        await finalizeBox(data);
+      } catch (error) {
+        showMessage(error?.message || "No se ha podido crear el box.");
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+        buttonText.textContent = "Crear mi box";
+        buttonIcon.className = "ph ph-buildings";
+      }
+      return;
+    }
+
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    buttonText.textContent = "Creando cuenta...";
+    buttonIcon.className = "ph ph-spinner-gap";
+
+    try {
+      const emailRedirectTo = new URL("create-box.html", window.location.href).href;
+      const { data: signupData, error } = await supabaseClient.auth.signUp({
+        email: fields.email.value.trim(),
+        password: fields.password.value,
+        options: {
+          emailRedirectTo,
+          data: {
+            first_name: fields.firstName.value.trim(),
+            last_name: fields.lastName.value.trim()
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (signupData?.session?.user) {
+        await finalizeBox(data);
+        return;
+      }
+
+      showMessage("Cuenta creada. Revisa tu correo y confirma la dirección. Al volver a WodIO, la configuración de tu box continuará automáticamente.", "success");
+    } catch (error) {
+      showMessage(error?.message || "No se ha podido crear la cuenta.");
+    } finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      buttonText.textContent = "Crear mi box";
+      buttonIcon.className = "ph ph-buildings";
+    }
+  });
+});
+</script>
+</body>
+</html>
