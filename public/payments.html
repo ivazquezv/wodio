@@ -1,34 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <title>WodIO - Pagos</title>
-
-    <link rel="stylesheet" href="css/wodio.css">
-    <link rel="stylesheet" href="">
-    <link rel="stylesheet" href="">
-
-    <script src="https://unpkg.com/phosphor-icons"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagos | WodIO</title>
+<meta name="description" content="Consulta tus cuotas y pagos en WodIO.">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<link rel="stylesheet" href="css/wodio-app.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
-
-<body>
-
-    <nav class="navbar">
-        <h2><i class="ph ph-credit-card"></i> Pagos</h2>
-        <a href="dashboard.html"><i class="ph ph-arrow-left"></i> Volver</a>
-    </nav>
-
-    <div class="container">
-        <h1><i class="ph ph-wallet"></i> Suscripciones y pagos</h1>
-
-        <div class="card">
-            <h3><i class="ph ph-receipt"></i> Mensualidad</h3>
-            <p class="card-meta">Estado: Pendiente</p>
-            <button><i class="ph ph-money"></i> Pagar ahora</button>
-        </div>
-    </div>
-
+<body class="app-page">
+<div class="app-shell">
+<header class="app-topbar">
+<a class="app-brand" href="dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO</span></a>
+<a class="app-back" href="dashboard.html"><i class="ph ph-arrow-left"></i> Dashboard</a>
+</header>
+<section class="app-hero">
+<div><div class="app-eyebrow">Cuenta</div><h1>Pagos</h1><p>Consulta el estado de tus cuotas y tu historial de pagos.</p></div>
+</section>
+<div id="pageMessage" class="app-message"></div>
+<section class="app-grid app-grid-3" id="paymentStats">
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-wallet"></i></div><div><div class="app-stat-value" id="pendingAmount">—</div><div class="app-stat-label">Pendiente</div></div></div>
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-check-circle"></i></div><div><div class="app-stat-value" id="paidAmount">—</div><div class="app-stat-label">Pagado este año</div></div></div>
+<div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-receipt"></i></div><div><div class="app-stat-value" id="paymentCount">—</div><div class="app-stat-label">Movimientos</div></div></div>
+</section>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h2>Historial</h2><p>Los pagos se gestionan desde la administración del box.</p></div></div>
+<div id="paymentList" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div>
+</section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/wodio-app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const ctx = await WodIOApp.requireUser();
+  if (!ctx) return;
+  const list = document.getElementById("paymentList");
+  const message = document.getElementById("pageMessage");
+  const {data: payments,error} = await supabaseClient.from("payments")
+    .select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at")
+    .eq("user_id",ctx.user.id).order("created_at",{ascending:false});
+  if (error) {
+    WodIOApp.message(message,error.message);
+    list.innerHTML='<div class="app-empty">No se pudieron cargar los pagos.</div>';
+    return;
+  }
+  const rows=payments||[];
+  const pending=rows.filter(p=>p.status==="pending").reduce((s,p)=>s+Number(p.amount_cents||0),0);
+  const year=new Date().getFullYear();
+  const paid=rows.filter(p=>p.status==="paid" && p.paid_at && new Date(p.paid_at).getFullYear()===year).reduce((s,p)=>s+Number(p.amount_cents||0),0);
+  document.getElementById("pendingAmount").textContent=WodIOApp.euro(pending);
+  document.getElementById("paidAmount").textContent=WodIOApp.euro(paid);
+  document.getElementById("paymentCount").textContent=rows.length;
+  if(!rows.length){list.innerHTML='<div class="app-empty">Todavía no hay movimientos.</div>';return;}
+  const labels={pending:["Pendiente","warning"],paid:["Pagado","success"],failed:["Fallido","danger"],cancelled:["Cancelado","danger"],refunded:["Reembolsado","primary"]};
+  list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Estado</th><th>Pagado</th></tr></thead><tbody>'+
+    rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td></tr>').join('')+
+    '</tbody></table>';
+});
+</script>
 </body>
-
 </html>
