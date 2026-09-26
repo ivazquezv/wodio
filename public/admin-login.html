@@ -150,18 +150,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const { data: profile, error: profileError } = await supabaseClient
-        .from("profiles")
-        .select("id, first_name, last_name, role")
-        .eq("id", data.user.id)
+        .rpc("get_my_profile")
         .maybeSingle();
 
       if (profileError) {
+        console.error("[WodIO] Error comprobando perfil:", profileError);
         await supabaseClient.auth.signOut();
-        showMessage("No se ha podido comprobar el rol de la cuenta.");
+        showMessage(profileError.message || "No se ha podido comprobar el rol de la cuenta.");
         return;
       }
 
-      if (!["box_admin", "super_admin"].includes(profile?.role)) {
+      if (!profile || !["box_admin", "super_admin"].includes(profile.role)) {
         await supabaseClient.auth.signOut();
         showMessage("Esta cuenta no tiene permisos de administración.");
         return;
