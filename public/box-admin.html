@@ -355,7 +355,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   const btn=$("savePaymentMethods");btn.disabled=true;
   try{
     const defaults=[["stripe","Stripe","ph-credit-card"],["paypal","PayPal","ph-paypal-logo"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
-    const payload=defaults.map(d=>({box_id:boxId,method_key:d[0],name:$("[data-pm-name=\""+d[0]+""]").value.trim()||d[1],icon:d[2],enabled:$("[data-pm-enabled=\""+d[0]+""]").checked,sort_order:+$("[data-pm-order=\""+d[0]+""]").value||0,checkout_url:$("[data-pm-url=\""+d[0]+""]").value.trim()||null,instructions:$("[data-pm-instructions=\""+d[0]+""]").value.trim()||null}));
+    const payload=defaults.map(d=>({box_id:boxId,method_key:d[0],name:document.querySelector('[data-pm-name="'+d[0]+'"]').value.trim()||d[1],icon:d[2],enabled:document.querySelector('[data-pm-enabled="'+d[0]+'"]').checked,sort_order:+document.querySelector('[data-pm-order="'+d[0]+'"]').value||0,checkout_url:document.querySelector('[data-pm-url="'+d[0]+'"]').value.trim()||null,instructions:document.querySelector('[data-pm-instructions="'+d[0]+'"]').value.trim()||null}));
     const {error}=await supabaseClient.from("box_payment_methods").upsert(payload,{onConflict:"box_id,method_key"});
     if(error)throw error;
     WodIOApp.message($("paymentMethodsMessage"),"Métodos de pago guardados.","success");
