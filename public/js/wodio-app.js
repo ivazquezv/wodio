@@ -14,7 +14,9 @@ window.WodIOApp = (() => {
 
     const user = data.user;
     const { data: profile, error: profileError } = await supabaseClient
-      .rpc("get_my_profile")
+      .from("profiles")
+      .select("id,box_id,first_name,last_name,role,created_at")
+      .eq("id", user.id)
       .maybeSingle();
 
     if (profileError || !profile) {
