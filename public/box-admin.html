@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="css/wodio.css">
 <link rel="stylesheet" href="css/wodio-app.css">
 <script src="https://unpkg.com/phosphor-icons" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>
 .admin-layout{min-height:100vh;display:grid;grid-template-columns:245px 1fr}
 .admin-side{position:fixed;inset:0 auto 0 0;width:245px;padding:22px 14px;background:#111116;border-right:1px solid var(--border-soft);display:flex;flex-direction:column;z-index:20}
@@ -196,7 +198,7 @@
 <section class="app-card"><div class="app-card-head"><div><h3>Ingresos por cliente</h3><p>Total cobrado y número de movimientos.</p></div></div><div id="incomeStats" class="app-table-wrap"></div></section>
 <section class="app-card"><div class="app-card-head"><div><h3>Gastos por proveedor</h3><p>Total gastado y número de movimientos.</p></div></div><div id="supplierStats" class="app-table-wrap"></div></section>
 </div>
-<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div></div><div id="financeTable" class="app-table-wrap"></div></section>
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="exportFinanceExcel"><i class="ph ph-file-xls"></i> Excel</button><button class="app-btn" type="button" id="exportFinancePdf"><i class="ph ph-file-pdf"></i> PDF</button></div></div><div id="financeTable" class="app-table-wrap"></div></section>
 </section>
 
 <section class="admin-section" id="verifactu">
@@ -363,6 +365,28 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   }catch(error){WodIOApp.message($("paymentMethodsMessage"),error?.message||"No se pudieron guardar los métodos.");}
   finally{btn.disabled=false;}
 });
+  
+  $("exportFinanceExcel").addEventListener("click",()=>{
+    const {start,now}=financeRange();
+    const rows=[
+      ...allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return d>=start&&d<=now;}).map(v=>({Fecha:v.paid_at||v.due_date||v.created_at,Tipo:"Ingreso",Cliente:name(users.find(u=>u.id===v.user_id)),Concepto:v.concept,Importe:(v.amount_cents||0)/100,Estado:WodIOIOStatus(v.status),Método:v.payment_method||""})),
+      ...allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;}).map(v=>({Fecha:v.expense_date,Tipo:"Gasto",Cliente:"",Proveedor:v.supplier||"",Concepto:v.concept,Importe:-((v.amount_cents||0)/100),Estado:"Registrado",Método:""}))
+    ].sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
+    const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Ingresos y gastos");XLSX.writeFile(wb,"WodIO-contabilidad-"+new Date().toISOString().slice(0,10)+".xlsx");
+  });
+  $("exportFinancePdf").addEventListener("click",()=>{
+    const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"landscape"});
+    const {start,now}=financeRange();
+    const rows=[
+      ...allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return d>=start&&d<=now;}).map(v=>[WodIOApp.formatDate(v.paid_at||v.due_date||v.created_at,{withYear:true}),"Ingreso",name(users.find(u=>u.id===v.user_id)),v.concept,WodIOApp.euro(v.amount_cents),WodIOIOStatus(v.status)]),
+      ...allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;}).map(v=>[WodIOApp.formatDate(v.expense_date,{withYear:true}),"Gasto",v.supplier||"",v.concept,WodIOApp.euro(-(v.amount_cents||0)),"Registrado"])
+    ].sort((a,b)=>String(b[0]).localeCompare(String(a[0])));
+    pdf.setFontSize(18);pdf.text((box?.name||"WodIO")+" — Ingresos y gastos",14,18);pdf.setFontSize(9);pdf.text("Periodo: "+WodIOApp.formatDate(start,{withYear:true})+" — "+WodIOApp.formatDate(now,{withYear:true}),14,25);
+    let y=34;pdf.setFontSize(8);pdf.text("Fecha",14,y);pdf.text("Tipo",42,y);pdf.text("Cliente/proveedor",65,y);pdf.text("Concepto",115,y);pdf.text("Importe",235,y);pdf.text("Estado",265,y);y+=6;
+    rows.slice(0,45).forEach(r=>{pdf.text(String(r[0]).slice(0,16),14,y);pdf.text(r[1],42,y);pdf.text(String(r[2]||"").slice(0,24),65,y);pdf.text(String(r[3]||"").slice(0,38),115,y);pdf.text(r[4],235,y);pdf.text(r[5],265,y);y+=5;if(y>195){pdf.addPage("a4","landscape");y=18;}});
+    pdf.save("WodIO-contabilidad-"+new Date().toISOString().slice(0,10)+".pdf");
+  });
+
   $("financePeriod").addEventListener("change",renderFinanceStats);renderFinanceStats();
   }catch(error){WodIOApp.message(msg,error?.message||"No se pudo actualizar el panel.");}
   finally{if(refreshBtn) refreshBtn.disabled=false;}
