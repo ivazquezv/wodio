@@ -25,6 +25,7 @@
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-check-circle"></i></div><div><div class="app-stat-value" id="paidAmount">—</div><div class="app-stat-label">Pagado este año</div></div></div>
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-receipt"></i></div><div><div class="app-stat-value" id="paymentCount">—</div><div class="app-stat-label">Movimientos</div></div></div>
 </section>
+<section class="app-card" id="paymentOptions" style="margin-top:18px"><div class="app-card-head"><div><h2>Formas de pago</h2><p>Elige cómo realizar el pago cuando tu box tenga métodos configurados.</p></div></div><div id="paymentMethods" class="payment-method-grid"><div class="app-loading">Cargando formas de pago…</div></div></section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h2>Historial</h2><p>Los pagos se gestionan desde la administración del box.</p></div></div>
 <div id="paymentList" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div>
@@ -34,14 +35,16 @@
 <script src="config/supabase-config.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/wodio-app.js"></script>
+<style>.payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}</style>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const ctx = await WodIOApp.requireUser();
   if (!ctx) return;
   const list = document.getElementById("paymentList");
+  const methodsList = document.getElementById("paymentMethods");
   const message = document.getElementById("pageMessage");
   const {data: payments,error} = await supabaseClient.from("payments")
-    .select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at")
+    .select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at,payment_method,provider_reference")
     .eq("user_id",ctx.user.id).order("created_at",{ascending:false});
   if (error) {
     WodIOApp.message(message,error.message);
@@ -49,6 +52,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
   const rows=payments||[];
+  const {data:methods,error:methodsError}=await supabaseClient.from("box_payment_methods").select("method_key,name,icon,checkout_url,instructions,sort_order").eq("box_id",ctx.profile?.box_id).eq("enabled",true).order("sort_order");
+  if(methodsError){WodIOApp.message(message,methodsError.message);methodsList.innerHTML="<div class=\"app-empty\">No se pudieron cargar las formas de pago.</div>";} else {
+    const pendingRows=rows.filter(p=>p.status==="pending");
+    const cards=(methods||[]).map(m=>{const pending=pendingRows.filter(p=>p.payment_method===m.method_key);let actions="";if(m.checkout_url)actions=pending.map(p=>"<a class=\"app-btn primary\" target=\"_blank\" rel=\"noopener\" href=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar "+WodIOApp.euro(p.amount_cents)+"</a>").join("");return "<article class=\"payment-method-card\"><div class=\"payment-method-icon\"><i class=\"ph "+WodIOApp.escapeHtml(m.icon||"ph-credit-card")+"\"></i></div><div><h3>"+WodIOApp.escapeHtml(m.name)+"</h3><p>"+WodIOApp.escapeHtml(m.instructions||"Forma de pago disponible en tu box.")+"</p>"+actions+"</div></article>";}).join("");
+    methodsList.innerHTML=cards||"<div class=\"app-empty\">El box todavía no ha configurado formas de pago.</div>";
+  }
   const pending=rows.filter(p=>p.status==="pending").reduce((s,p)=>s+Number(p.amount_cents||0),0);
   const year=new Date().getFullYear();
   const paid=rows.filter(p=>p.status==="paid" && p.paid_at && new Date(p.paid_at).getFullYear()===year).reduce((s,p)=>s+Number(p.amount_cents||0),0);
@@ -57,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("paymentCount").textContent=rows.length;
   if(!rows.length){list.innerHTML='<div class="app-empty">Todavía no hay movimientos.</div>';return;}
   const labels={pending:["Pendiente","warning"],paid:["Pagado","success"],failed:["Fallido","danger"],cancelled:["Cancelado","danger"],refunded:["Reembolsado","primary"]};
-  list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Estado</th><th>Pagado</th></tr></thead><tbody>'+
+  list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Método</th><th>Estado</th><th>Pagado</th></tr></thead><tbody>'+
     rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td></tr>').join('')+
     '</tbody></table>';
 });
