@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     list.innerHTML = '<div class="app-loading">Cargando clases…</div>';
 
     const [{data:boxPolicy},{data:memberBoxes}]=await Promise.all([
-      supabaseClient.from("boxes").select("id,name,booking_advance_days,cancellation_cutoff_hours,weekly_cancellation_limit").eq("id",ctx.profile.box_id).single(),
+      supabaseClient.from("boxes").select("id,name,logo_url,booking_advance_days,cancellation_cutoff_hours,weekly_cancellation_limit").eq("id",ctx.profile.box_id).single(),
       supabaseClient.from("user_box_memberships").select("box_id,box:boxes(id,name)").eq("user_id",ctx.user.id).order("created_at")
     ]);
     const selector=document.getElementById("boxSelector");
@@ -148,6 +148,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const booking = bookings.find(b => b.class_id === c.id && b.status === "booked");
       const canCancel = booking && (new Date(c.starts_at).getTime() - Date.now()) > 60 * 60 * 1000;
       const coach = [c.coach?.first_name, c.coach?.last_name].filter(Boolean).join(" ") || "Sin coach asignado";
+      const attendees = attendeesByClass.get(c.id) || [];
       return '<article class="app-item">' +
         '<div class="app-item-main">' +
         '<div class="app-item-title">' + WodIOApp.escapeHtml(c.title) + '</div>' +
@@ -156,7 +157,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         (c.location ? '<span><i class="ph ph-map-pin"></i> ' + WodIOApp.escapeHtml(c.location) + '</span>' : '') + '</div>' +
         (c.description ? '<div class="app-help" style="margin-top:7px">' + WodIOApp.escapeHtml(c.description) + '</div>' : '') +
         '<div class="app-item-meta"><span>' + open + ' / ' + c.capacity + ' plazas</span>' +
-        (c.workout ? '<span>WOD: ' + WodIOApp.escapeHtml(c.workout) + '</span>' : '') + '</div>' +
+        (c.workout ? '<span>WOD: ' + WodIOApp.escapeHtml(c.workout) + '</span>' : '') + '</div>' + (attendees.length ? '<div class="app-help" style="margin-top:8px"><strong>Van a esta clase:</strong> ' + attendees.map(a => '<span style="display:inline-flex;align-items:center;gap:5px;margin:3px 8px 0 0">' + (a.avatar_url ? '<img src="' + WodIOApp.escapeHtml(a.avatar_url) + '" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover">' : '') + WodIOApp.escapeHtml(a.name || "Usuario") + '</span>').join("") + '</div>' : '<div class="app-help" style="margin-top:8px">Todavía no hay reservas.</div>') +
         '</div>' +
         '<div class="app-item-actions">' +
         '<span class="app-badge ' + (booking ? "success" : open ? "primary" : "danger") + '">' + (booking ? "Reservada" : open ? "Disponible" : "Completa") + '</span>' +
