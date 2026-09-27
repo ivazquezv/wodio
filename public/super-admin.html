@@ -481,123 +481,44 @@ $("nTrial").textContent=dashboard.summary.trial_boxes??0;
 $("nSusp").textContent=dashboard.summary.suspended_boxes??0;
 $("nUsers").textContent=dashboard.summary.users??0;
 $("nRevenue").textContent=euro(dashboard.summary.revenue_cents);
-$("rows").innerHTML=r.length?r.map(x=>`<tr>
-      <td>
-<b>${
-esc(x.name)}
-</b>
-<small>${
-esc(x.contact_email||x.slug)}
-</small>
-</td>
-      <td>
-<span class="pill ${
-esc(x.status)}
-">${
-esc(labels[x.status]||x.status)}
-</span>
-</td>
-      <td>
-<span class="pill plan">${
-esc(x.subscription_plan||"—")}
-</span>
-<small class="sa-sub">${
-esc(x.subscription_status||"Sin estado")}
-${
-x.trial_ends_at?" · fin demo "+date(x.trial_ends_at):""}
-</small>
-</td>
-      <td>${
-Number(x.user_count||0)}
-</td>
-<td>${
-euro(x.current_month_revenue_cents)}
-</td>
-<td>${
-euro(x.paid_revenue_cents)}
-</td>
-<td>${
-euro(x.pending_revenue_cents)}
-</td>
-<td>${
-date(x.last_payment_at)}
-</td>
-      <td>
-<button class="app-btn" data-id="${
-x.id}
-">
-<i class="ph ph-sliders-horizontal">
-</i> Gestionar</button>
-</td>
-    </tr>`).join(""):'<tr>
-<td colspan="9">No hay resultados.</td>
-</tr>';
+$("rows").innerHTML = r.length ? r.map(x => `<tr>
+<td><b>${esc(x.name)}</b><small>${esc(x.contact_email||x.slug)}</small></td>
+<td><span class="pill ${esc(x.status)}">${esc(labels[x.status]||x.status)}</span></td>
+<td><span class="pill plan">${esc(x.subscription_plan||"—")}</span><small class="sa-sub">${esc(x.subscription_status||"Sin estado")}${x.trial_ends_at?" · fin demo "+date(x.trial_ends_at):""}</small></td>
+<td>${Number(x.user_count||0)}</td>
+<td>${euro(x.current_month_revenue_cents)}</td>
+<td>${euro(x.paid_revenue_cents)}</td>
+<td>${euro(x.pending_revenue_cents)}</td>
+<td>${date(x.last_payment_at)}</td>
+<td><button class="app-btn" data-id="${x.id}"><i class="ph ph-sliders-horizontal"></i> Gestionar</button></td>
+</tr>`).join("") : `<tr><td colspan="9">No hay resultados.</td></tr>`;
 renderUsers();
 renderPayments();
 }
 function renderUsers(){
 const q=$("userSearch").value.toLowerCase().trim();
 const r=dashboard.users.filter(x=>!q||[x.first_name,x.last_name,x.email,x.box_name,x.role].some(v=>String(v||"").toLowerCase().includes(q)));
-$("userRows").innerHTML=r.length?r.map(x=>`<tr>
-      <td>
-<b>${
-esc([x.first_name,x.last_name].filter(Boolean).join(" ")||"Usuario")}
-</b>
-<small>${
-esc(x.email||"")}
-</small>
-</td>
-      <td>${
-esc(roles[x.role]||x.role||"—")}
-</td>
-<td>${
-esc(x.box_name||"Sin box")}
-</td>
-<td class="sa-nowrap">${
-date(x.created_at)}
-</td>
-<td>${
-Number(x.payment_count||0)}
-</td>
-<td>${
-euro(x.paid_amount_cents)}
-</td>
-    </tr>`).join(""):'<tr>
-<td colspan="6">No hay resultados.</td>
-</tr>';
+$("userRows").innerHTML = r.length ? r.map(x => `<tr>
+<td><b>${esc([x.first_name,x.last_name].filter(Boolean).join(" ")||"Usuario")}</b><small>${esc(x.email||"")}</small></td>
+<td>${esc(roles[x.role]||x.role||"—")}</td>
+<td>${esc(x.box_name||"Sin box")}</td>
+<td class="sa-nowrap">${date(x.created_at)}</td>
+<td>${Number(x.payment_count||0)}</td>
+<td>${euro(x.paid_amount_cents)}</td>
+</tr>`).join("") : `<tr><td colspan="6">No hay resultados.</td></tr>`;
 }
 function renderPayments(){
 const s=$("paymentStatus").value;
 const r=dashboard.payments.filter(x=>!s||x.status===s);
-$("paymentRows").innerHTML=r.length?r.map(x=>`<tr>
-      <td class="sa-nowrap">${
-date(x.payment_date)}
-</td>
-<td>${
-esc(x.box_name||"—")}
-</td>
-<td>${
-esc(x.user_name||"—")}
-</td>
-<td>${
-esc(x.concept||x.category||"—")}
-</td>
-<td class="sa-nowrap">${
-euro(x.amount_cents)}
-</td>
-      <td>
-<span class="pill ${
-x.status==="paid"?"active":x.status==="pending"?"pending":"suspended"}
-">${
-esc(paymentLabels[x.status]||x.status||"—")}
-</span>
-</td>
-<td>${
-esc(x.payment_method||x.provider||"—")}
-</td>
-    </tr>`).join(""):'<tr>
-<td colspan="7">No hay pagos con ese filtro.</td>
-</tr>';
+$("paymentRows").innerHTML = r.length ? r.map(x => `<tr>
+<td class="sa-nowrap">${date(x.payment_date)}</td>
+<td>${esc(x.box_name||"—")}</td>
+<td>${esc(x.user_name||"—")}</td>
+<td>${esc(x.concept||x.category||"—")}</td>
+<td class="sa-nowrap">${euro(x.amount_cents)}</td>
+<td><span class="pill ${x.status==="paid"?"active":x.status==="pending"?"pending":"suspended"}">${esc(paymentLabels[x.status]||x.status||"—")}</span></td>
+<td>${esc(x.payment_method||x.provider||"—")}</td>
+</tr>`).join("") : `<tr><td colspan="7">No hay pagos con ese filtro.</td></tr>`;
 }
 async function load(showSuccess=false){
   if(showSuccess) ($("msg").textContent="Actualizando datos…",$("msg").className="app-message show success");
