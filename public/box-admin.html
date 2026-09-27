@@ -70,6 +70,7 @@
 <a href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
 <a href="#eventos"><i class="ph ph-calendar"></i> Eventos</a>
 <a href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
+<a href="#verifactu"><i class="ph ph-file-text"></i> VERI*FACTU</a>
 <a href="#configuracion"><i class="ph ph-gear"></i> Configuración</a>
 </nav>
 <div class="admin-side-bottom">
@@ -199,6 +200,31 @@
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div></div><div id="financeTable" class="app-table-wrap"></div></section>
 </section>
 
+<section class="admin-section" id="verifactu">
+<div class="admin-section-title"><div><h2>VERI*FACTU</h2><p>Configuración fiscal y base de datos preparada para registros de facturación encadenados.</p></div></div>
+<section class="app-card">
+<div class="app-card-head"><div><h3>Configuración de facturación</h3><p>Datos para la futura generación y remisión de registros de facturación.</p></div></div>
+<form id="verifactuForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Modalidad</label><select id="verifactuMode"><option value="verifactu">VERI*FACTU — remisión a la AEAT</option><option value="no_verifactu">No VERI*FACTU — conservación de registros</option></select></div>
+<div class="app-field"><label>Entorno AEAT</label><select id="verifactuEnvironment"><option value="test">Pruebas</option><option value="production">Producción</option></select></div>
+<div class="app-field"><label>Razón social / nombre</label><input id="verifactuIssuerName" placeholder="Titular que emite las facturas"></div>
+<div class="app-field"><label>NIF</label><input id="verifactuIssuerNif" placeholder="NIF/CIF"></div>
+<div class="app-field full"><label>Domicilio fiscal</label><input id="verifactuIssuerAddress" placeholder="Dirección fiscal"></div>
+<div class="app-field"><label>Serie de facturación</label><input id="verifactuSeries" value="F" maxlength="20"></div>
+<div class="app-field"><label>Próximo número</label><input id="verifactuNextNumber" type="number" min="1" value="1"></div>
+<div class="app-field"><label>Identificador del sistema</label><input id="verifactuSoftwareId" value="WODIO"></div>
+<div class="app-field"><label>Versión del sistema</label><input id="verifactuSoftwareVersion" value="1.0.0"></div>
+<div class="app-field"><label>NIF del productor</label><input id="verifactuSoftwareNif" placeholder="NIF del productor"></div>
+<div class="app-field"><label>Nº de instalación</label><input id="verifactuInstallation"></div>
+</div>
+<label class="admin-checkbox" style="margin:14px 0"><input type="checkbox" id="verifactuEnabled"><span>Activar preparación VERI*FACTU para este box</span></label>
+<div class="admin-mini" style="margin-bottom:14px">Se guardarán registros de alta/anulación, huella SHA-256 y encadenamiento. La remisión real a la AEAT y la declaración responsable requieren una fase específica de integración y certificación.</div>
+<div class="admin-actions"><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar configuración fiscal</button></div>
+</form>
+<div id="verifactuStatus" class="app-message" style="margin-top:14px"></div>
+</section>
+</section>
+
 <section class="admin-section" id="configuracion">
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h3>Política de reservas</h3><p>Define las reglas que se aplican a todos los atletas del box.</p></div></div>
@@ -278,6 +304,22 @@ document.addEventListener("DOMContentLoaded",async()=>{
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
   $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
   $("eventsList").innerHTML=(e.data||[]).length?(e.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+(v.price_cents?WodIOApp.euro(v.price_cents):"Gratis")+'</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-event="'+v.id+'">Editar</button><button class="app-btn danger" data-del-event="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
+  const vf=await supabaseClient.from("verifactu_config").select("*").eq("box_id",boxId).maybeSingle();
+  if(vf.error)throw vf.error;
+  const vfConfig=vf.data;
+  $("verifactuMode").value=vfConfig?.mode||"verifactu";
+  $("verifactuEnvironment").value=vfConfig?.aeat_environment||"test";
+  $("verifactuIssuerName").value=vfConfig?.issuer_name||box?.name||"";
+  $("verifactuIssuerNif").value=vfConfig?.issuer_nif||box?.tax_id||"";
+  $("verifactuIssuerAddress").value=vfConfig?.issuer_address||box?.address||"";
+  $("verifactuSeries").value=vfConfig?.invoice_series||"F";
+  $("verifactuNextNumber").value=vfConfig?.next_invoice_number||1;
+  $("verifactuSoftwareId").value=vfConfig?.software_id||"WODIO";
+  $("verifactuSoftwareVersion").value=vfConfig?.software_version||"1.0.0";
+  $("verifactuSoftwareNif").value=vfConfig?.software_nif||"";
+  $("verifactuInstallation").value=vfConfig?.installation_number||"";
+  $("verifactuEnabled").checked=!!vfConfig?.enabled;
+  $("verifactuStatus").innerHTML=vfConfig?.enabled?'<span class="app-badge success">Preparación activada</span>':'<span class="app-badge">Sin activar</span>';
   const allPayments=p.data||[], allExpenses=x.data||[];
   function financeRange(){const mode=$("financePeriod").value,now=new Date(),start=new Date(0);if(mode==="month"){start.setTime(new Date(now.getFullYear(),now.getMonth(),1).getTime());}else if(mode==="3months"){start.setTime(new Date(now.getFullYear(),now.getMonth()-2,1).getTime());}else if(mode==="year"){start.setTime(new Date(now.getFullYear(),0,1).getTime());}return {start,now};}
   function renderFinanceStats(){const {start,now}=financeRange(),incomes=allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return v.status==="paid"&&d>=start&&d<=now;}),expenses=allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;});const incomeTotal=incomes.reduce((s,v)=>s+v.amount_cents,0),expenseTotal=expenses.reduce((s,v)=>s+v.amount_cents,0);$("financeIncome").textContent=WodIOApp.euro(incomeTotal);$("financeExpense").textContent=WodIOApp.euro(expenseTotal);$("financeBalance").textContent=WodIOApp.euro(incomeTotal-expenseTotal);$("financePending").textContent=WodIOApp.euro(allPayments.filter(v=>v.status==="pending").reduce((s,v)=>s+v.amount_cents,0));
@@ -298,6 +340,19 @@ document.addEventListener("DOMContentLoaded",async()=>{
  $("roleForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando rol…","success");const id=$("roleUser").value,role=$("roleValue").value;if(!id)return;const {error}=await supabaseClient.from("profiles").update({role}).eq("id",id).eq("box_id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Rol actualizado.","success");await load();}});
  $("paymentForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando ingreso…","success");const status=$("paymentStatus").value,paidDate=$("paymentPaidAt").value;const payload={box_id:boxId,user_id:$("paymentUser").value,concept:$("paymentConcept").value.trim(),amount_cents:Math.round(+$("paymentAmount").value*100),due_date:$("paymentDue").value||null,status,paid_at:status==="paid"?(paidDate?new Date(paidDate+"T12:00:00").toISOString():new Date().toISOString()):null,category:$("paymentCategory").value.trim()||null,payment_method:$("paymentMethod").value||null,provider_reference:$("paymentReference").value.trim()||null,notes:$("paymentNotes").value.trim()||null};const {error}=await supabaseClient.from("payments").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Ingreso registrado.","success");await load();}});
  $("expenseForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando gasto…","success");const payload={box_id:boxId,created_by:ctx.user.id,concept:$("expenseConcept").value.trim(),amount_cents:Math.round(+$("expenseAmount").value*100),expense_date:$("expenseDate").value||new Date().toISOString().slice(0,10),category:$("expenseCategory").value.trim()||null,supplier:$("expenseSupplier").value.trim()||null,notes:$("expenseNotes").value.trim()||null};const {error}=await supabaseClient.from("expenses").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Gasto registrado.","success");await load();}});
+ $("verifactuForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const btn=ev.submitter; btn.disabled=true;
+  try{
+    const payload={box_id:boxId,enabled:$("verifactuEnabled").checked,mode:$("verifactuMode").value,aeat_environment:$("verifactuEnvironment").value,issuer_name:$("verifactuIssuerName").value.trim()||null,issuer_nif:$("verifactuIssuerNif").value.trim()||null,issuer_address:$("verifactuIssuerAddress").value.trim()||null,invoice_series:$("verifactuSeries").value.trim()||"F",next_invoice_number:+$("verifactuNextNumber").value,software_id:$("verifactuSoftwareId").value.trim()||"WODIO",software_version:$("verifactuSoftwareVersion").value.trim()||"1.0.0",software_nif:$("verifactuSoftwareNif").value.trim()||null,installation_number:$("verifactuInstallation").value.trim()||null};
+    const {error}=await supabaseClient.from("verifactu_config").upsert(payload,{onConflict:"box_id"});
+    if(error)throw error;
+    WodIOApp.message($("verifactuStatus"),"Configuración VERI*FACTU guardada.","success");
+    await load();
+  }catch(error){WodIOApp.message($("verifactuStatus"),error?.message||"No se pudo guardar la configuración.");}
+  finally{btn.disabled=false;}
+});
+
  $("bookingPolicyForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando política…","success");const payload={booking_advance_days:+$("bookingAdvanceDays").value,cancellation_cutoff_hours:+$("cancellationCutoffHours").value,weekly_cancellation_limit:+$("weeklyCancellationLimit").value};const {error}=await supabaseClient.from("boxes").update(payload).eq("id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Política de reservas guardada.","success");await load();}});
  $("boxLogoFile").addEventListener("change",ev=>{const file=ev.target.files?.[0];if(!file)return;if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){ev.target.value="";WodIOApp.message(msg,"El logotipo debe ser JPG, PNG o WebP y pesar como máximo 5 MB.");return;}const url=URL.createObjectURL(file);$("boxLogoPreview").src=url;$("boxLogoPreview").hidden=false;});
  $("boxForm").addEventListener("submit",async ev=>{ev.preventDefault();const btn=ev.submitter;btn.disabled=true;WodIOApp.message(msg,"Guardando configuración…","success");const file=$("boxLogoFile").files?.[0];let logoUrl=box?.logo_url||null;if(file){const {error:uploadError}=await supabaseClient.storage.from("wodio-media").upload("boxes/"+boxId+"/logo",file,{cacheControl:"3600",upsert:true,contentType:file.type});if(uploadError){btn.disabled=false;WodIOApp.message(msg,uploadError.message);return;}const pub=supabaseClient.storage.from("wodio-media").getPublicUrl("boxes/"+boxId+"/logo");logoUrl=pub.data.publicUrl+"?v="+Date.now();}const payload={name:$("boxNameInput").value.trim(),contact_email:$("boxEmail").value.trim()||null,phone:$("boxPhone").value.trim()||null,tax_id:$("boxTax").value.trim()||null,address:$("boxAddress").value.trim()||null,city:$("boxCity").value.trim()||null,postal_code:$("boxPostal").value.trim()||null,logo_url:logoUrl,booking_advance_days:+$("bookingAdvanceDays").value,cancellation_cutoff_hours:+$("cancellationCutoffHours").value,weekly_cancellation_limit:+$("weeklyCancellationLimit").value};const {error}=await supabaseClient.from("boxes").update(payload).eq("id",boxId);btn.disabled=false;if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Configuración guardada.","success");$("boxLogoFile").value="";await load();}});
