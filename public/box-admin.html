@@ -39,6 +39,12 @@
 .admin-mini{font-size:.72rem;color:var(--text-muted)}
 #pageMessage{position:fixed;right:22px;bottom:22px;z-index:1000;max-width:min(420px,calc(100vw - 32px));margin:0;box-shadow:0 12px 30px rgba(0,0,0,.28);pointer-events:none}
 @media(max-width:760px){#pageMessage{left:14px;right:14px;bottom:14px;max-width:none;text-align:center}}
+.admin-modal{position:fixed;inset:0;z-index:1100;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.68)}
+.admin-modal[hidden]{display:none}
+.admin-modal-card{width:min(720px,100%);max-height:90vh;overflow:auto;background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:16px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.4)}
+.admin-modal-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.admin-modal-head h3{margin:0}
+
 @media(max-width:1050px){.admin-stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.admin-layout{display:block}.admin-side{position:relative;width:100%;height:auto}.admin-nav{grid-template-columns:repeat(3,1fr)}.admin-side-bottom{display:none}.admin-main{padding-top:20px}.admin-stat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.admin-nav{grid-template-columns:repeat(2,1fr)}.admin-stat-grid{grid-template-columns:1fr}}
