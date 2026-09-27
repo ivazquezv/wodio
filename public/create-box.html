@@ -217,6 +217,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
   const currentPlanCopy = planCopy[selectedPlan];
+  const paymentCancelled = new URLSearchParams(window.location.search).get("payment") === "cancelled";
+  if (paymentCancelled) {
+    showMessage("El pago se ha cancelado. Puedes volver a intentarlo cuando quieras.", "error");
+  }
   planIntro.textContent = currentPlanCopy.intro;
   planNote.innerHTML = currentPlanCopy.note;
   buttonText.textContent = currentPlanCopy.button;
@@ -336,6 +340,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (error) {
       const detail = error?.context?.json?.error || error.message || "No se ha podido crear el box.";
       if (detail === "user_already_has_box") {
+        if (["starter", "pro", "elite"].includes(selectedPlan)) {
+          await startStripeCheckout();
+          return;
+        }
         localStorage.removeItem(pendingKey);
         window.location.href = "box-admin.html";
         return;
@@ -345,6 +353,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (result?.error) {
       if (result.error === "user_already_has_box") {
+        if (["starter", "pro", "elite"].includes(selectedPlan)) {
+          await startStripeCheckout();
+          return;
+        }
         localStorage.removeItem(pendingKey);
         window.location.href = "box-admin.html";
         return;
@@ -389,9 +401,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           pendingPlan = boxState?.subscription_plan || null;
         }
         if (boxStatus === "pending_payment") {
-          if (["starter", "pro", "elite"].includes(pendingPlan)) {
+          if (["starter", "pro", "elite"].includes(pendingPlan) && !paymentCancelled) {
             await startStripeCheckout();
             return;
+          }
+          if (paymentCancelled) {
+            button.disabled = false;
+            button.removeAttribute("aria-busy");
+            buttonText.textContent = currentPlanCopy.button;
+            buttonIcon.className = "ph ph-credit-card";
           }
         }
         if (boxStatus === "active" || boxStatus === "trial") {
