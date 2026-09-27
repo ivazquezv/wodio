@@ -477,6 +477,12 @@
         .dashboard-page .weekly-class-time{font-size:.82rem;font-weight:800}
         .dashboard-page .weekly-class-name{margin-top:3px;font-size:.78rem;font-weight:700;line-height:1.25}
         .dashboard-page .weekly-class-meta{margin-top:4px;color:var(--text-muted);font-size:.66rem;line-height:1.4}
+        .dashboard-page .weekly-class.booked{border-color:var(--primary);background:rgba(255,107,0,.09)}
+        .dashboard-page .weekly-class-action{margin-top:8px;width:100%;padding:7px 9px;border:1px solid var(--border-soft);border-radius:8px;background:var(--bg-elevated);color:var(--text-main);font-size:.68rem;font-weight:800;cursor:pointer}
+        .dashboard-page .weekly-class-action:hover{border-color:var(--primary);color:var(--primary)}
+        .dashboard-page .weekly-class.booked .weekly-class-action{background:var(--primary);border-color:var(--primary);color:#fff}
+        .dashboard-page .weekly-class-action:disabled{opacity:.55;cursor:not-allowed}
+
         .dashboard-page .weekly-empty{padding:12px 4px;color:var(--text-muted);font-size:.7rem}
         @media(max-width:1000px){.dashboard-page .weekly-grid{grid-template-columns:repeat(7,130px)}}
         .dashboard-page .class-status {
@@ -1554,12 +1560,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             const base=startOfWeek(new Date());
             base.setDate(base.getDate()+weeklyOffset*7);
             const end=new Date(base);end.setDate(end.getDate()+7);
-            const [{data:hours,error:hoursError},{data:weekClasses,error:classesError}]=await Promise.all([
+            const [{data:hours,error:hoursError},{data:weekClasses,error:classesError},{data:weekBookings,error:bookingsError}]=await Promise.all([
                 supabaseClient.from("box_hours").select("weekday,open_time,close_time,closed").eq("box_id",profile.box_id),
-                supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
+                supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at"),
+                supabaseClient.from("class_bookings").select("class_id,status").eq("user_id",user.id)
             ]);
-            if(hoursError||classesError){
-                weeklyGrid.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(hoursError?.message||classesError?.message||"No se pudo cargar el horario.")+'</div>';
+            if(hoursError||classesError||bookingsError){
+                weeklyGrid.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(hoursError?.message||classesError?.message||bookingsError?.message||"No se pudo cargar el horario.")+'</div>';
                 return;
             }
             const hourMap=new Map((hours||[]).map(h=>[Number(h.weekday),h]));
@@ -1569,6 +1576,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             weeklySubtitle.textContent=base.toLocaleDateString("es-ES",{day:"numeric",month:"long"})+" – "+new Date(end.getTime()-86400000).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"});
             weeklyBoxName.textContent=(box?.name||"Box activo")+" · horario habitual y clases publicadas";
             const todayKey=localKey(new Date());
+            const bookedMap=new Map((weekBookings||[]).map(b=>[b.class_id,b.status]));
             weeklyGrid.innerHTML=dayDates.map((date,i)=>{
                 const weekday=date.getDay();
                 const h=hourMap.get(weekday);
@@ -1576,11 +1584,34 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const hoursText=!h||h.closed?"Cerrado":formatHour(h.open_time)+" – "+formatHour(h.close_time);
                 const classHtml=dayClasses.length?dayClasses.map(c=>{
                     const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
-                    return '<article class="weekly-class"><div class="weekly-class-time">'+new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div></article>';
+                    const isBooked=bookedMap.get(c.id)==="booked";
+                    const classDate=new Date(c.starts_at);
+                    const isPast=classDate<=new Date();
+                    const action=isBooked
+                        ? '<button type="button" class="weekly-class-action" data-weekly-cancel="'+c.id+'">✓ Reservada · Cancelar</button>'
+                        : '<button type="button" class="weekly-class-action" data-weekly-book="'+c.id+'" '+(isPast?"disabled":"")+'>'+ (isPast?"Clase pasada":"Reservar clase") +'</button>';
+                    return '<article class="weekly-class '+(isBooked?"booked":"")+'"><div class="weekly-class-time">'+classDate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div>'+action+'</article>';
                 }).join(""):'<div class="weekly-empty">Sin clases publicadas</div>';
                 return '<article class="weekly-day '+(localKey(date)===todayKey?"today":"")+'"><div class="weekly-day-head"><div class="weekly-day-name">'+dayNames[i]+'</div><div class="weekly-day-date">'+date.getDate()+' '+date.toLocaleDateString("es-ES",{month:"short"})+'</div><div class="weekly-hours">'+hoursText+'</div></div><div class="weekly-classes">'+classHtml+'</div></article>';
             }).join("");
         }
+        weeklyGrid.onclick=async e=>{
+            const button=e.target.closest("[data-weekly-book],[data-weekly-cancel]");
+            if(!button)return;
+            const classId=button.dataset.weeklyBook||button.dataset.weeklyCancel;
+            const isCancel=Boolean(button.dataset.weeklyCancel);
+            button.disabled=true;
+            WodIOApp.clearMessage(document.getElementById("pageMessage"));
+            const result=isCancel
+                ? await supabaseClient.from("class_bookings").update({status:"cancelled"}).eq("class_id",classId).eq("user_id",user.id)
+                : await supabaseClient.from("class_bookings").upsert({class_id:classId,user_id:user.id,status:"booked"},{onConflict:"class_id,user_id"});
+            if(result.error){
+                WodIOApp.message(document.getElementById("pageMessage"),result.error.message);
+            }else{
+                WodIOApp.message(document.getElementById("pageMessage"),isCancel?"Clase cancelada correctamente.":"Clase reservada correctamente.","success");
+            }
+            await renderWeeklySchedule();
+        };
         document.getElementById("weeklyPrev")?.addEventListener("click",()=>{weeklyOffset--;renderWeeklySchedule();});
         document.getElementById("weeklyToday")?.addEventListener("click",()=>{weeklyOffset=0;renderWeeklySchedule();});
         document.getElementById("weeklyNext")?.addEventListener("click",()=>{weeklyOffset++;renderWeeklySchedule();});
