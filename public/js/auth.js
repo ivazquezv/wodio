@@ -10,10 +10,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   const resendConfirmationText = document.getElementById(
     "resendConfirmationText",
   );
+  const passwordInput = document.getElementById("password");
+  const passwordToggle = document.getElementById("passwordToggle");
 
   if (!loginForm) {
     return;
   }
+  if (passwordToggle && passwordInput) {
+    passwordToggle.addEventListener("click", () => {
+      const showing = passwordInput.type === "text";
+      passwordInput.type = showing ? "password" : "text";
+      passwordToggle.setAttribute("aria-label", showing ? "Mostrar contraseña" : "Ocultar contraseña");
+      passwordToggle.setAttribute("aria-pressed", String(!showing));
+      const icon = passwordToggle.querySelector("i");
+      if (icon) icon.className = showing ? "ph ph-eye" : "ph ph-eye-slash";
+      passwordInput.focus();
+    });
+  }
+
 
   const PENDING_EMAIL_KEY = "wodio.pendingConfirmationEmail";
 
