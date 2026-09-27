@@ -459,6 +459,26 @@
             font-size: .75rem;
         }
 
+        .dashboard-page .weekly-schedule-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+        .dashboard-page .weekly-schedule-actions{display:flex;gap:8px}
+        .dashboard-page .weekly-schedule-actions button{padding:8px 11px;border:1px solid var(--border-soft);border-radius:9px;background:var(--bg-elevated);color:var(--text-main);cursor:pointer;font-weight:700}
+        .dashboard-page .weekly-schedule-actions button:hover{border-color:rgba(255,107,0,.45);color:var(--primary)}
+        .dashboard-page .weekly-schedule-title{font-size:.95rem;font-weight:800}
+        .dashboard-page .weekly-schedule-subtitle{margin-top:3px;color:var(--text-muted);font-size:.75rem}
+        .dashboard-page .weekly-grid{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:8px;overflow-x:auto;padding-bottom:4px}
+        .dashboard-page .weekly-day{min-width:130px;padding:12px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}
+        .dashboard-page .weekly-day.today{border-color:var(--primary)}
+        .dashboard-page .weekly-day-head{padding-bottom:10px;border-bottom:1px solid var(--border-soft)}
+        .dashboard-page .weekly-day-name{color:var(--text-muted);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+        .dashboard-page .weekly-day-date{margin-top:3px;font-size:1rem;font-weight:800}
+        .dashboard-page .weekly-hours{margin-top:7px;color:var(--primary-soft);font-size:.68rem;font-weight:700}
+        .dashboard-page .weekly-classes{display:grid;gap:7px;margin-top:10px}
+        .dashboard-page .weekly-class{padding:9px;border-radius:9px;background:var(--bg-surface);border:1px solid var(--border-soft)}
+        .dashboard-page .weekly-class-time{font-size:.82rem;font-weight:800}
+        .dashboard-page .weekly-class-name{margin-top:3px;font-size:.78rem;font-weight:700;line-height:1.25}
+        .dashboard-page .weekly-class-meta{margin-top:4px;color:var(--text-muted);font-size:.66rem;line-height:1.4}
+        .dashboard-page .weekly-empty{padding:12px 4px;color:var(--text-muted);font-size:.7rem}
+        @media(max-width:1000px){.dashboard-page .weekly-grid{grid-template-columns:repeat(7,130px)}}
         .dashboard-page .class-status {
             padding: 5px 9px;
             border-radius: 999px;
@@ -940,6 +960,30 @@
 
                 </section>
 
+
+                <section class="dashboard-section" id="weeklyScheduleSection" style="margin-bottom:24px">
+                    <div class="section-header">
+                        <div>
+                            <h3>Horario del box y clases</h3>
+                            <div id="weeklyScheduleBoxName" class="weekly-schedule-subtitle">Cargando horario del box…</div>
+                        </div>
+                        <a href="classes.html" class="section-link">Ver clases y reservar</a>
+                    </div>
+                    <div class="weekly-schedule-toolbar">
+                        <div>
+                            <div id="weeklyScheduleTitle" class="weekly-schedule-title">Esta semana</div>
+                            <div id="weeklyScheduleSubtitle" class="weekly-schedule-subtitle"></div>
+                        </div>
+                        <div class="weekly-schedule-actions">
+                            <button type="button" id="weeklyPrev" aria-label="Semana anterior">‹</button>
+                            <button type="button" id="weeklyToday">Hoy</button>
+                            <button type="button" id="weeklyNext" aria-label="Semana siguiente">›</button>
+                        </div>
+                    </div>
+                    <div id="weeklyScheduleGrid" class="weekly-grid">
+                        <div class="app-loading">Cargando horario…</div>
+                    </div>
+                </section>
 
                 <!-- =================================================
              STATS
@@ -1487,6 +1531,60 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(updateError){WodIOApp.message(document.getElementById("pageMessage"),updateError.message);return;}
             avatarImg.src=avatarUrl;avatarImg.style.display="block";document.getElementById("profileAvatarInitials").style.display="none";document.getElementById("profilePhotoInput").value="";WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
         });
+
+        const weeklyGrid=document.getElementById("weeklyScheduleGrid");
+        const weeklyTitle=document.getElementById("weeklyScheduleTitle");
+        const weeklySubtitle=document.getElementById("weeklyScheduleSubtitle");
+        const weeklyBoxName=document.getElementById("weeklyScheduleBoxName");
+        let weeklyOffset=0;
+
+        function startOfWeek(date){
+            const d=new Date(date);
+            d.setHours(0,0,0,0);
+            const day=d.getDay();
+            const diff=day===0?-6:1-day;
+            d.setDate(d.getDate()+diff);
+            return d;
+        }
+        function localKey(date){return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");}
+        function formatHour(value){return value?String(value).slice(0,5):"";}
+        async function renderWeeklySchedule(){
+            if(!profile?.box_id){weeklyGrid.innerHTML='<div class="app-empty">No hay un box activo.</div>';return;}
+            weeklyGrid.innerHTML='<div class="app-loading">Cargando horario…</div>';
+            const base=startOfWeek(new Date());
+            base.setDate(base.getDate()+weeklyOffset*7);
+            const end=new Date(base);end.setDate(end.getDate()+7);
+            const [{data:hours,error:hoursError},{data:weekClasses,error:classesError}]=await Promise.all([
+                supabaseClient.from("box_hours").select("weekday,open_time,close_time,closed").eq("box_id",profile.box_id),
+                supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
+            ]);
+            if(hoursError||classesError){
+                weeklyGrid.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(hoursError?.message||classesError?.message||"No se pudo cargar el horario.")+'</div>';
+                return;
+            }
+            const hourMap=new Map((hours||[]).map(h=>[Number(h.weekday),h]));
+            const dayNames=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+            const dayDates=Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(base.getDate()+i);return d;});
+            weeklyTitle.textContent=weeklyOffset===0?"Esta semana":"Semana del "+base.toLocaleDateString("es-ES",{day:"numeric",month:"long"});
+            weeklySubtitle.textContent=base.toLocaleDateString("es-ES",{day:"numeric",month:"long"})+" – "+new Date(end.getTime()-86400000).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"});
+            weeklyBoxName.textContent=(box?.name||"Box activo")+" · horario habitual y clases publicadas";
+            const todayKey=localKey(new Date());
+            weeklyGrid.innerHTML=dayDates.map((date,i)=>{
+                const weekday=date.getDay();
+                const h=hourMap.get(weekday);
+                const dayClasses=(weekClasses||[]).filter(c=>localKey(new Date(c.starts_at))===localKey(date));
+                const hoursText=!h||h.closed?"Cerrado":formatHour(h.open_time)+" – "+formatHour(h.close_time);
+                const classHtml=dayClasses.length?dayClasses.map(c=>{
+                    const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
+                    return '<article class="weekly-class"><div class="weekly-class-time">'+new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div></article>';
+                }).join(""):'<div class="weekly-empty">Sin clases publicadas</div>';
+                return '<article class="weekly-day '+(localKey(date)===todayKey?"today":"")+'"><div class="weekly-day-head"><div class="weekly-day-name">'+dayNames[i]+'</div><div class="weekly-day-date">'+date.getDate()+' '+date.toLocaleDateString("es-ES",{month:"short"})+'</div><div class="weekly-hours">'+hoursText+'</div></div><div class="weekly-classes">'+classHtml+'</div></article>';
+            }).join("");
+        }
+        document.getElementById("weeklyPrev")?.addEventListener("click",()=>{weeklyOffset--;renderWeeklySchedule();});
+        document.getElementById("weeklyToday")?.addEventListener("click",()=>{weeklyOffset=0;renderWeeklySchedule();});
+        document.getElementById("weeklyNext")?.addEventListener("click",()=>{weeklyOffset++;renderWeeklySchedule();});
+        await renderWeeklySchedule();
 
         const futureClasses=classes||[];
         const booked=new Set((bookings||[]).filter(b=>b.status==="booked").map(b=>b.class_id));
