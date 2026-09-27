@@ -207,7 +207,7 @@ grid-template-columns:repeat(2,1fr)}
 .sa-grid{
 grid-template-columns:1fr}
 }
-</style>
+.sa-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}.sa-chart-card{padding:18px;border:1px solid var(--border-soft);border-radius:14px;background:var(--bg-surface)}.sa-chart-card h2{margin:0 0 16px;font-size:1rem}.sa-donut{width:170px;height:170px;border-radius:50%;margin:4px auto 14px;position:relative;background:var(--bg-elevated)}.sa-donut:after{content:"";position:absolute;inset:38px;border-radius:50%;background:var(--bg-surface)}.sa-legend{display:grid;gap:7px}.sa-legend-item{display:flex;justify-content:space-between;font-size:.76rem}.sa-legend-item span:first-child:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:7px}.sa-legend-item:nth-child(2) span:first-child:before{background:#5ee28a}.sa-legend-item:nth-child(3) span:first-child:before{background:#75aefc}.sa-legend-item:nth-child(4) span:first-child:before{background:#ff8585}.sa-bars{display:grid;gap:13px}.sa-bar-row{display:grid;grid-template-columns:105px 1fr 90px;align-items:center;gap:9px;font-size:.72rem}.sa-bar-track{height:10px;border-radius:999px;background:var(--bg-elevated);overflow:hidden}.sa-bar-fill{height:100%;border-radius:999px;background:var(--primary);min-width:2px}.sa-chart-note{margin-top:12px;color:var(--text-muted);font-size:.7rem}@media(max-width:800px){.sa-charts{grid-template-columns:1fr}.sa-bar-row{grid-template-columns:95px 1fr 78px}}</style>
 </head>
 <body class="app-page">
 <header class="sa-top">
@@ -263,7 +263,7 @@ grid-template-columns:1fr}
 <button class="sa-tab" data-tab="users">Usuarios</button>
 <button class="sa-tab" data-tab="billing">Facturación</button>
 </nav>
-<div class="sa-tools">
+<section class="sa-charts" aria-label="Resumen visual"><div class="sa-chart-card"><h2>Estado de los boxes</h2><div class="sa-donut" id="boxStatusChart"></div><div class="sa-legend" id="boxStatusLegend"></div></div><div class="sa-chart-card"><h2>Ingresos</h2><div class="sa-bars" id="revenueChart"></div><div class="sa-chart-note">Cobrado este mes, cobrado acumulado y pendiente.</div></div></section><div class="sa-tools">
 <input id="search" type="search" placeholder="Buscar box o email">
 <select id="status">
 <option value="">Todos</option>
@@ -472,7 +472,7 @@ box_admin:"Administrador",coach:"Coach",athlete:"Atleta"}
 const paymentLabels={
 paid:"Pagado",pending:"Pendiente",due:"Vencido",unpaid:"Impagado"}
 ;
-function render(){
+function renderCharts(){const s=dashboard.summary||{};const total=Math.max(Number(s.boxes||0),1);const values=[["Activos",Number(s.active_boxes||0)],["Demo",Number(s.trial_boxes||0)],["Pendientes",Number(s.pending_payment_boxes||0)],["Suspendidos",Number(s.suspended_boxes||0)]];let angle=0,stops=[];const colors=["var(--primary)","#5ee28a","#75aefc","#ff8585"];values.forEach((v,i)=>{const next=angle+v[1]/total*360;stops.push(colors[i]+" "+angle+"deg "+next+"deg");angle=next;});$("boxStatusChart").style.background="conic-gradient("+stops.join(",")+")";$("boxStatusLegend").innerHTML=values.map(v=>"<div class=\"sa-legend-item\"><span>"+esc(v[0])+"</span><b>"+v[1]+"</b></div>").join("");const revenue=[["Mes",Number(s.current_month_revenue_cents||0)],["Total",Number(s.revenue_cents||0)],["Pendiente",Number(s.pending_revenue_cents||0)]];const max=Math.max(...revenue.map(v=>v[1]),1);$("revenueChart").innerHTML=revenue.map(v=>"<div class=\"sa-bar-row\"><span>"+esc(v[0])+"</span><div class=\"sa-bar-track\"><div class=\"sa-bar-fill\" style=\"width:"+Math.max(2,v[1]/max*100)+"%\"></div></div><b>"+euro(v[1])+"</b></div>").join("")}function render(){
 const q=$("search").value.toLowerCase().trim(),s=$("status").value,p=$("plan").value;
 const r=dashboard.boxes.filter(x=>(!q||[x.name,x.contact_email,x.slug].some(v=>String(v||"").toLowerCase().includes(q)))&&(!s||x.status===s)&&(!p||x.subscription_plan===p));
 $("nBoxes").textContent=dashboard.summary.boxes??0;
@@ -494,6 +494,7 @@ $("rows").innerHTML = r.length ? r.map(x => `<tr>
 </tr>`).join("") : `<tr><td colspan="9">No hay resultados.</td></tr>`;
 renderUsers();
 renderPayments();
+renderCharts();
 }
 function renderUsers(){
 const q=$("userSearch").value.toLowerCase().trim();
