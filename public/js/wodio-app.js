@@ -30,7 +30,7 @@ window.WodIOApp = (() => {
       return null;
     }
 
-    return { user, profile };
+    if (profile.role !== "super_admin" && profile.box_id) {\n      const { data: box, error: boxError } = await supabaseClient\n        .from("boxes")\n        .select("status,trial_ends_at")\n        .eq("id", profile.box_id)\n        .maybeSingle();\n      if (boxError) {\n        console.error("[WodIO] Error comprobando estado del box:", boxError);\n      } else if (box?.status === "suspended" || (box?.status === "trial" && box?.trial_ends_at && new Date(box.trial_ends_at) <= new Date())) {\n        window.location.href = "access-blocked.html";\n        return null;\n      }\n    }\n\n    return { user, profile };
   }
 
   function roleHome(role) {
