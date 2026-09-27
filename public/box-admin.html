@@ -166,7 +166,7 @@
 <div class="app-field"><label>Vencimiento</label><input id="paymentDue" type="date"></div>
 <div class="app-field"><label>Estado</label><select id="paymentStatus"><option value="paid">Pagado</option><option value="pending">Pendiente</option><option value="failed">Fallido</option><option value="cancelled">Cancelado</option><option value="refunded">Devuelto</option></select></div>
 <div class="app-field"><label>Categoría</label><input id="paymentCategory" placeholder="Cuota, evento, matrícula…"></div>
-<div class="app-field"><label>Método de pago</label><select id="paymentMethod"><option value="">Selecciona</option><option>Transferencia</option><option>Tarjeta</option><option>Efectivo</option><option>Domiciliación</option><option>Bizum</option><option>Otro</option></select></div>
+<div class="app-field"><label>Método de pago</label><select id="paymentMethod"><option value="">Selecciona</option><option value="stripe">Stripe</option><option value="paypal">PayPal</option><option value="bizum">Bizum</option><option value="transfer">Transferencia bancaria</option><option value="direct_debit">Domiciliación</option><option value="cash">Efectivo</option><option value="other">Otro</option></select></div>
 <div class="app-field"><label>Referencia</label><input id="paymentReference" placeholder="Nº factura / referencia"></div>
 <div class="app-field full"><label>Notas</label><input id="paymentNotes" placeholder="Observaciones del ingreso"></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-receipt"></i> Registrar ingreso</button></form>
@@ -247,7 +247,7 @@
 </div><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar configuración</button></form>
 </section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Horario habitual del box</h3><p>Se utiliza para mostrar cuándo está abierto el box junto con la programación mensual.</p></div></div><div class="app-table-wrap"><table class="app-table"><thead><tr><th>Día</th><th>Abierto</th><th>Desde</th><th>Hasta</th></tr></thead><tbody id="boxHoursRows"></tbody></table></div><div class="admin-actions" style="margin-top:12px"><button class="app-btn primary" type="button" id="saveBoxHours">Guardar horarios</button></div><div id="boxHoursMessage" class="app-message" style="margin-top:10px"></div></section>
-<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Programación mensual</h3><p>Clases disponibles y coach asignado.</p></div><input id="adminScheduleMonth" type="month" class="app-btn"></div><div id="adminMonthlySchedule" class="app-list"></div></section>
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Métodos de pago del box</h3><p>Define dónde y cómo puede pagar cada atleta. Puedes usar enlaces de Stripe, PayPal u otras plataformas, o instrucciones para pagos manuales.</p></div></div><div id="paymentMethodsAdmin" class="app-list"><div class="app-loading">Cargando métodos de pago…</div></div><div class="admin-actions" style="margin-top:12px"><button class="app-btn primary" type="button" id="savePaymentMethods"><i class="ph ph-floppy-disk"></i> Guardar métodos de pago</button></div><div id="paymentMethodsMessage" class="app-message" style="margin-top:10px"></div></section><section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Programación mensual</h3><p>Clases disponibles y coach asignado.</p></div><input id="adminScheduleMonth" type="month" class="app-btn"></div><div id="adminMonthlySchedule" class="app-list"></div></section>
 </section>
 </section>
 <div class="admin-modal" id="editModal" hidden><section class="admin-modal-card"><div class="admin-modal-head"><h3 id="editModalTitle">Editar</h3><button class="app-btn" type="button" id="editModalClose">Cerrar</button></div><div id="editModalMessage" class="app-message" aria-live="polite"></div>
@@ -276,22 +276,23 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const boxId=ctx.profile?.box_id, msg=document.getElementById("pageMessage");
  if(!boxId){WodIOApp.message(msg,"La cuenta de administración no tiene un box asignado.");return;}
  const $=id=>document.getElementById(id), name=u=>[u?.first_name,u?.last_name].filter(Boolean).join(" ")||"Usuario";
- let box=null, users=[], coaches=[], classes=[], events=[];
+ let box=null, users=[], coaches=[], classes=[], events=[], paymentMethods=[];
  async function load(){
   const refreshBtn=$("refreshBtn");
   if(refreshBtn) refreshBtn.disabled=true;
   try{
   const now=new Date().toISOString(), monthStart=new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
-  const [b,u,c,e,p,x]=await Promise.all([
+  const [b,u,c,e,p,x,pm]=await Promise.all([
    supabaseClient.from("boxes").select("*").eq("id",boxId).single(),
    supabaseClient.rpc("get_box_users",{p_box_id:boxId}),
    supabaseClient.from("classes").select("id,title,description,starts_at,duration_minutes,capacity,coach_id,workout,location").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
    supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
    supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,provider,provider_reference,category,payment_method,notes,created_at").eq("box_id",boxId).order("created_at",{ascending:false}),
-   supabaseClient.from("expenses").select("id,concept,amount_cents,expense_date,category,supplier,notes").eq("box_id",boxId).order("expense_date",{ascending:false})
+   supabaseClient.from("expenses").select("id,concept,amount_cents,expense_date,category,supplier,notes").eq("box_id",boxId).order("expense_date",{ascending:false}),
+   supabaseClient.from("box_payment_methods").select("id,method_key,name,icon,enabled,sort_order,checkout_url,instructions").eq("box_id",boxId).order("sort_order")
   ]);
-  const err=b.error||u.error||c.error||e.error||p.error||x.error;if(err){WodIOApp.message(msg,err.message);return;}
-  box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];coaches=users.filter(v=>v.role==="coach");
+  const err=b.error||u.error||c.error||e.error||p.error||x.error||pm.error;if(err){WodIOApp.message(msg,err.message);return;}
+  box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];paymentMethods=pm.data||[];coaches=users.filter(v=>v.role==="coach");
   $("boxName").textContent=box.name;$("welcomeTitle").textContent="Hola, "+name(ctx.profile);
   $("boxNameInput").value=box.name||"";$("boxEmail").value=box.contact_email||"";
   if(box.logo_url){$("adminBoxLogo").src=box.logo_url;$("adminBoxLogo").hidden=false;$("boxLogoPreview").src=box.logo_url;$("boxLogoPreview").hidden=false;}else{$("adminBoxLogo").hidden=true;$("boxLogoPreview").hidden=true;}$("boxPhone").value=box.phone||"";$("boxTax").value=box.tax_id||"";$("boxAddress").value=box.address||"";$("boxCity").value=box.city||"";$("boxPostal").value=box.postal_code||"";
@@ -307,6 +308,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   $("statClients").textContent=clients.length;$("statCoaches").textContent=coaches.length;$("statClasses").textContent=(c.data||[]).length;$("statPending").textContent=pending.length;$("statBalance").textContent=WodIOApp.euro(income-expenses);
   $("classCoach").innerHTML='<option value="">Sin asignar</option>'+coaches.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
 $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
+  renderPaymentMethodsAdmin();
   $("clientsTable").innerHTML='<table class="app-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Móvil</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody>'+users.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td>'+WodIOApp.escapeHtml(v.email||"—")+'</td><td>'+WodIOApp.escapeHtml(v.phone||"—")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+ '</td><td><button class="app-btn" data-edit-user="'+v.id+'">Editar</button></td></tr>').join("")+'</tbody></table>';
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
   $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
@@ -329,6 +331,14 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("verifactuStatus").innerHTML=vfConfig?.enabled?'<span class="app-badge success">Preparación activada</span>':'<span class="app-badge">Sin activar</span>';
   const allPayments=p.data||[], allExpenses=x.data||[];
   async function renderAdminMonthlySchedule(){const month=$("adminScheduleMonth").value;if(!month)return;const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);const {data,error}=await supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",boxId).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at");if(error)throw error;$("adminMonthlySchedule").innerHTML=(data||[]).length?(data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(name(v.coach)||"Sin coach")+'</span><span>'+v.capacity+' plazas</span></div></div></article>').join(""):'<div class="app-empty">No hay clases programadas en este mes.</div>';}
+  function renderPaymentMethodsAdmin(){
+  const defaults=[["stripe","Stripe","ph-credit-card"],["paypal","PayPal","ph-paypal-logo"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
+  const byKey=new Map(paymentMethods.map(v=>[v.method_key,v]));
+  $("paymentMethodsAdmin").innerHTML=defaults.map(d=>{
+    const v=byKey.get(d[0])||{method_key:d[0],name:d[1],icon:d[2],enabled:false,sort_order:10,checkout_url:"",instructions:""};
+    return "<article class=\"app-item\"><div class=\"app-item-main\"><div style=\"display:flex;align-items:center;gap:10px\"><i class=\"ph "+WodIOApp.escapeHtml(v.icon||d[2])+"\" style=\"font-size:24px\"></i><strong>"+WodIOApp.escapeHtml(d[1])+"</strong></div><div class=\"app-form-grid\" style=\"margin-top:12px\"><div class=\"app-field\"><label>Nombre visible</label><input data-pm-name=\""+d[0]+"\" value=\""+WodIOApp.escapeHtml(v.name||d[1])+"\"></div><div class=\"app-field\"><label>Orden</label><input type=\"number\" data-pm-order=\""+d[0]+"\" value=\""+(v.sort_order||0)+"\"></div><div class=\"app-field full\"><label>Enlace de pago / plataforma</label><input type=\"url\" data-pm-url=\""+d[0]+"\" value=\""+WodIOApp.escapeHtml(v.checkout_url||"")+" \" placeholder=\"https://...\"></div><div class=\"app-field full\"><label>Instrucciones para el atleta</label><input data-pm-instructions=\""+d[0]+"\" value=\""+WodIOApp.escapeHtml(v.instructions||"")+" \" placeholder=\"Cómo debe realizar el pago\"></div></div><label class=\"admin-checkbox\" style=\"margin-top:10px\"><input type=\"checkbox\" data-pm-enabled=\""+d[0]+"\" "+(v.enabled?"checked":"")+"><span>Mostrar este método en Pagos</span></label></div></article>";
+  }).join("");
+}
   function financeRange(){const mode=$("financePeriod").value,now=new Date(),start=new Date(0);if(mode==="month"){start.setTime(new Date(now.getFullYear(),now.getMonth(),1).getTime());}else if(mode==="3months"){start.setTime(new Date(now.getFullYear(),now.getMonth()-2,1).getTime());}else if(mode==="year"){start.setTime(new Date(now.getFullYear(),0,1).getTime());}return {start,now};}
   function renderFinanceStats(){const {start,now}=financeRange(),incomes=allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return v.status==="paid"&&d>=start&&d<=now;}),expenses=allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;});const incomeTotal=incomes.reduce((s,v)=>s+v.amount_cents,0),expenseTotal=expenses.reduce((s,v)=>s+v.amount_cents,0);$("financeIncome").textContent=WodIOApp.euro(incomeTotal);$("financeExpense").textContent=WodIOApp.euro(expenseTotal);$("financeBalance").textContent=WodIOApp.euro(incomeTotal-expenseTotal);$("financePending").textContent=WodIOApp.euro(allPayments.filter(v=>v.status==="pending").reduce((s,v)=>s+v.amount_cents,0));
     const byUser={};incomes.forEach(v=>{const key=v.user_id||"unknown";if(!byUser[key])byUser[key]={label:name(users.find(u=>u.id===key))||"Usuario",amount:0,count:0};byUser[key].amount+=v.amount_cents;byUser[key].count++;});
@@ -341,6 +351,18 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   function WodIOIOStatus(s){return ({paid:"Pagado",pending:"Pendiente",failed:"Fallido",cancelled:"Cancelado",refunded:"Devuelto"})[s]||s||"—";}
   $("adminScheduleMonth").addEventListener("change",renderAdminMonthlySchedule);
   $("saveBoxHours").addEventListener("click",async()=>{const rows=[...document.querySelectorAll("#boxHoursRows tr")];const payload=rows.map(tr=>{const open=tr.querySelector("[data-hour-open]").checked,day=+tr.querySelector("[data-hour-open]").dataset.hourOpen;return {box_id:boxId,weekday:day,closed:!open,open_time:open?(tr.querySelector("[data-hour-start]").value||null):null,close_time:open?(tr.querySelector("[data-hour-end]").value||null):null};});const bad=payload.find(x=>!x.closed&&(!x.open_time||!x.close_time||x.open_time>=x.close_time));if(bad)return WodIOApp.message($("boxHoursMessage"),"Revisa las horas de apertura y cierre.");const {error}=await supabaseClient.from("box_hours").upsert(payload,{onConflict:"box_id,weekday"});if(error)WodIOApp.message($("boxHoursMessage"),error.message);else WodIOApp.message($("boxHoursMessage"),"Horarios guardados correctamente.","success");});
+  $("savePaymentMethods").addEventListener("click",async()=>{
+  const btn=$("savePaymentMethods");btn.disabled=true;
+  try{
+    const defaults=[["stripe","Stripe","ph-credit-card"],["paypal","PayPal","ph-paypal-logo"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
+    const payload=defaults.map(d=>({box_id:boxId,method_key:d[0],name:$("[data-pm-name=\""+d[0]+""]").value.trim()||d[1],icon:d[2],enabled:$("[data-pm-enabled=\""+d[0]+""]").checked,sort_order:+$("[data-pm-order=\""+d[0]+""]").value||0,checkout_url:$("[data-pm-url=\""+d[0]+""]").value.trim()||null,instructions:$("[data-pm-instructions=\""+d[0]+""]").value.trim()||null}));
+    const {error}=await supabaseClient.from("box_payment_methods").upsert(payload,{onConflict:"box_id,method_key"});
+    if(error)throw error;
+    WodIOApp.message($("paymentMethodsMessage"),"Métodos de pago guardados.","success");
+    await load();
+  }catch(error){WodIOApp.message($("paymentMethodsMessage"),error?.message||"No se pudieron guardar los métodos.");}
+  finally{btn.disabled=false;}
+});
   $("financePeriod").addEventListener("change",renderFinanceStats);renderFinanceStats();
   }catch(error){WodIOApp.message(msg,error?.message||"No se pudo actualizar el panel.");}
   finally{if(refreshBtn) refreshBtn.disabled=false;}
