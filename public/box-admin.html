@@ -37,6 +37,8 @@
 .admin-stat span{display:block;margin-top:5px;color:var(--text-muted);font-size:.72rem}
 .admin-actions{display:flex;flex-wrap:wrap;gap:8px}
 .admin-mini{font-size:.72rem;color:var(--text-muted)}
+#pageMessage{position:fixed;right:22px;bottom:22px;z-index:1000;max-width:min(420px,calc(100vw - 32px));margin:0;box-shadow:0 12px 30px rgba(0,0,0,.28);pointer-events:none}
+@media(max-width:760px){#pageMessage{left:14px;right:14px;bottom:14px;max-width:none;text-align:center}}
 @media(max-width:1050px){.admin-stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.admin-layout{display:block}.admin-side{position:relative;width:100%;height:auto}.admin-nav{grid-template-columns:repeat(3,1fr)}.admin-side-bottom{display:none}.admin-main{padding-top:20px}.admin-stat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.admin-nav{grid-template-columns:repeat(2,1fr)}.admin-stat-grid{grid-template-columns:1fr}}
