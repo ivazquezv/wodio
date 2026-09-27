@@ -627,8 +627,7 @@ e.preventDefault();
 const b=$("refresh");
 const old=b.innerHTML;
 b.disabled=true;
-b.innerHTML='<i class="ph ph-spinner">
-</i> Actualizando…';
+b.innerHTML='<i class="ph ph-spinner"></i> Actualizando…';
 try{
 await load(true);
 }
