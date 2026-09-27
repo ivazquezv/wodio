@@ -22,3 +22,8 @@ drop policy if exists "Users can view attendees in their box classes" on public.
 create policy "Users can view attendees in their box classes" on public.class_bookings for select to authenticated using (exists(select 1 from public.classes c where c.id=class_bookings.class_id and c.box_id=private.current_box_id()));
 drop policy if exists "Users can view member athlete profiles in their box" on public.profiles;
 create policy "Users can view member athlete profiles in their box" on public.profiles for select to authenticated using (role='athlete' and exists(select 1 from public.user_box_memberships m where m.user_id=profiles.id and m.box_id=private.current_box_id()));
+
+grant select on table public.user_box_memberships to authenticated;
+grant select on table public.boxes to authenticated;
+grant select on table public.class_bookings to authenticated;
+grant select on table public.profiles to authenticated;
