@@ -75,13 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(payBtn){
       payBtn.disabled=true;
       try{
-        const method=payBtn.dataset.startPayment,url=payBtn.dataset.paymentUrl;
-        const methodInfo=(methods||[]).find(m=>m.method_key===method);
-        const existing=(rows||[]).find(p=>p.status==="pending"&&p.payment_method===method);
-        if(!existing){
-          const {error}=await supabaseClient.from("payments").insert({box_id:ctx.profile.box_id,user_id:ctx.user.id,concept:"Pago mediante "+(methodInfo?.name||method),amount_cents:0,currency:"EUR",status:"pending",payment_method:method});
-          if(error)throw error;
-        }
+        const url=payBtn.dataset.paymentUrl;
         window.open(url,"_blank","noopener");
       }catch(error){WodIOApp.message(message,error?.message||"No se pudo iniciar el pago.");}
       finally{payBtn.disabled=false;}
