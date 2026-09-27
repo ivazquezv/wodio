@@ -44,7 +44,7 @@
 <div class="login-heading">
 <span class="section-eyebrow">WODIO PARA BOXES</span>
 <h1 id="create-box-title">Crea tu box</h1>
-<p class="text-muted">Registra tu box y configura el acceso del responsable. Tendrás un periodo de prueba para empezar a trabajar con WodIO.</p>
+<p class="text-muted" id="planIntro">Registra tu box y configura el acceso del responsable.</p>
 </div>
 
 <form class="login-card register-card" id="createBoxForm" novalidate>
@@ -52,7 +52,7 @@
 
 <div class="box-owner-note">
 <i class="ph ph-shield-check" aria-hidden="true"></i>
-<span>La primera cuenta queda vinculada como <strong>administrador del box</strong>. Los coaches y atletas se añadirán después desde el panel de gestión.</span>
+<span id="planNote">La primera cuenta queda vinculada como <strong>administrador del box</strong>. Los coaches y atletas se añadirán después desde el panel de gestión.</span>
 </div>
 
 <div class="box-section-title">Responsable</div>
@@ -189,6 +189,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const pendingKey = "wodio.pendingBox";
+  const plan = new URLSearchParams(window.location.search).get("plan") || "demo";
+  const validPlans = ["demo", "starter", "pro", "elite"];
+  const selectedPlan = validPlans.includes(plan) ? plan : "demo";
+  const planIntro = document.getElementById("planIntro");
+  const planNote = document.getElementById("planNote");
+  const planCopy = {
+    demo: {
+      intro: "Prueba WodIO gratis durante 7 días. No se realiza ningún cargo durante la demo.",
+      note: "Incluye 7 días de acceso completo. Al finalizar la demo podrás elegir un plan de pago.",
+      button: "Crear mi demo de 7 días"
+    },
+    starter: {
+      intro: "Starter · 29 €/mes. El acceso al box se activa después de completar el pago seguro con Stripe.",
+      note: "Tu cuenta y box se preparan primero. Después te llevaremos a Stripe para completar la suscripción.",
+      button: "Continuar con Stripe"
+    },
+    pro: {
+      intro: "Pro · 49 €/mes. El acceso al box se activa después de completar el pago seguro con Stripe.",
+      note: "Tu cuenta y box se preparan primero. Después te llevaremos a Stripe para completar la suscripción.",
+      button: "Continuar con Stripe"
+    },
+    elite: {
+      intro: "Elite · 79 €/mes. El acceso al box se activa después de completar el pago seguro con Stripe.",
+      note: "Tu cuenta y box se preparan primero. Después te llevaremos a Stripe para completar la suscripción.",
+      button: "Continuar con Stripe"
+    }
+  };
+  const currentPlanCopy = planCopy[selectedPlan];
+  planIntro.textContent = currentPlanCopy.intro;
+  planNote.innerHTML = currentPlanCopy.note;
+  buttonText.textContent = currentPlanCopy.button;
 
   function showMessage(text, type = "error") {
     message.textContent = text;
@@ -250,6 +281,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  async function startStripeCheckout() {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    buttonText.textContent = "Abriendo Stripe...";
+    buttonIcon.className = "ph ph-spinner-gap";
+    clearMessage();
+
+    const { data: result, error } = await supabaseClient.functions.invoke("stripe-checkout", {
+      body: { plan: selectedPlan }
+    });
+
+    if (error) {
+      const detail = error?.context?.json?.error || error.message || "No se ha podido iniciar el pago con Stripe.";
+      throw new Error(detail === "STRIPE_SECRET_KEY_not_configured"
+        ? "El pago con Stripe todavía no está configurado en WodIO."
+        : detail);
+    }
+
+    if (result?.error) throw new Error(result.error);
+    if (!result?.url) throw new Error("Stripe no ha devuelto una URL de pago.");
+
+    window.location.href = result.url;
+  }
+
   async function finalizeBox(data) {
     const { data: activeSession } = await supabaseClient.auth.getSession();
     const activeEmail = activeSession?.session?.user?.email?.trim().toLowerCase();
@@ -269,6 +324,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       body: {
         name: data.boxName,
         contact_email: data.email,
+        plan: selectedPlan,
         phone: data.phone || null,
         address: data.address || null,
         city: data.city || null,
@@ -297,7 +353,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     localStorage.removeItem(pendingKey);
-    showMessage("Tu box se ha creado correctamente. Entrando en el panel de administración...", "success");
+
+    if (result?.requires_payment) {
+      await startStripeCheckout();
+      return;
+    }
+
+    showMessage("Tu demo de 7 días se ha creado correctamente. Entrando en el panel de administración...", "success");
     window.setTimeout(() => {
       window.location.href = "box-admin.html";
     }, 500);
@@ -388,7 +450,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         showMessage(error?.message || "No se ha podido crear el box.");
         button.disabled = false;
         button.removeAttribute("aria-busy");
-        buttonText.textContent = "Crear mi box";
+        buttonText.textContent = currentPlanCopy.button;
         buttonIcon.className = "ph ph-buildings";
       }
       return;
