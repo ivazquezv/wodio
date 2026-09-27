@@ -46,23 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return true;
     }
 
-    const { data: profile } = await supabaseClient
-      .from("profiles")
-      .select("box_id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!profile?.box_id) {
-      state.textContent = "No hemos encontrado el box asociado a esta cuenta.";
-      state.classList.remove("success");
-      return true;
-    }
-
-    const { data: box } = await supabaseClient
-      .from("boxes")
-      .select("status,subscription_status,subscription_plan")
-      .eq("id", profile.box_id)
-      .maybeSingle();
+    const { data: box } = await supabaseClient.rpc("get_my_subscription_status").maybeSingle();
 
     if (box?.status === "active") {
       state.textContent = "Suscripción confirmada. Tu box ya está activo.";
