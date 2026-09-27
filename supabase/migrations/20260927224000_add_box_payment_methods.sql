@@ -53,3 +53,6 @@ cross join (values
  ('cash','Efectivo','ph-money',60,'Pago presencial en el box.')
 ) v(method_key,name,icon,sort_order,instructions)
 on conflict (box_id,method_key) do nothing;
+
+revoke all on table public.box_payment_methods from anon;
+grant select, insert, update, delete on table public.box_payment_methods to authenticated;
