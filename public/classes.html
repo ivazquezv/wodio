@@ -37,7 +37,7 @@
 </section>
 
 <section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h2>Box activo</h2><p>Si perteneces a varios boxes, selecciona dónde quieres entrenar.</p></div></div>
+<div class="app-card-head"><div style="display:flex;align-items:center;gap:12px"><img id="boxLogo" alt="Logotipo del box" style="width:46px;height:46px;object-fit:contain;border-radius:10px;background:var(--bg-main);border:1px solid var(--border-soft)" hidden><div><h2>Box activo</h2><p>Si perteneces a varios boxes, selecciona dónde quieres entrenar.</p></div></div>
 <div class="app-form-grid"><div class="app-field"><label for="boxSelector">Buscar y seleccionar box</label><select id="boxSelector"><option value="">Cargando boxes…</option></select></div></div>
 </section>
 <section class="app-card" style="margin-top:18px;border-left:3px solid var(--primary)">
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const selector=document.getElementById("boxSelector");
     const boxes=(memberBoxes||[]).map(m=>m.box).filter(Boolean);
     selector.innerHTML=boxes.length?boxes.map(b=>'<option value="'+b.id+'" '+(b.id===ctx.profile.box_id?"selected":"")+'>'+WodIOApp.escapeHtml(b.name)+'</option>').join(""):'<option value="'+ctx.profile.box_id+'">'+WodIOApp.escapeHtml(boxPolicy?.name||"Box actual")+'</option>';
-    if(boxPolicy){document.getElementById("policyAdvance").textContent=boxPolicy.booking_advance_days;document.getElementById("policyCutoff").textContent=boxPolicy.cancellation_cutoff_hours;document.getElementById("policyWeekly").textContent=boxPolicy.weekly_cancellation_limit;}
+    if(boxPolicy){if(boxPolicy.logo_url){document.getElementById("boxLogo").src=boxPolicy.logo_url;document.getElementById("boxLogo").hidden=false;}document.getElementById("policyAdvance").textContent=boxPolicy.booking_advance_days;document.getElementById("policyCutoff").textContent=boxPolicy.cancellation_cutoff_hours;document.getElementById("policyWeekly").textContent=boxPolicy.weekly_cancellation_limit;}
     const from = new Date();
     from.setHours(0,0,0,0);
 
@@ -113,12 +113,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         .select("class_id,user_id,status").in("class_id", classes.map(c => c.id)).in("status", ["booked","attended"]);
       const ids = [...new Set((allBookings || []).map(b => b.user_id))];
       const { data: people } = ids.length
-        ? await supabaseClient.from("profiles").select("id,first_name,last_name").in("id", ids)
+        ? await supabaseClient.from("profiles").select("id,first_name,last_name,avatar_url").in("id", ids)
         : { data: [] };
       const peopleMap = new Map((people || []).map(p => [p.id, p]));
       (allBookings || []).forEach(b => {
         const p = peopleMap.get(b.user_id);
-        if (p) attendeesByClass.get(b.class_id)?.push({ name: [p.first_name,p.last_name].filter(Boolean).join(" ") });
+        if (p) attendeesByClass.get(b.class_id)?.push({ name: [p.first_name,p.last_name].filter(Boolean).join(" "), avatar_url:p.avatar_url });
       });
     }
 
