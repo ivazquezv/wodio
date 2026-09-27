@@ -422,23 +422,22 @@ grid-template-columns:1fr}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 </script>
-<script src="config/supabase-config.js">
-</script>
-<script src="js/supabase.js">
-</script>
-<script src="js/wodio-app.js">
-</script>
+
 <script>
+const SUPABASE_URL="https://qiqxybvagwgqsniluhln.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_L4o8nKhO-AwhY8_Pl_QleQ_BWy1f3AH";
+let supabaseClient=null;
 document.addEventListener("DOMContentLoaded",async()=>{
 const $=id=>document.getElementById(id);
+supabaseClient=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const showBootError=(message)=>{
   console.error("[SuperAdmin]",message);
   const el=$("msg");
   if(el){el.textContent=message;el.className="app-message show";}
 };
 try{
-  if(typeof window.supabase==="undefined") throw new Error("La librería de Supabase no se ha cargado.");
-  if(typeof supabaseClient==="undefined") throw new Error("El cliente de Supabase no se ha inicializado.");
+  if(!window.supabase) throw new Error("La librería de Supabase no se ha cargado.");
+  if(!supabaseClient) throw new Error("El cliente de Supabase no se ha inicializado.");
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
   if(sessionError) throw sessionError;
   if(!session) throw new Error("No hay una sesión activa. Inicia sesión de nuevo.");
@@ -463,7 +462,7 @@ style:"currency",currency:"EUR"}
 const date=x=>x?new Intl.DateTimeFormat("es-ES",{
 day:"2-digit",month:"short",year:"numeric"}
 ).format(new Date(x)):"—";
-const esc=x=>typeof WodIOApp!=="undefined" ? WodIOApp.escapeHtml(x||"") : String(x||"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+const esc=x=>String(x||"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
 const labels={
 active:"Activo",trial:"Demo",pending_payment:"Pendiente",suspended:"Suspendido"}
 ;
@@ -694,7 +693,7 @@ if(!window.confirm("¿Seguro que quieres salir de WodIO?")) return;
 const b=$("logout");
 b.disabled=true;
 try{
-await WodIOApp.logout();
+await supabaseClient.auth.signOut().then(()=>{window.location.href="login.html";});
 }
 catch(err){
 console.error("[SuperAdmin] Error al salir:",err);
