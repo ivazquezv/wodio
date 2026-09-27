@@ -36,6 +36,10 @@
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div class="app-stat-value" id="statOpen">—</div><div class="app-stat-label">Plazas disponibles</div></div></div>
 </section>
 
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h2>Box activo</h2><p>Si perteneces a varios boxes, selecciona dónde quieres entrenar.</p></div></div>
+<div class="app-form-grid"><div class="app-field"><label for="boxSelector">Buscar y seleccionar box</label><select id="boxSelector"><option value="">Cargando boxes…</option></select></div></div>
+</section>
 <section class="app-card" style="margin-top:18px;border-left:3px solid var(--primary)">
 <div class="app-card-head"><div><h2>Política de reservas</h2><p>Estas reglas las configura el administrador del box.</p></div></div>
 <div id="bookingPolicy" class="app-grid app-grid-3">
@@ -71,7 +75,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function load() {
     list.innerHTML = '<div class="app-loading">Cargando clases…</div>';
 
-    const {data:boxPolicy}=await supabaseClient.from("boxes").select("booking_advance_days,cancellation_cutoff_hours,weekly_cancellation_limit").eq("id",ctx.profile.box_id).single();
+    const [{data:boxPolicy},{data:memberBoxes}]=await Promise.all([
+      supabaseClient.from("boxes").select("id,name,booking_advance_days,cancellation_cutoff_hours,weekly_cancellation_limit").eq("id",ctx.profile.box_id).single(),
+      supabaseClient.from("user_box_memberships").select("box_id,box:boxes(id,name)").eq("user_id",ctx.user.id).order("created_at")
+    ]);
+    const selector=document.getElementById("boxSelector");
+    const boxes=(memberBoxes||[]).map(m=>m.box).filter(Boolean);
+    selector.innerHTML=boxes.length?boxes.map(b=>'<option value="'+b.id+'" '+(b.id===ctx.profile.box_id?"selected":"")+'>'+WodIOApp.escapeHtml(b.name)+'</option>').join(""):'<option value="'+ctx.profile.box_id+'">'+WodIOApp.escapeHtml(boxPolicy?.name||"Box actual")+'</option>';
     if(boxPolicy){document.getElementById("policyAdvance").textContent=boxPolicy.booking_advance_days;document.getElementById("policyCutoff").textContent=boxPolicy.cancellation_cutoff_hours;document.getElementById("policyWeekly").textContent=boxPolicy.weekly_cancellation_limit;}
     const from = new Date();
     from.setHours(0,0,0,0);
@@ -141,6 +151,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         '</div></article>';
     }).join("");
   }
+
+  document.getElementById("boxSelector").addEventListener("change",async e=>{
+    const boxId=e.target.value;if(!boxId||boxId===ctx.profile.box_id)return;
+    e.target.disabled=true;WodIOApp.clearMessage(message);
+    const {error}=await supabaseClient.rpc("switch_active_box",{p_box_id:boxId});
+    e.target.disabled=false;
+    if(error){WodIOApp.message(message,error.message);e.target.value=ctx.profile.box_id;return;}
+    ctx.profile.box_id=boxId;WodIOApp.message(message,"Box activo cambiado correctamente.","success");await load();
+  });
 
   list.addEventListener("click", async e => {
     const book = e.target.closest("[data-book]")?.dataset.book;
