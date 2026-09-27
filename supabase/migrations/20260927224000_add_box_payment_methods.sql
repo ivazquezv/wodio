@@ -3,7 +3,7 @@ create table if not exists public.box_payment_methods (
   box_id uuid not null references public.boxes(id) on delete cascade,
   method_key text not null,
   name text not null,
-  icon text not null default 'ph-credit-card',
+  icon text not null default 'ph-stripe-logo',
   enabled boolean not null default true,
   sort_order integer not null default 0,
   checkout_url text,
@@ -45,8 +45,8 @@ insert into public.box_payment_methods(box_id,method_key,name,icon,enabled,sort_
 select b.id,v.method_key,v.name,v.icon,true,v.sort_order,null,v.instructions
 from public.boxes b
 cross join (values
- ('stripe','Stripe','ph-credit-card',10,'Pago seguro con tarjeta mediante Stripe.'),
- ('paypal','PayPal','ph-paypal-logo',20,'Paga con tu cuenta de PayPal.'),
+ ('stripe','Stripe','ph-stripe-logo',10,'Pago seguro con tarjeta mediante Stripe.'),
+ ('paypal','PayPal','ph-paypal-logo-fill',20,'Paga con tu cuenta de PayPal.'),
  ('bizum','Bizum','ph-device-mobile',30,'Indica el número de Bizum del box o configura un enlace de pago.'),
  ('transfer','Transferencia bancaria','ph-bank',40,'Realiza la transferencia usando las instrucciones del box.'),
  ('direct_debit','Domiciliación','ph-arrows-clockwise',50,'El box gestionará el cobro mediante domiciliación.'),
