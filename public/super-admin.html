@@ -92,7 +92,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     </tr>`).join(""):'<tr><td colspan="7">No hay pagos con ese filtro.</td></tr>';
   }
 
-  async function load(){
+  async function load(showSuccess=false){
+    if(showSuccess) WodIOApp.message($("msg"),"Actualizando datos…","success");
     const r=await supabaseClient.rpc("get_super_admin_dashboard");
     if(r.error){
       console.error("[SuperAdmin]",r.error);
@@ -100,8 +101,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
       return;
     }
     dashboard=r.data||{summary:{},boxes:[],users:[],payments:[]};
-    WodIOApp.clearMessage($("msg"));
     render();
+    if(showSuccess) WodIOApp.message($("msg"),"Datos actualizados correctamente.","success");
+    else WodIOApp.clearMessage($("msg"));
   }
 
   function open(id){
@@ -126,10 +128,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
   e.preventDefault();
   const b=$("refresh"); const old=b.innerHTML;
   b.disabled=true; b.innerHTML='<i class="ph ph-spinner"></i> Actualizando…';
-  try{await load();}finally{b.disabled=false;b.innerHTML=old;}
+  try{await load(true);}catch(err){console.error("[SuperAdmin] Error actualizando:",err);WodIOApp.message($("msg"),"No se ha podido actualizar: "+(err?.message||err));}finally{b.disabled=false;b.innerHTML=old;}
 });
 $("logout").addEventListener("click",async e=>{
   e.preventDefault();
+  if(!window.confirm("¿Seguro que quieres salir de WodIO?")) return;
   const b=$("logout"); b.disabled=true;
   try{await WodIOApp.logout();}catch(err){console.error("[SuperAdmin] Error al salir:",err);window.location.href="login.html";}
 });
