@@ -65,7 +65,7 @@
 <div class="admin-box"><img class="admin-box-logo" id="adminBoxLogo" alt="Logotipo del box" hidden><small>Box activo</small><strong id="boxName">Cargando…</strong></div>
 <nav class="admin-nav" aria-label="Administración">
 <a href="#inicio" class="active"><i class="ph ph-squares-four"></i> Inicio</a>
-<a href="#clientes"><i class="ph ph-users-three"></i> Clientes</a>
+<a href="#usuarios"><i class="ph ph-users-three"></i> Usuarios</a>
 <a href="#clases"><i class="ph ph-barbell"></i> Clases</a>
 <a href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
 <a href="#eventos"><i class="ph ph-calendar"></i> Eventos</a>
@@ -94,8 +94,8 @@
 <div class="admin-stat"><strong id="statBalance">—</strong><span>Balance del mes</span></div>
 </section>
 
-<section class="admin-section" id="clientes">
-<div class="admin-section-title"><div><h2>Clientes</h2><p>Personas vinculadas al box y sus roles.</p></div></div>
+<section class="admin-section" id="usuarios">
+<div class="admin-section-title"><div><h2>Usuarios</h2><p>Gestiona las personas vinculadas al box, sus datos, rol y acceso al box.</p></div></div>
 <section class="app-card">
 <div class="app-card-head"><div><h3>Editar usuario</h3><p>Modifica los datos básicos del usuario.</p></div></div>
 <form id="userForm" class="app-form"><input type="hidden" id="userEditId"><div class="app-form-grid">
@@ -129,11 +129,8 @@
 <section class="admin-section" id="coaches">
 <div class="admin-section-title"><div><h2>Coaches y roles</h2><p>Gestiona quién puede impartir clases y administrar el box.</p></div></div>
 <section class="app-card">
-<form id="roleForm" class="app-form"><div class="app-form-grid">
-<div class="app-field"><label>Usuario</label><select id="roleUser" required><option value="">Selecciona un usuario</option></select></div>
-<div class="app-field"><label>Rol</label><select id="roleValue"><option value="athlete">Cliente / atleta</option><option value="coach">Coach</option></select></div>
-</div><button class="app-btn primary" type="submit"><i class="ph ph-user-gear"></i> Guardar rol</button></form>
-<div id="coachesTable" class="app-table-wrap" style="margin-top:18px"></div>
+<div class="app-card-head"><div><h3>Coaches del box</h3><p>Aquí solo aparecen los usuarios que tienen el rol <strong>Coach</strong>. Para cambiar un rol, utiliza el apartado Usuarios.</p></div></div>
+<div id="coachesTable" class="app-table-wrap"></div>
 </section>
 </section>
 
@@ -307,8 +304,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const expenses=(x.data||[]).filter(v=>new Date(v.expense_date)>=monthStart).reduce((s,v)=>s+v.amount_cents,0);
   $("statClients").textContent=clients.length;$("statCoaches").textContent=coaches.length;$("statClasses").textContent=(c.data||[]).length;$("statPending").textContent=pending.length;$("statBalance").textContent=WodIOApp.euro(income-expenses);
   $("classCoach").innerHTML='<option value="">Sin asignar</option>'+coaches.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
-  $("roleUser").innerHTML='<option value="">Selecciona un usuario</option>'+users.filter(v=>v.role==="athlete"||v.role==="coach").map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+" · "+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+"</option>").join("");
-  $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
+$("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
   $("clientsTable").innerHTML='<table class="app-table"><thead><tr><th>Cliente</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody>'+users.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+ '</td><td><button class="app-btn" data-edit-user="'+v.id+'">Editar</button></td></tr>').join("")+'</tbody></table>';
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
   $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
@@ -349,7 +345,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
  }
  $("classForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando clase…","success");const payload={box_id:boxId,created_by:ctx.user.id,title:$("classTitle").value.trim(),starts_at:new Date($("classStart").value).toISOString(),duration_minutes:+$("classDuration").value,capacity:+$("classCapacity").value,coach_id:$("classCoach").value||null,location:$("classLocation").value.trim()||null,workout:$("classWorkout").value.trim()||null};const {error}=await supabaseClient.from("classes").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Clase creada.","success");await load();}});
  $("eventForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando evento…","success");const payload={box_id:boxId,created_by:ctx.user.id,title:$("eventTitle").value.trim(),starts_at:new Date($("eventStart").value).toISOString(),ends_at:$("eventEnd").value?new Date($("eventEnd").value).toISOString():null,capacity:$("eventCapacity").value?+$("eventCapacity").value:null,price_cents:Math.round(+$("eventPrice").value*100),location:$("eventLocation").value.trim()||null};const {error}=await supabaseClient.from("events").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Evento creado.","success");await load();}});
- $("roleForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando rol…","success");const id=$("roleUser").value,role=$("roleValue").value;if(!id)return;const {error}=await supabaseClient.from("profiles").update({role}).eq("id",id).eq("box_id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Rol actualizado.","success");await load();}});
  $("paymentForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando ingreso…","success");const status=$("paymentStatus").value,paidDate=$("paymentPaidAt").value;const payload={box_id:boxId,user_id:$("paymentUser").value,concept:$("paymentConcept").value.trim(),amount_cents:Math.round(+$("paymentAmount").value*100),due_date:$("paymentDue").value||null,status,paid_at:status==="paid"?(paidDate?new Date(paidDate+"T12:00:00").toISOString():new Date().toISOString()):null,category:$("paymentCategory").value.trim()||null,payment_method:$("paymentMethod").value||null,provider_reference:$("paymentReference").value.trim()||null,notes:$("paymentNotes").value.trim()||null};const {error}=await supabaseClient.from("payments").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Ingreso registrado.","success");await load();}});
  $("expenseForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando gasto…","success");const payload={box_id:boxId,created_by:ctx.user.id,concept:$("expenseConcept").value.trim(),amount_cents:Math.round(+$("expenseAmount").value*100),expense_date:$("expenseDate").value||new Date().toISOString().slice(0,10),category:$("expenseCategory").value.trim()||null,supplier:$("expenseSupplier").value.trim()||null,notes:$("expenseNotes").value.trim()||null};const {error}=await supabaseClient.from("expenses").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Gasto registrado.","success");await load();}});
  $("verifactuForm").addEventListener("submit",async ev=>{
