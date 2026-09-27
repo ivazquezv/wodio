@@ -112,14 +112,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("adminPasswordToggle").addEventListener("click", togglePassword);
 
-  const { data: existing } = await supabaseClient.auth.getUser();
-  if (existing?.user) {
-    const { data: profile } = await supabaseClient.rpc("get_my_profile").maybeSingle();
-    if (["box_admin", "super_admin"].includes(profile?.role)) {
+  const { data: existing, error: existingError } = await supabaseClient.auth.getUser();
+  if (existing?.user && !existingError) {
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("role")
+      .eq("id", existing.user.id)
+      .maybeSingle();
+
+    if (!profileError && ["box_admin", "super_admin"].includes(profile?.role)) {
       window.location.href = "box-admin.html";
       return;
     }
-    await supabaseClient.auth.signOut();
+
+    // No destruyas una sesión válida solo porque el perfil no pueda consultarse.
+    // El usuario podrá iniciar sesión de nuevo y recibirá el error concreto.
+    if (profileError) {
+      console.error("[WodIO] Error comprobando perfil existente:", profileError);
+    }
   }
 
   form.addEventListener("submit", async event => {
@@ -150,12 +160,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const { data: profile, error: profileError } = await supabaseClient
-        .rpc("get_my_profile")
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
         .maybeSingle();
 
       if (profileError) {
         console.error("[WodIO] Error comprobando perfil:", profileError);
-        await supabaseClient.auth.signOut();
         showMessage(profileError.message || "No se ha podido comprobar el rol de la cuenta.");
         return;
       }
