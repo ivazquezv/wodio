@@ -1511,19 +1511,43 @@ document.addEventListener("DOMContentLoaded", async () => {
         const evoMax=Math.max(...evo.map(p=>Number(p.value)),1);
         document.getElementById("performanceChart").innerHTML=evo.length?evo.map(p=>'<div title="'+WodIOApp.escapeHtml(p.exercise+" · "+p.value+" "+p.unit)+'" class="performance-bar" style="--bar-height:'+Math.max(8,Number(p.value)/evoMax*100)+'%"></div>').join(""):'<div class="app-empty">Registra cargas en Mi progreso para ver tu evolución.</div>';
 
-        const timerState={type:"clock",running:false,remaining:0,interval:null,phase:"Listo"};
+        const timerState={type:"clock",running:false,remaining:0,elapsed:0,interval:null,phase:"Listo",round:1};
         const timerConfig=document.getElementById("timerConfig"),timerDisplay=document.getElementById("timerDisplay"),timerPhase=document.getElementById("timerPhase");
         const defaults={clock:{duration:3600},tabata:{rounds:8,work:20,rest:10},fortime:{duration:1200},amrap:{duration:600},emom:{duration:1200,interval:60}};
         function field(label,id,value){return '<label>'+label+'<input id="'+id+'" type="number" min="1" value="'+value+'"></label>';}
-        function renderTimerConfig(){const t=timerState.type;timerConfig.innerHTML=t==="tabata"?field("Rondas","timerRounds",defaults.tabata.rounds)+field("Trabajo (seg)","timerWork",defaults.tabata.work)+field("Descanso (seg)","timerRest",defaults.tabata.rest):t==="emom"?field("Duración (min)","timerDuration",20)+field("Cada (min)","timerInterval",1):t==="clock"?field("Duración (min)","timerDuration",60):field("Duración (min)","timerDuration",t==="fortime"?20:10);}
+        function renderTimerConfig(){const t=timerState.type;timerConfig.innerHTML=t==="tabata"?field("Rondas","timerRounds",defaults.tabata.rounds)+field("Trabajo (seg)","timerWork",defaults.tabata.work)+field("Descanso (seg)","timerRest",defaults.tabata.rest):t==="emom"?field("Duración (min)","timerDuration",20)+field("Cada (min)","timerInterval",1):field("Duración (min)","timerDuration",t==="clock"?60:t==="fortime"?20:10);}
         function fmt(sec){sec=Math.max(0,Math.ceil(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
         function renderTimer(){timerDisplay.textContent=fmt(timerState.remaining);timerPhase.textContent=timerState.phase;}
-        function configureTimer(){timerState.remaining=timerState.type==="tabata"?Number(document.getElementById("timerRounds").value)*(Number(document.getElementById("timerWork").value)+Number(document.getElementById("timerRest").value)):Number(document.getElementById("timerDuration").value)*60;timerState.phase="Listo";renderTimer();}
-        document.querySelectorAll(".timer-type").forEach(b=>b.addEventListener("click",()=>{clearInterval(timerState.interval);timerState.running=false;document.querySelectorAll(".timer-type").forEach(x=>x.classList.remove("active"));b.classList.add("active");timerState.type=b.dataset.timer;renderTimerConfig();configureTimer();}));
+        function configureTimer(){clearInterval(timerState.interval);timerState.running=false;timerState.elapsed=0;timerState.round=1;const t=timerState.type;if(t==="tabata"){timerState.remaining=Number(document.getElementById("timerWork").value);timerState.phase="Trabajo · Ronda 1";}else{timerState.remaining=Number(document.getElementById("timerDuration").value)*60;timerState.phase="Listo";}renderTimer();}
+        function tickTimer(){
+            timerState.elapsed++;
+            if(timerState.type==="tabata"){
+                timerState.remaining--;
+                if(timerState.remaining<=0){
+                    const rounds=Number(document.getElementById("timerRounds").value),work=Number(document.getElementById("timerWork").value),rest=Number(document.getElementById("timerRest").value);
+                    if(timerState.phase.startsWith("Trabajo")){
+                        timerState.phase="Descanso";timerState.remaining=rest;
+                    }else{
+                        if(timerState.round>=rounds){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="Tabata terminado";}
+                        else{timerState.round++;timerState.remaining=work;timerState.phase="Trabajo · Ronda "+timerState.round;}
+                    }
+                }
+            }else if(timerState.type==="emom"){
+                timerState.remaining--;
+                if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.phase="EMOM terminado";}
+                else{const interval=Number(document.getElementById("timerInterval").value)*60;const left=timerState.remaining%interval;timerState.phase="EMOM · siguiente minuto en "+fmt(left||interval);}
+            }else if(timerState.type==="fortime"){
+                timerState.remaining--;if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="For Time terminado";}
+            }else{
+                timerState.remaining--;if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="Tiempo terminado";}
+            }
+            renderTimer();
+        }
+        document.querySelectorAll(".timer-type").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".timer-type").forEach(x=>x.classList.remove("active"));b.classList.add("active");timerState.type=b.dataset.timer;renderTimerConfig();configureTimer();}));
         timerConfig.addEventListener("change",configureTimer);
-        document.getElementById("timerStart").addEventListener("click",()=>{if(timerState.running)return;timerState.running=true;timerState.phase=timerState.type==="amrap"?"AMRAP en curso":timerState.type==="fortime"?"For Time en curso":timerState.type==="emom"?"EMOM en curso":timerState.type==="tabata"?"Tabata en curso":"Entrenamiento";timerState.interval=setInterval(()=>{timerState.remaining--;if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="Tiempo terminado";}renderTimer();},1000);renderTimer();});
+        document.getElementById("timerStart").addEventListener("click",()=>{if(timerState.running)return;timerState.running=true;timerState.interval=setInterval(tickTimer,1000);renderTimer();});
         document.getElementById("timerPause").addEventListener("click",()=>{clearInterval(timerState.interval);timerState.running=false;timerState.phase="Pausado";renderTimer();});
-        document.getElementById("timerReset").addEventListener("click",()=>{clearInterval(timerState.interval);timerState.running=false;configureTimer();});
+        document.getElementById("timerReset").addEventListener("click",()=>configureTimer());
         renderTimerConfig();configureTimer();
 
         const activity=[];
