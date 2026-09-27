@@ -37,6 +37,12 @@
 .admin-stat span{display:block;margin-top:5px;color:var(--text-muted);font-size:.72rem}
 .admin-actions{display:flex;flex-wrap:wrap;gap:8px}
 .admin-mini{font-size:.72rem;color:var(--text-muted)}
+.finance-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+.finance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.finance-breakdown .app-card{min-width:0}
+@media(max-width:1050px){.finance-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.finance-breakdown{grid-template-columns:1fr}}
+@media(max-width:480px){.finance-stat-grid{grid-template-columns:1fr}}
 #pageMessage{position:fixed;right:22px;bottom:22px;z-index:1000;max-width:min(420px,calc(100vw - 32px));margin:0;box-shadow:0 12px 30px rgba(0,0,0,.28);pointer-events:none}
 @media(max-width:760px){#pageMessage{left:14px;right:14px;bottom:14px;max-width:none;text-align:center}}
 .admin-modal{position:fixed;inset:0;z-index:1100;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.68)}
@@ -146,7 +152,7 @@
 </section>
 
 <section class="admin-section" id="finanzas">
-<div class="admin-section-title"><div><h2>Contabilidad</h2><p>Control básico de ingresos y gastos del box.</p></div></div>
+<div class="admin-section-title"><div><h2>Contabilidad</h2><p>Registra ingresos y gastos con detalle y consulta estadísticas por cliente, categoría y proveedor.</p></div></div>
 <div class="app-grid app-grid-2">
 <section class="app-card">
 <div class="app-card-head"><div><h3>Registrar ingreso</h3><p>Cuotas y otros cobros.</p></div></div>
@@ -154,19 +160,39 @@
 <div class="app-field"><label>Cliente</label><select id="paymentUser" required><option value="">Selecciona</option></select></div>
 <div class="app-field"><label>Concepto</label><input id="paymentConcept" required placeholder="Cuota mensual"></div>
 <div class="app-field"><label>Importe (€)</label><input id="paymentAmount" type="number" min="0" step=".01" required></div>
+<div class="app-field"><label>Fecha de ingreso</label><input id="paymentPaidAt" type="date"></div>
 <div class="app-field"><label>Vencimiento</label><input id="paymentDue" type="date"></div>
+<div class="app-field"><label>Estado</label><select id="paymentStatus"><option value="paid">Pagado</option><option value="pending">Pendiente</option><option value="failed">Fallido</option><option value="cancelled">Cancelado</option><option value="refunded">Devuelto</option></select></div>
+<div class="app-field"><label>Categoría</label><input id="paymentCategory" placeholder="Cuota, evento, matrícula…"></div>
+<div class="app-field"><label>Método de pago</label><select id="paymentMethod"><option value="">Selecciona</option><option>Transferencia</option><option>Tarjeta</option><option>Efectivo</option><option>Domiciliación</option><option>Bizum</option><option>Otro</option></select></div>
+<div class="app-field"><label>Referencia</label><input id="paymentReference" placeholder="Nº factura / referencia"></div>
+<div class="app-field full"><label>Notas</label><input id="paymentNotes" placeholder="Observaciones del ingreso"></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-receipt"></i> Registrar ingreso</button></form>
 </section>
 <section class="app-card">
-<div class="app-card-head"><div><h3>Registrar gasto</h3><p>Proveedores y gastos operativos.</p></div></div>
+<div class="app-card-head"><div><h3>Registrar gasto</h3><p>Controla proveedor, categoría y observaciones.</p></div></div>
 <form id="expenseForm" class="app-form"><div class="app-form-grid">
 <div class="app-field"><label>Concepto</label><input id="expenseConcept" required placeholder="Material deportivo"></div>
 <div class="app-field"><label>Importe (€)</label><input id="expenseAmount" type="number" min="0" step=".01" required></div>
 <div class="app-field"><label>Fecha</label><input id="expenseDate" type="date"></div>
 <div class="app-field"><label>Categoría</label><input id="expenseCategory" placeholder="Material"></div>
 <div class="app-field full"><label>Proveedor</label><input id="expenseSupplier" placeholder="Proveedor"></div>
+<div class="app-field full"><label>Notas</label><input id="expenseNotes" placeholder="Factura, observaciones…"></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-minus-circle"></i> Registrar gasto</button></form>
 </section>
+</div>
+<div class="finance-stat-grid">
+<div class="admin-stat"><strong id="financeIncome">—</strong><span>Ingresos del periodo</span></div>
+<div class="admin-stat"><strong id="financeExpense">—</strong><span>Gastos del periodo</span></div>
+<div class="admin-stat"><strong id="financeBalance">—</strong><span>Balance del periodo</span></div>
+<div class="admin-stat"><strong id="financePending">—</strong><span>Ingresos pendientes</span></div>
+</div>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Estadísticas</h3><p>Desglose del periodo seleccionado.</p></div><select id="financePeriod" class="app-btn"><option value="month">Este mes</option><option value="3months">Últimos 3 meses</option><option value="year">Este año</option><option value="all">Todo</option></select></div>
+</section>
+<div class="finance-breakdown">
+<section class="app-card"><div class="app-card-head"><div><h3>Ingresos por cliente</h3><p>Total cobrado y número de movimientos.</p></div></div><div id="incomeStats" class="app-table-wrap"></div></section>
+<section class="app-card"><div class="app-card-head"><div><h3>Gastos por proveedor</h3><p>Total gastado y número de movimientos.</p></div></div><div id="supplierStats" class="app-table-wrap"></div></section>
 </div>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div></div><div id="financeTable" class="app-table-wrap"></div></section>
 </section>
@@ -218,8 +244,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
    supabaseClient.from("profiles").select("id,first_name,last_name,role,created_at").eq("box_id",boxId).order("created_at",{ascending:false}),
    supabaseClient.from("classes").select("id,title,description,starts_at,duration_minutes,capacity,coach_id,workout,location").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
    supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
-   supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,created_at").eq("box_id",boxId).order("created_at",{ascending:false}).limit(40),
-   supabaseClient.from("expenses").select("id,concept,amount_cents,expense_date,category,supplier").eq("box_id",boxId).order("expense_date",{ascending:false}).limit(40)
+   supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,provider,provider_reference,category,payment_method,notes,created_at").eq("box_id",boxId).order("created_at",{ascending:false}),
+   supabaseClient.from("expenses").select("id,concept,amount_cents,expense_date,category,supplier,notes").eq("box_id",boxId).order("expense_date",{ascending:false})
   ]);
   const err=b.error||u.error||c.error||e.error||p.error||x.error;if(err){WodIOApp.message(msg,err.message);return;}
   box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];coaches=users.filter(v=>v.role==="coach");
@@ -236,14 +262,24 @@ document.addEventListener("DOMContentLoaded",async()=>{
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
   $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
   $("eventsList").innerHTML=(e.data||[]).length?(e.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+(v.price_cents?WodIOApp.euro(v.price_cents):"Gratis")+'</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-event="'+v.id+'">Editar</button><button class="app-btn danger" data-del-event="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
-  const rows=[...(p.data||[]).map(v=>({type:"Ingreso",date:v.paid_at||v.due_date,concept:v.concept,amount:v.amount_cents,status:v.status,id:v.id})),...(x.data||[]).map(v=>({type:"Gasto",date:v.expense_date,concept:v.concept,amount:-v.amount_cents,status:"paid",id:v.id}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  $("financeTable").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Importe</th><th>Estado</th><th></th></tr></thead><tbody>'+rows.slice(0,40).map(v=>'<tr><td>'+WodIOApp.formatDate(v.date,{withYear:true})+'</td><td>'+v.type+'</td><td>'+WodIOApp.escapeHtml(v.concept)+'</td><td>'+WodIOApp.euro(v.amount)+'</td><td><span class="app-badge '+(v.status==="paid"?"success":"warning")+'">'+(v.status==="paid"?"Pagado":"Pendiente")+'</span></td><td></td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay movimientos.</div>';
+  const allPayments=p.data||[], allExpenses=x.data||[];
+  function financeRange(){const mode=$("financePeriod").value,now=new Date(),start=new Date(0);if(mode==="month"){start.setTime(new Date(now.getFullYear(),now.getMonth(),1).getTime());}else if(mode==="3months"){start.setTime(new Date(now.getFullYear(),now.getMonth()-2,1).getTime());}else if(mode==="year"){start.setTime(new Date(now.getFullYear(),0,1).getTime());}return {start,now};}
+  function renderFinanceStats(){const {start,now}=financeRange(),incomes=allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return v.status==="paid"&&d>=start&&d<=now;}),expenses=allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;});const incomeTotal=incomes.reduce((s,v)=>s+v.amount_cents,0),expenseTotal=expenses.reduce((s,v)=>s+v.amount_cents,0);$("financeIncome").textContent=WodIOApp.euro(incomeTotal);$("financeExpense").textContent=WodIOApp.euro(expenseTotal);$("financeBalance").textContent=WodIOApp.euro(incomeTotal-expenseTotal);$("financePending").textContent=WodIOApp.euro(allPayments.filter(v=>v.status==="pending").reduce((s,v)=>s+v.amount_cents,0));
+    const byUser={};incomes.forEach(v=>{const key=v.user_id||"unknown";if(!byUser[key])byUser[key]={label:name(users.find(u=>u.id===key))||"Usuario",amount:0,count:0};byUser[key].amount+=v.amount_cents;byUser[key].count++;});
+    const userRows=Object.values(byUser).sort((a,b)=>b.amount-a.amount);$("incomeStats").innerHTML=userRows.length?'<table class="app-table"><thead><tr><th>Cliente</th><th>Mov.</th><th>Total</th></tr></thead><tbody>'+userRows.map(v=>'<tr><td>'+WodIOApp.escapeHtml(v.label)+'</td><td>'+v.count+'</td><td>'+WodIOApp.euro(v.amount)+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay ingresos en el periodo.</div>';
+    const bySupplier={};expenses.forEach(v=>{const key=(v.supplier||"Sin proveedor").trim()||"Sin proveedor";if(!bySupplier[key])bySupplier[key]={label:key,amount:0,count:0};bySupplier[key].amount+=v.amount_cents;bySupplier[key].count++;});
+    const supplierRows=Object.values(bySupplier).sort((a,b)=>b.amount-a.amount);$("supplierStats").innerHTML=supplierRows.length?'<table class="app-table"><thead><tr><th>Proveedor</th><th>Mov.</th><th>Total</th></tr></thead><tbody>'+supplierRows.map(v=>'<tr><td>'+WodIOApp.escapeHtml(v.label)+'</td><td>'+v.count+'</td><td>'+WodIOApp.euro(v.amount)+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay gastos en el periodo.</div>';
+    const rows=[...allPayments.map(v=>({type:"Ingreso",date:v.paid_at||v.due_date||v.created_at,concept:v.concept,amount:v.amount_cents,status:v.status,user:name(users.find(u=>u.id===v.user_id)),id:v.id})),...allExpenses.map(v=>({type:"Gasto",date:v.expense_date,concept:v.concept,amount:-v.amount_cents,status:"paid",user:v.supplier||"Sin proveedor",id:v.id}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    $("financeTable").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Cliente / proveedor</th><th>Concepto</th><th>Importe</th><th>Estado</th></tr></thead><tbody>'+rows.slice(0,40).map(v=>'<tr><td>'+WodIOApp.formatDate(v.date,{withYear:true})+'</td><td>'+v.type+'</td><td>'+WodIOApp.escapeHtml(v.user)+'</td><td>'+WodIOApp.escapeHtml(v.concept)+'</td><td>'+WodIOApp.euro(v.amount)+'</td><td><span class="app-badge '+(v.status==="paid"?"success":v.status==="pending"?"warning":"")+'">'+WodIOIOStatus(v.status)+'</span></td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay movimientos.</div>';
+  }
+  function WodIOIOStatus(s){return ({paid:"Pagado",pending:"Pendiente",failed:"Fallido",cancelled:"Cancelado",refunded:"Devuelto"})[s]||s||"—";}
+  $("financePeriod").addEventListener("change",renderFinanceStats);renderFinanceStats();
  }
  $("classForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando clase…","success");const payload={box_id:boxId,created_by:ctx.user.id,title:$("classTitle").value.trim(),starts_at:new Date($("classStart").value).toISOString(),duration_minutes:+$("classDuration").value,capacity:+$("classCapacity").value,coach_id:$("classCoach").value||null,location:$("classLocation").value.trim()||null,workout:$("classWorkout").value.trim()||null};const {error}=await supabaseClient.from("classes").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Clase creada.","success");await load();}});
  $("eventForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando evento…","success");const payload={box_id:boxId,created_by:ctx.user.id,title:$("eventTitle").value.trim(),starts_at:new Date($("eventStart").value).toISOString(),ends_at:$("eventEnd").value?new Date($("eventEnd").value).toISOString():null,capacity:$("eventCapacity").value?+$("eventCapacity").value:null,price_cents:Math.round(+$("eventPrice").value*100),location:$("eventLocation").value.trim()||null};const {error}=await supabaseClient.from("events").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Evento creado.","success");await load();}});
  $("roleForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando rol…","success");const id=$("roleUser").value,role=$("roleValue").value;if(!id)return;const {error}=await supabaseClient.from("profiles").update({role}).eq("id",id).eq("box_id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Rol actualizado.","success");await load();}});
- $("paymentForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando ingreso…","success");const payload={box_id:boxId,user_id:$("paymentUser").value,concept:$("paymentConcept").value.trim(),amount_cents:Math.round(+$("paymentAmount").value*100),due_date:$("paymentDue").value||null};const {error}=await supabaseClient.from("payments").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Ingreso registrado.","success");await load();}});
- $("expenseForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando gasto…","success");const payload={box_id:boxId,created_by:ctx.user.id,concept:$("expenseConcept").value.trim(),amount_cents:Math.round(+$("expenseAmount").value*100),expense_date:$("expenseDate").value||new Date().toISOString().slice(0,10),category:$("expenseCategory").value.trim()||null,supplier:$("expenseSupplier").value.trim()||null};const {error}=await supabaseClient.from("expenses").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Gasto registrado.","success");await load();}});
+ $("paymentForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando ingreso…","success");const status=$("paymentStatus").value,paidDate=$("paymentPaidAt").value;const payload={box_id:boxId,user_id:$("paymentUser").value,concept:$("paymentConcept").value.trim(),amount_cents:Math.round(+$("paymentAmount").value*100),due_date:$("paymentDue").value||null,status,paid_at:status==="paid"?(paidDate?new Date(paidDate+"T12:00:00").toISOString():new Date().toISOString()):null,category:$("paymentCategory").value.trim()||null,payment_method:$("paymentMethod").value||null,provider_reference:$("paymentReference").value.trim()||null,notes:$("paymentNotes").value.trim()||null};const {error}=await supabaseClient.from("payments").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Ingreso registrado.","success");await load();}});
+ $("expenseForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando gasto…","success");const payload={box_id:boxId,created_by:ctx.user.id,concept:$("expenseConcept").value.trim(),amount_cents:Math.round(+$("expenseAmount").value*100),expense_date:$("expenseDate").value||new Date().toISOString().slice(0,10),category:$("expenseCategory").value.trim()||null,supplier:$("expenseSupplier").value.trim()||null,notes:$("expenseNotes").value.trim()||null};const {error}=await supabaseClient.from("expenses").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Gasto registrado.","success");await load();}});
  $("boxForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando configuración…","success");const payload={name:$("boxNameInput").value.trim(),contact_email:$("boxEmail").value.trim()||null,phone:$("boxPhone").value.trim()||null,tax_id:$("boxTax").value.trim()||null,address:$("boxAddress").value.trim()||null,city:$("boxCity").value.trim()||null,postal_code:$("boxPostal").value.trim()||null};const {error}=await supabaseClient.from("boxes").update(payload).eq("id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Configuración guardada.","success");await load();}});
  document.addEventListener("click",async ev=>{const cls=ev.target.closest("[data-del-class]")?.dataset.delClass,evt=ev.target.closest("[data-del-event]")?.dataset.delEvent,pay=ev.target.closest("[data-pay]")?.dataset.pay;if(cls&&confirm("¿Eliminar esta clase?")){const r=await supabaseClient.from("classes").delete().eq("id",cls).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else await load();}if(evt&&confirm("¿Eliminar este evento?")){const r=await supabaseClient.from("events").delete().eq("id",evt).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else await load();}});
 
