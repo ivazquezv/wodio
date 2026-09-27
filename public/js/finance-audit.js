@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   document.addEventListener("click",e=>{const b=e.target.closest("[data-finance-edit]");if(!b)return;const [type,id]=b.dataset.financeEdit.split("|");openEdit(type,id);});
   const table=$("financeTable");
   if(table){
-    const observer=new MutationObserver(()=>{if(table.querySelector("table"))render();});
+    const observer=new MutationObserver(()=>{if(table.querySelector("table")&&!table.querySelector("[data-finance-edit]"))render();});
     observer.observe(table,{childList:true,subtree:true});
   }
   await reload();
