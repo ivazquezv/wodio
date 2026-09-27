@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suscripción | WodIO</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
+<link rel="stylesheet" href="css/wodio.css">
+<script src="https://unpkg.com/phosphor-icons" defer></script>
+</head>
+<body class="auth-page">
+<main>
+<section class="login-wrapper register-wrapper" aria-labelledby="subscription-title">
+<img src="assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
+<div class="login-heading">
+<span class="section-eyebrow">WODIO</span>
+<h1 id="subscription-title">Procesando tu suscripción</h1>
+<p id="subscriptionMessage" class="text-muted">Estamos comprobando la confirmación de Stripe. No cierres esta ventana.</p>
+</div>
+<div class="login-card register-card">
+<div id="subscriptionState" class="login-message success" role="status">Comprobando acceso…</div>
+<div class="login-register" style="margin-top:20px">
+<a href="login.html">Ir a iniciar sesión</a>
+<span>·</span>
+<a href="index.html#pricing">Ver planes</a>
+</div>
+</div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config/supabase-config.js"></script>
+<script src="js/supabase.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const state = document.getElementById("subscriptionState");
+  const message = document.getElementById("subscriptionMessage");
+  const sessionId = new URLSearchParams(location.search).get("session_id");
+
+  async function checkAccess() {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (!user) {
+      state.textContent = "El pago se ha enviado a Stripe. Inicia sesión para comprobar el acceso.";
+      state.classList.remove("success");
+      return true;
+    }
+
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("box_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.box_id) {
+      state.textContent = "No hemos encontrado el box asociado a esta cuenta.";
+      state.classList.remove("success");
+      return true;
+    }
+
+    const { data: box } = await supabaseClient
+      .from("boxes")
+      .select("status,subscription_status,subscription_plan")
+      .eq("id", profile.box_id)
+      .maybeSingle();
+
+    if (box?.status === "active") {
+      state.textContent = "Suscripción confirmada. Tu box ya está activo.";
+      message.textContent = "Ya puedes entrar al panel de administración.";
+      state.classList.add("success");
+      setTimeout(() => location.href = "box-admin.html", 700);
+      return true;
+    }
+
+    state.textContent = sessionId
+      ? "Pago recibido. Estamos esperando la confirmación de Stripe…"
+      : "La suscripción todavía está pendiente de confirmación.";
+    state.classList.remove("success");
+    return false;
+  }
+
+  for (let attempt = 0; attempt < 8; attempt++) {
+    if (await checkAccess()) break;
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+});
+</script>
+</body>
+</html>
