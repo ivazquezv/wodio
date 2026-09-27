@@ -326,6 +326,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("verifactuIssuerAddress").value=vfConfig?.issuer_address||box?.address||"";
   $("verifactuSeries").value=vfConfig?.invoice_series||"F";
   $("verifactuNextNumber").value=vfConfig?.next_invoice_number||1;
+  $("verifactuVatRate").value=vfConfig?.default_vat_rate??21;
   $("verifactuSoftwareId").value=vfConfig?.software_id||"WODIO";
   $("verifactuSoftwareVersion").value=vfConfig?.software_version||"1.0.0";
   $("verifactuSoftwareNif").value=vfConfig?.software_nif||"";
@@ -400,7 +401,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   ev.preventDefault();
   const btn=ev.submitter; btn.disabled=true;
   try{
-    const payload={box_id:boxId,enabled:$("verifactuEnabled").checked,mode:$("verifactuMode").value,aeat_environment:$("verifactuEnvironment").value,issuer_name:$("verifactuIssuerName").value.trim()||null,issuer_nif:$("verifactuIssuerNif").value.trim()||null,issuer_address:$("verifactuIssuerAddress").value.trim()||null,invoice_series:$("verifactuSeries").value.trim()||"F",next_invoice_number:+$("verifactuNextNumber").value,software_id:$("verifactuSoftwareId").value.trim()||"WODIO",software_version:$("verifactuSoftwareVersion").value.trim()||"1.0.0",software_nif:$("verifactuSoftwareNif").value.trim()||null,installation_number:$("verifactuInstallation").value.trim()||null};
+    const payload={box_id:boxId,enabled:$("verifactuEnabled").checked,mode:$("verifactuMode").value,aeat_environment:$("verifactuEnvironment").value,issuer_name:$("verifactuIssuerName").value.trim()||null,issuer_nif:$("verifactuIssuerNif").value.trim()||null,issuer_address:$("verifactuIssuerAddress").value.trim()||null,invoice_series:$("verifactuSeries").value.trim()||"F",next_invoice_number:+$("verifactuNextNumber").value,default_vat_rate:+$("verifactuVatRate").value||0,software_id:$("verifactuSoftwareId").value.trim()||"WODIO",software_version:$("verifactuSoftwareVersion").value.trim()||"1.0.0",software_nif:$("verifactuSoftwareNif").value.trim()||null,installation_number:$("verifactuInstallation").value.trim()||null};
     const {error}=await supabaseClient.from("verifactu_config").upsert(payload,{onConflict:"box_id"});
     if(error)throw error;
     WodIOApp.message($("verifactuStatus"),"Configuración VERI*FACTU guardada.","success");
