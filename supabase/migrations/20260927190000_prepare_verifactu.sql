@@ -57,16 +57,21 @@ create index if not exists verifactu_records_box_generated_idx
 alter table public.verifactu_config enable row level security;
 alter table public.verifactu_records enable row level security;
 
+drop policy if exists "Box admins can view VERI*FACTU config" on public.verifactu_config;
 create policy "Box admins can view VERI*FACTU config" on public.verifactu_config for select to authenticated
 using (private.is_box_admin(box_id));
+drop policy if exists "Box admins can insert VERI*FACTU config" on public.verifactu_config;
 create policy "Box admins can insert VERI*FACTU config" on public.verifactu_config for insert to authenticated
 with check (private.is_box_admin(box_id));
+drop policy if exists "Box admins can update VERI*FACTU config" on public.verifactu_config;
 create policy "Box admins can update VERI*FACTU config" on public.verifactu_config for update to authenticated
 using (private.is_box_admin(box_id))
 with check (private.is_box_admin(box_id));
 
+drop policy if exists "Box admins can view VERI*FACTU records" on public.verifactu_records;
 create policy "Box admins can view VERI*FACTU records" on public.verifactu_records for select to authenticated
 using (private.is_box_admin(box_id));
+drop policy if exists "Box admins can insert VERI*FACTU records" on public.verifactu_records;
 create policy "Box admins can insert VERI*FACTU records" on public.verifactu_records for insert to authenticated
 with check (private.is_box_admin(box_id));
 
