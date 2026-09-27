@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const message = document.getElementById("pageMessage");
   let classes = [];
   let bookings = [];
+  let attendeesByClass = new Map();
 
   async function load() {
     list.innerHTML = '<div class="app-loading">Cargando clases…</div>';
@@ -106,6 +107,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     classes = classRows || [];
     bookings = bookingRows || [];
+    attendeesByClass = new Map(classes.map(c => [c.id, []]));
+    if (classes.length) {
+      const { data: allBookings } = await supabaseClient.from("class_bookings")
+        .select("class_id,user_id,status").in("class_id", classes.map(c => c.id)).in("status", ["booked","attended"]);
+      const ids = [...new Set((allBookings || []).map(b => b.user_id))];
+      const { data: people } = ids.length
+        ? await supabaseClient.from("profiles").select("id,first_name,last_name").in("id", ids)
+        : { data: [] };
+      const peopleMap = new Map((people || []).map(p => [p.id, p]));
+      (allBookings || []).forEach(b => {
+        const p = peopleMap.get(b.user_id);
+        if (p) attendeesByClass.get(b.class_id)?.push({ name: [p.first_name,p.last_name].filter(Boolean).join(" ") });
+      });
+    }
 
     const activeBookings = new Set(bookings.filter(b => b.status === "booked").map(b => b.class_id));
     document.getElementById("statClasses").textContent = classes.length;
