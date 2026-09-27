@@ -609,14 +609,43 @@ async function load(showSuccess=false){
     return false;
   }
 
-  const { data, error } = await supabaseClient.rpc("get_super_admin_dashboard");
-  if(error){
-    console.error("[SuperAdmin] Error RPC get_super_admin_dashboard:",error);
-    showBootError("No se ha podido cargar el panel: "+(error.message||"Error desconocido"));
-    $("rows").innerHTML='<tr><td colspan="9">Error cargando los datos.</td></tr>';
-    $("userRows").innerHTML='<tr><td colspan="6">Error cargando los datos.</td></tr>';
-    $("paymentRows").innerHTML='<tr><td colspan="7">Error cargando los datos.</td></tr>';
-    return false;
+  let data=null;
+  let error=null;
+
+  // Primero usamos supabase-js. Si el navegador falla en la llamada RPC,
+  // hacemos la misma llamada directamente contra PostgREST con el JWT actual.
+  const rpc=await supabaseClient.rpc("get_super_admin_dashboard");
+  data=rpc.data;
+  error=rpc.error;
+
+  if(error || !data){
+    console.warn("[SuperAdmin] RPC mediante supabase-js falló. Probando REST directo:",error);
+    try{
+      const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_super_admin_dashboard",{
+        method:"POST",
+        headers:{
+          "apikey":SUPABASE_PUBLISHABLE_KEY,
+          "Authorization":"Bearer "+sessionData.session.access_token,
+          "Content-Type":"application/json",
+          "Accept":"application/json"
+        },
+        body:"{}"
+      });
+      const body=await response.text();
+      if(!response.ok){
+        throw new Error("HTTP "+response.status+": "+body);
+      }
+      data=body?JSON.parse(body):null;
+      error=null;
+    }catch(restError){
+      console.error("[SuperAdmin] REST directo también falló:",restError);
+      const detail=error?.message||restError?.message||"Error desconocido";
+      showBootError("No se ha podido cargar el panel. "+detail);
+      $("rows").innerHTML='<tr><td colspan="9">Error cargando los datos.</td></tr>';
+      $("userRows").innerHTML='<tr><td colspan="6">Error cargando los datos.</td></tr>';
+      $("paymentRows").innerHTML='<tr><td colspan="7">Error cargando los datos.</td></tr>';
+      return false;
+    }
   }
 
   if(!data || typeof data !== "object"){
@@ -633,6 +662,11 @@ async function load(showSuccess=false){
   };
 
   render();
+  console.info("[SuperAdmin] Datos cargados:",{
+    boxes:dashboard.boxes.length,
+    users:dashboard.users.length,
+    payments:dashboard.payments.length
+  });
   if(showSuccess) ($("msg").textContent="Datos actualizados correctamente.",$("msg").className="app-message show success");
   else { $("msg").textContent=""; $("msg").className="app-message"; }
   return true;
