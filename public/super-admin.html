@@ -42,45 +42,97 @@ body{margin:0}.sa-top{position:sticky;top:0;z-index:5;display:flex;justify-conte
 </section></main>
 <div class="sa-modal" id="modal" hidden><div class="sa-card"><div class="sa-card-head"><div><h2 id="mtitle">Gestionar box</h2><p id="msub"></p></div><button class="app-btn" id="close"><i class="ph ph-x"></i></button></div><form class="sa-form" id="form"><input type="hidden" id="bid"><div class="sa-grid"><div class="sa-field"><label>Estado de acceso</label><select id="mstatus"><option value="active">Activo</option><option value="trial">Demo</option><option value="pending_payment">Pendiente de pago</option><option value="suspended">Suspendido</option></select></div><div class="sa-field"><label>Plan</label><select id="mplan"><option value="demo">Demo</option><option value="starter">Starter</option><option value="pro">Pro</option><option value="elite">Elite</option></select></div></div><p>Suspender bloqueará el acceso normal del box cuando se aplique la comprobación de estado. El cambio de plan actualiza WodIO, pero no cambia automáticamente el precio de una suscripción existente en Stripe.</p><div id="mmsg" class="app-message"></div><div class="sa-actions"><button type="button" class="app-btn" id="cancel">Cancelar</button><button class="app-btn primary">Guardar cambios</button></div></form></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config/supabase-config.js"></script><script src="js/supabase.js"></script><script src="js/wodio-app.js"></script><script>
-document.addEventListener("DOMContentLoaded",async()=>{const ctx=await WodIOApp.requireUser({roles:["super_admin"]});if(!ctx)return;const $=x=>document.getElementById(x);let dashboard={summary:{},boxes:[],users:[],payments:[]};
-const euro=x=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(Number(x||0)/100),date=x=>x?new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(x)):"—",esc=x=>WodIOApp.escapeHtml(x||""),labels={active:"Activo",trial:"Demo",pending_payment:"Pendiente",suspended:"Suspendido"};
-function render(){const q=$("search").value.toLowerCase().trim(),s=$("status").value,p=$("plan").value,r=dashboard.boxes.filter(x=>(!q||[x.name,x.contact_email,x.slug].some(v=>String(v||"").toLowerCase().includes(q)))&&(!s||x.status===s)&&(!p||x.subscription_plan===p));$("nBoxes").textContent=data.length;$("nActive").textContent=data.filter(x=>x.status==="active").length;$("nTrial").textContent=data.filter(x=>x.status==="trial").length;$("nSusp").textContent=data.filter(x=>x.status==="suspended").length;$("nUsers").textContent=data.reduce((n,x)=>n+Number(x.user_count||0),0);$("nRevenue").textContent=euro(data.reduce((n,x)=>n+Number(x.paid_revenue_cents||0),0));$("rows").innerHTML=r.length?r.map(x=>'<tr><td><b>'+esc(x.name)+'</b><small>'+esc(x.contact_email||x.slug)+'</small></td><td><span class="pill '+x.status+'">'+esc(labels[x.status]||x.status)+'</span></td><td><span class="pill plan">'+esc(x.subscription_plan||"—")+'</span></td><td>'+x.user_count+'</td><td>'+euro(x.current_month_revenue_cents)+'</td><td>'+euro(x.paid_revenue_cents)+'</td><td>'+euro(x.pending_revenue_cents)+'</td><td>'+date(x.last_payment_at)+'</td><td><button class="app-btn" data-id="'+x.id+'"><i class="ph ph-sliders-horizontal"></i> Gestionar</button></td></tr>').join(""):'<tr><td colspan="9">No hay resultados.</td></tr>'}
-function renderUsers(){
-const q=$("userSearch").value.toLowerCase().trim();
-const r=dashboard.users.filter(x=>!q||[x.first_name,x.last_name,x.email,x.box_name,x.role].some(v=>String(v||"").toLowerCase().includes(q)));
-const roles={box_admin:"Administrador",coach:"Coach",athlete:"Atleta"};
-$("userRows").innerHTML=r.length?r.map(x=>'<tr><td><b>'+esc((x.first_name||"")+" "+(x.last_name||""))+'</b><small>'+esc(x.email||"")+'</small></td><td>'+esc(roles[x.role]||x.role||"—")+'</td><td>'+esc(x.box_name||"Sin box")+'</td><td class="sa-nowrap">'+date(x.created_at)+'</td><td>'+Number(x.payment_count||0)+'</td><td>'+euro(x.paid_amount_cents)+'</td></tr>').join(""):'<tr><td colspan="6">No hay resultados.</td></tr>';
-}
-function renderPayments(){
-const s=$("paymentStatus").value;
-const r=dashboard.payments.filter(x=>!s||x.status===s);
-const labelsPay={paid:"Pagado",pending:"Pendiente",due:"Vencido",unpaid:"Impagado"};
-$("paymentRows").innerHTML=r.length?r.map(x=>'<tr><td class="sa-nowrap">'+date(x.payment_date)+'</td><td>'+esc(x.box_name||"—")+'</td><td>'+esc(x.user_name||"—")+'</td><td>'+esc(x.concept||x.category||"—")+'</td><td class="sa-nowrap">'+euro(x.amount_cents)+'</td><td><span class="pill '+(x.status==="paid"?"active":x.status==="pending"?"pending":"suspended")+'">'+esc(labelsPay[x.status]||x.status||"—")+'</span></td><td>'+esc(x.payment_method||x.provider||"—")+'</td></tr>').join(""):'<tr><td colspan="7">No hay pagos con ese filtro.</td></tr>';
-}
-function render(){
-const q=$("search").value.toLowerCase().trim(),s=$("status").value,p=$("plan").value;
-const r=dashboard.boxes.filter(x=>(!q||[x.name,x.contact_email,x.slug].some(v=>String(v||"").toLowerCase().includes(q)))&&(!s||x.status===s)&&(!p||x.subscription_plan===p));
-$("nBoxes").textContent=dashboard.summary.boxes;
-$("nActive").textContent=dashboard.summary.active_boxes;
-$("nTrial").textContent=dashboard.summary.trial_boxes;
-$("nSusp").textContent=dashboard.summary.suspended_boxes;
-$("nUsers").textContent=dashboard.summary.users;
-$("nRevenue").textContent=euro(dashboard.summary.revenue_cents);
-$("rows").innerHTML=r.length?r.map(x=>'<tr><td><b>'+esc(x.name)+'</b><small>'+esc(x.contact_email||x.slug)+'</small></td><td><span class="pill '+x.status+'">'+esc(labels[x.status]||x.status)+'</span></td><td><span class="pill plan">'+esc(x.subscription_plan||"—")+'</span><small class="sa-sub">'+esc(x.subscription_status||"Sin estado")+(x.trial_ends_at?" · fin demo "+date(x.trial_ends_at):"")+'</small></td><td>'+Number(x.user_count||0)+'</td><td>'+euro(x.current_month_revenue_cents)+'</td><td>'+euro(x.paid_revenue_cents)+'</td><td>'+euro(x.pending_revenue_cents)+'</td><td>'+date(x.last_payment_at)+'</td><td><button class="app-btn" data-id="'+x.id+'"><i class="ph ph-sliders-horizontal"></i> Gestionar</button></td></tr>').join(""):'<tr><td colspan="9">No hay resultados.</td></tr>';
-renderUsers();renderPayments();
-}
-async function load(){
-const r=await supabaseClient.rpc("get_super_admin_dashboard");
-if(r.error){console.error("[SuperAdmin]",r.error);WodIOApp.message($("msg"),"No se ha podido cargar el panel: "+r.error.message);return}
-dashboard=r.data||{summary:{},boxes:[],users:[],payments:[]};render();
-}
-function setTab(tab){
-document.querySelectorAll(".sa-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
-["boxes","users","billing"].forEach(k=>$(("panel-"+k)).hidden=k!==tab);
-}
-document.querySelectorAll(".sa-tab").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-$("userSearch").addEventListener("input",renderUsers);$("paymentStatus").addEventListener("change",renderPayments);
-$("rows").addEventListener("click",e=>{const b=e.target.closest("[data-id]");if(b)open(b.dataset.id)});
-["search","status","plan"].forEach(id=>$(id).addEventListener("input",render));$("refresh").onclick=load;$("close").onclick=close;$("cancel").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};$("logout").onclick=()=>WodIOApp.logout();
-$("form").onsubmit=async e=>{e.preventDefault();const r=await supabaseClient.rpc("super_admin_update_box",{p_box_id:$("bid").value,p_status:$("mstatus").value,p_plan:$("mplan").value});if(r.error){$("mmsg").textContent=r.error.message;$("mmsg").className="app-message show";return}$("mmsg").textContent="Cambios guardados.";$("mmsg").className="app-message show success";await load();setTimeout(close,400)};await load()});
+document.addEventListener("DOMContentLoaded",async()=>{
+  const ctx=await WodIOApp.requireUser({roles:["super_admin"]});
+  if(!ctx)return;
+  const $=id=>document.getElementById(id);
+  let dashboard={summary:{},boxes:[],users:[],payments:[]};
+
+  const euro=x=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(Number(x||0)/100);
+  const date=x=>x?new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(x)):"—";
+  const esc=x=>WodIOApp.escapeHtml(x||"");
+  const labels={active:"Activo",trial:"Demo",pending_payment:"Pendiente",suspended:"Suspendido"};
+  const roles={box_admin:"Administrador",coach:"Coach",athlete:"Atleta"};
+  const paymentLabels={paid:"Pagado",pending:"Pendiente",due:"Vencido",unpaid:"Impagado"};
+
+  function render(){
+    const q=$("search").value.toLowerCase().trim(),s=$("status").value,p=$("plan").value;
+    const r=dashboard.boxes.filter(x=>(!q||[x.name,x.contact_email,x.slug].some(v=>String(v||"").toLowerCase().includes(q)))&&(!s||x.status===s)&&(!p||x.subscription_plan===p));
+    $("nBoxes").textContent=dashboard.summary.boxes??0;
+    $("nActive").textContent=dashboard.summary.active_boxes??0;
+    $("nTrial").textContent=dashboard.summary.trial_boxes??0;
+    $("nSusp").textContent=dashboard.summary.suspended_boxes??0;
+    $("nUsers").textContent=dashboard.summary.users??0;
+    $("nRevenue").textContent=euro(dashboard.summary.revenue_cents);
+    $("rows").innerHTML=r.length?r.map(x=>`<tr>
+      <td><b>${esc(x.name)}</b><small>${esc(x.contact_email||x.slug)}</small></td>
+      <td><span class="pill ${esc(x.status)}">${esc(labels[x.status]||x.status)}</span></td>
+      <td><span class="pill plan">${esc(x.subscription_plan||"—")}</span><small class="sa-sub">${esc(x.subscription_status||"Sin estado")}${x.trial_ends_at?" · fin demo "+date(x.trial_ends_at):""}</small></td>
+      <td>${Number(x.user_count||0)}</td><td>${euro(x.current_month_revenue_cents)}</td><td>${euro(x.paid_revenue_cents)}</td><td>${euro(x.pending_revenue_cents)}</td><td>${date(x.last_payment_at)}</td>
+      <td><button class="app-btn" data-id="${x.id}"><i class="ph ph-sliders-horizontal"></i> Gestionar</button></td>
+    </tr>`).join(""):'<tr><td colspan="9">No hay resultados.</td></tr>';
+    renderUsers();renderPayments();
+  }
+
+  function renderUsers(){
+    const q=$("userSearch").value.toLowerCase().trim();
+    const r=dashboard.users.filter(x=>!q||[x.first_name,x.last_name,x.email,x.box_name,x.role].some(v=>String(v||"").toLowerCase().includes(q)));
+    $("userRows").innerHTML=r.length?r.map(x=>`<tr>
+      <td><b>${esc([x.first_name,x.last_name].filter(Boolean).join(" ")||"Usuario")}</b><small>${esc(x.email||"")}</small></td>
+      <td>${esc(roles[x.role]||x.role||"—")}</td><td>${esc(x.box_name||"Sin box")}</td><td class="sa-nowrap">${date(x.created_at)}</td><td>${Number(x.payment_count||0)}</td><td>${euro(x.paid_amount_cents)}</td>
+    </tr>`).join(""):'<tr><td colspan="6">No hay resultados.</td></tr>';
+  }
+
+  function renderPayments(){
+    const s=$("paymentStatus").value;
+    const r=dashboard.payments.filter(x=>!s||x.status===s);
+    $("paymentRows").innerHTML=r.length?r.map(x=>`<tr>
+      <td class="sa-nowrap">${date(x.payment_date)}</td><td>${esc(x.box_name||"—")}</td><td>${esc(x.user_name||"—")}</td><td>${esc(x.concept||x.category||"—")}</td><td class="sa-nowrap">${euro(x.amount_cents)}</td>
+      <td><span class="pill ${x.status==="paid"?"active":x.status==="pending"?"pending":"suspended"}">${esc(paymentLabels[x.status]||x.status||"—")}</span></td><td>${esc(x.payment_method||x.provider||"—")}</td>
+    </tr>`).join(""):'<tr><td colspan="7">No hay pagos con ese filtro.</td></tr>';
+  }
+
+  async function load(){
+    const r=await supabaseClient.rpc("get_super_admin_dashboard");
+    if(r.error){
+      console.error("[SuperAdmin]",r.error);
+      WodIOApp.message($("msg"),"No se ha podido cargar el panel: "+r.error.message);
+      return;
+    }
+    dashboard=r.data||{summary:{},boxes:[],users:[],payments:[]};
+    WodIOApp.clearMessage($("msg"));
+    render();
+  }
+
+  function open(id){
+    const x=dashboard.boxes.find(v=>v.id===id);
+    if(!x)return;
+    $("bid").value=x.id;$("mtitle").textContent=x.name;$("msub").textContent=x.contact_email||x.slug;
+    $("mstatus").value=x.status;$("mplan").value=x.subscription_plan||"demo";
+    $("mmsg").className="app-message";$("mmsg").textContent="";$("modal").hidden=false;
+  }
+  function close(){$("modal").hidden=true;}
+  function setTab(tab){
+    document.querySelectorAll(".sa-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+    ["boxes","users","billing"].forEach(k=>{ $("panel-"+k).hidden=k!==tab; });
+  }
+
+  document.querySelectorAll(".sa-tab").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+  $("rows").addEventListener("click",e=>{const b=e.target.closest("[data-id]");if(b)open(b.dataset.id)});
+  ["search","status","plan"].forEach(id=>$(id).addEventListener("input",render));
+  $("userSearch").addEventListener("input",renderUsers);
+  $("paymentStatus").addEventListener("change",renderPayments);
+  $("refresh").onclick=load;$("close").onclick=close;$("cancel").onclick=close;$("logout").onclick=()=>WodIOApp.logout();
+  $("modal").onclick=e=>{if(e.target===$("modal"))close()};
+
+  $("form").onsubmit=async e=>{
+    e.preventDefault();
+    const r=await supabaseClient.rpc("super_admin_update_box",{p_box_id:$("bid").value,p_status:$("mstatus").value,p_plan:$("mplan").value});
+    if(r.error){WodIOApp.message($("mmsg"),r.error.message);return;}
+    WodIOApp.message($("mmsg"),"Cambios guardados.","success");
+    await load();setTimeout(close,400);
+  };
+
+  await load();
+});
 </script></body></html>
