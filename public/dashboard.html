@@ -153,6 +153,8 @@
             font-weight: 800;
         }
 
+        .dashboard-page .profile-avatar img{width:100%;height:100%;display:none;object-fit:cover;border-radius:50%}
+
         .dashboard-page .profile-info {
             min-width: 0;
         }
@@ -819,7 +821,8 @@
                 <div class="sidebar-profile">
 
                     <div class="profile-avatar" id="profileAvatar">
-                        --
+                        <img id="profileAvatarImage" alt="Foto de perfil">
+                        <span id="profileAvatarInitials">--</span>
                     </div>
 
                     <div class="profile-info">
@@ -939,6 +942,19 @@
                 <!-- =================================================
              STATS
         ================================================== -->
+
+                <section class="app-card" id="profileMediaCard" style="margin-bottom:18px;padding:18px">
+                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                        <div id="dashboardBoxIdentity" style="display:flex;align-items:center;gap:10px;min-width:220px">
+                            <img id="dashboardBoxLogo" alt="Logotipo del box" style="width:52px;height:52px;object-fit:contain;border-radius:12px;background:var(--bg-main);border:1px solid var(--border-soft)" hidden>
+                            <div><div class="stat-label">Box activo</div><strong id="dashboardBoxName">—</strong></div>
+                        </div>
+                        <form id="profilePhotoForm" style="display:flex;align-items:end;gap:10px;flex-wrap:wrap;flex:1;min-width:260px">
+                            <div class="app-field" style="margin:0;min-width:220px;flex:1"><label for="profilePhotoInput">Foto de perfil</label><input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp"><span style="color:var(--text-muted);font-size:.72rem">JPG, PNG o WebP · máximo 5 MB.</span></div>
+                            <button class="app-btn primary" type="submit" id="profilePhotoSave">Guardar foto</button>
+                        </form>
+                    </div>
+                </section>
 
                 <section class="stats-grid">
 
@@ -1430,23 +1446,45 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (sessionError || !user) { window.location.href="login.html"; return; }
 
         const [{data:profile}, {data:classes}, {data:bookings}, {data:payments}, {data:progress}] = await Promise.all([
-            supabaseClient.from("profiles").select("first_name,last_name,role").eq("id",user.id).maybeSingle(),
+            supabaseClient.from("profiles").select("first_name,last_name,role,avatar_url,box_id").eq("id",user.id).maybeSingle(),
             supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8),
             supabaseClient.from("class_bookings").select("id,class_id,status,created_at").eq("user_id",user.id),
             supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at").eq("user_id",user.id).order("created_at",{ascending:false}).limit(10),
             supabaseClient.from("progress_entries").select("id,exercise,value,unit,reps,recorded_at,notes").eq("user_id",user.id).order("recorded_at",{ascending:false}).limit(100)
         ]);
 
+        const {data:box}=profile?.box_id?await supabaseClient.from("boxes").select("id,name,logo_url").eq("id",profile.box_id).maybeSingle():{data:null};
         const firstName = profile?.first_name || user.email?.split("@")[0] || "Usuario";
         const fullName = [profile?.first_name,profile?.last_name].filter(Boolean).join(" ") || firstName;
         document.getElementById("profileName").textContent=fullName;
         document.getElementById("welcomeName").textContent=firstName;
-        document.getElementById("profileAvatar").textContent=initials(profile?.first_name,profile?.last_name);
+        document.getElementById("profileAvatarInitials").textContent=initials(profile?.first_name,profile?.last_name);
+        const avatarImg=document.getElementById("profileAvatarImage");
+        if(profile?.avatar_url){avatarImg.src=profile.avatar_url;avatarImg.style.display="block";document.getElementById("profileAvatarInitials").style.display="none";}
+        else{avatarImg.style.display="none";document.getElementById("profileAvatarInitials").style.display="inline";}
+        document.getElementById("dashboardBoxName").textContent=box?.name||"Box activo";
+        if(box?.logo_url){document.getElementById("dashboardBoxLogo").src=box.logo_url;document.getElementById("dashboardBoxLogo").hidden=false;}
         document.getElementById("profileRole").textContent=({
             athlete:"Atleta",coach:"Coach",box_admin:"Administrador",super_admin:"Super administrador"
         })[profile?.role] || "Usuario";
 
         if (adminLink && !["box_admin","super_admin"].includes(profile?.role)) adminLink.style.display="none";
+
+        document.getElementById("profilePhotoForm")?.addEventListener("submit",async ev=>{
+            ev.preventDefault();
+            const file=document.getElementById("profilePhotoInput").files?.[0];
+            if(!file){return;}
+            if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){WodIOApp.message(document.getElementById("pageMessage"),"La foto debe ser JPG, PNG o WebP y pesar como máximo 5 MB.");return;}
+            const btn=document.getElementById("profilePhotoSave");btn.disabled=true;btn.textContent="Subiendo…";
+            const path="profiles/"+user.id+"/avatar";
+            const {error:uploadError}=await supabaseClient.storage.from("wodio-media").upload(path,file,{cacheControl:"3600",upsert:true,contentType:file.type});
+            if(uploadError){btn.disabled=false;btn.textContent="Guardar foto";WodIOApp.message(document.getElementById("pageMessage"),uploadError.message);return;}
+            const pub=supabaseClient.storage.from("wodio-media").getPublicUrl(path);const avatarUrl=pub.data.publicUrl+"?v="+Date.now();
+            const {error:updateError}=await supabaseClient.from("profiles").update({avatar_url:avatarUrl}).eq("id",user.id);
+            btn.disabled=false;btn.textContent="Guardar foto";
+            if(updateError){WodIOApp.message(document.getElementById("pageMessage"),updateError.message);return;}
+            avatarImg.src=avatarUrl;avatarImg.style.display="block";document.getElementById("profileAvatarInitials").style.display="none";document.getElementById("profilePhotoInput").value="";WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
+        });
 
         const futureClasses=classes||[];
         const booked=new Set((bookings||[]).filter(b=>b.status==="booked").map(b=>b.class_id));
