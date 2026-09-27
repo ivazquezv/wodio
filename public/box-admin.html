@@ -336,7 +336,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   const allPayments=p.data||[], allExpenses=x.data||[];
   async function renderAdminMonthlySchedule(){const month=$("adminScheduleMonth").value;if(!month)return;const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);const {data,error}=await supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",boxId).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at");if(error)throw error;$("adminMonthlySchedule").innerHTML=(data||[]).length?(data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(name(v.coach)||"Sin coach")+'</span><span>'+v.capacity+' plazas</span></div></div></article>').join(""):'<div class="app-empty">No hay clases programadas en este mes.</div>';}
   function renderPaymentMethodsAdmin(){
-  const defaults=[["stripe","Stripe","ph-credit-card"],["paypal","PayPal","ph-paypal-logo"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
+  const defaults=[["stripe","Stripe","ph-stripe-logo"],["paypal","PayPal","ph-paypal-logo-fill"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
   const byKey=new Map(paymentMethods.map(v=>[v.method_key,v]));
   $("paymentMethodsAdmin").innerHTML=defaults.map(d=>{
     const v=byKey.get(d[0])||{method_key:d[0],name:d[1],icon:d[2],enabled:false,sort_order:10,checkout_url:"",instructions:""};
@@ -358,7 +358,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("savePaymentMethods").addEventListener("click",async()=>{
   const btn=$("savePaymentMethods");btn.disabled=true;
   try{
-    const defaults=[["stripe","Stripe","ph-credit-card"],["paypal","PayPal","ph-paypal-logo"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
+    const defaults=[["stripe","Stripe","ph-stripe-logo"],["paypal","PayPal","ph-paypal-logo-fill"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
     const payload=defaults.map(d=>({box_id:boxId,method_key:d[0],name:document.querySelector('[data-pm-name="'+d[0]+'"]').value.trim()||d[1],icon:d[2],enabled:document.querySelector('[data-pm-enabled="'+d[0]+'"]').checked,sort_order:+document.querySelector('[data-pm-order="'+d[0]+'"]').value||0,checkout_url:document.querySelector('[data-pm-url="'+d[0]+'"]').value.trim()||null,instructions:document.querySelector('[data-pm-instructions="'+d[0]+'"]').value.trim()||null}));
     const {error}=await supabaseClient.from("box_payment_methods").upsert(payload,{onConflict:"box_id,method_key"});
     if(error)throw error;
