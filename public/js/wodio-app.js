@@ -46,7 +46,9 @@ window.WodIOApp = (() => {
         window.location.href = "access-blocked.html";
         return null;
       }
-    }\n\n    return { user, profile };
+    }
+
+    return { user, profile };
   }
 
   function roleHome(role) {
