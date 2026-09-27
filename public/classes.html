@@ -49,6 +49,7 @@
 </div>
 <p class="app-help" style="margin-top:12px">Si intentas reservar fuera de este plazo o cancelar demasiado tarde, la aplicación no permitirá la operación.</p>
 </section>
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Horario y programación del mes</h2><p>Consulta cuándo abre el box y las clases programadas.</p></div><input id="scheduleMonth" type="month" class="app-btn"></div><div id="boxOpeningHours" class="app-help" style="margin-bottom:14px"></div><div id="monthlyClassSchedule" class="app-list"></div></section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head">
 <div><h2>Próximas sesiones</h2><p>Las clases se muestran desde hoy en adelante.</p></div>
@@ -84,6 +85,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     const boxes=(memberBoxes||[]).map(m=>m.box).filter(Boolean);
     selector.innerHTML=boxes.length?boxes.map(b=>'<option value="'+b.id+'" '+(b.id===ctx.profile.box_id?"selected":"")+'>'+WodIOApp.escapeHtml(b.name)+'</option>').join(""):'<option value="'+ctx.profile.box_id+'">'+WodIOApp.escapeHtml(boxPolicy?.name||"Box actual")+'</option>';
     if(boxPolicy){if(boxPolicy.logo_url){document.getElementById("boxLogo").src=boxPolicy.logo_url;document.getElementById("boxLogo").hidden=false;}document.getElementById("policyAdvance").textContent=boxPolicy.booking_advance_days;document.getElementById("policyCutoff").textContent=boxPolicy.cancellation_cutoff_hours;document.getElementById("policyWeekly").textContent=boxPolicy.weekly_cancellation_limit;}
+    const monthInput=document.getElementById("scheduleMonth");if(!monthInput.value)monthInput.value=new Date().toISOString().slice(0,7);
+    async function renderMonthlySchedule(){
+      const month=monthInput.value;if(!month)return;
+      const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);
+      const [{data:hours},{data:monthClasses,error}]=await Promise.all([
+        supabaseClient.from("box_hours").select("*").eq("box_id",ctx.profile.box_id).order("weekday"),
+        supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",ctx.profile.box_id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
+      ]);
+      if(error){WodIOApp.message(message,error.message);return;}
+      const dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+      document.getElementById("boxOpeningHours").innerHTML="<strong>Horario del box:</strong> "+(hours||[]).sort((a,b)=>a.weekday-b.weekday).map(h=>h.closed?dayNames[h.weekday]+": cerrado":dayNames[h.weekday]+": "+String(h.open_time).slice(0,5)+"–"+String(h.close_time).slice(0,5)).join(" · ");
+      document.getElementById("monthlyClassSchedule").innerHTML=(monthClasses||[]).length?(monthClasses||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml([v.coach?.first_name,v.coach?.last_name].filter(Boolean).join(" ")||"Sin coach")+'</span><span>'+v.capacity+' plazas</span></div></div></article>').join(""):'<div class="app-empty">No hay clases programadas este mes.</div>';
+    }
+    monthInput.addEventListener("change",renderMonthlySchedule);
+    await renderMonthlySchedule();
     const from = new Date();
     from.setHours(0,0,0,0);
 
