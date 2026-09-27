@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const count = countMap.get(c.id) || 0;
       const open = Math.max(0, c.capacity - count);
       const booking = bookings.find(b => b.class_id === c.id && b.status === "booked");
+      const canCancel = booking && (new Date(c.starts_at).getTime() - Date.now()) > 60 * 60 * 1000;
       const coach = [c.coach?.first_name, c.coach?.last_name].filter(Boolean).join(" ") || "Sin coach asignado";
       return '<article class="app-item">' +
         '<div class="app-item-main">' +
@@ -124,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         '<div class="app-item-actions">' +
         '<span class="app-badge ' + (booking ? "success" : open ? "primary" : "danger") + '">' + (booking ? "Reservada" : open ? "Disponible" : "Completa") + '</span>' +
         (booking
-          ? '<button class="app-btn" data-cancel="' + c.id + '"><i class="ph ph-x"></i> Cancelar</button>'
+          ? '<button class="app-btn" data-cancel="' + c.id + '" ' + (!canCancel ? "disabled title=\"La cancelación se cierra 1 hora antes de la clase.\"" : "") + '><i class="ph ph-x"></i> ' + (canCancel ? "Cancelar" : "Cancelación cerrada") + '</button>'
           : '<button class="app-btn primary" data-book="' + c.id + '" ' + (open === 0 ? "disabled" : "") + '><i class="ph ph-check"></i> Reservar</button>') +
         '</div></article>';
     }).join("");
@@ -145,10 +146,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const { error } = await supabaseClient.from("class_bookings")
         .update({ status }).eq("class_id", classId).eq("user_id", ctx.user.id);
       if (error) WodIOApp.message(message, error.message);
+      else WodIOApp.message(message, "Clase cancelada correctamente.", "success");
     } else {
       const { error } = await supabaseClient.from("class_bookings")
         .upsert({ class_id: classId, user_id: ctx.user.id, status:"booked" }, { onConflict:"class_id,user_id" });
       if (error) WodIOApp.message(message, error.message);
+      else WodIOApp.message(message, "Clase reservada correctamente.", "success");
     }
     await load();
   });
