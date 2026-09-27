@@ -22,6 +22,7 @@
 .admin-box strong{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .admin-checkbox{display:flex;align-items:center;gap:8px;cursor:pointer}.admin-checkbox input{width:16px;height:16px;margin:0;flex:0 0 16px;accent-color:var(--primary)}.admin-checkbox span{line-height:1.2}
 .admin-nav{display:grid;gap:4px}
+.admin-nav-group{margin:14px 8px 5px;color:var(--text-muted);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .admin-nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--text-muted);font-weight:650;font-size:.86rem}
 .admin-nav a:hover,.admin-nav a.active{color:var(--primary-soft);background:rgba(255,107,0,.09)}
 .admin-nav i{width:21px;text-align:center}
@@ -67,13 +68,16 @@
 <div class="admin-box"><img class="admin-box-logo" id="adminBoxLogo" alt="Logotipo del box" hidden><small>Box activo</small><strong id="boxName">Cargando…</strong></div>
 <nav class="admin-nav" aria-label="Administración">
 <a href="#inicio" class="active"><i class="ph ph-squares-four"></i> Inicio</a>
-<a href="#usuarios"><i class="ph ph-users-three"></i> Usuarios</a>
+<div class="admin-nav-group">Operativa</div>
 <a href="#clases"><i class="ph ph-barbell"></i> Clases</a>
+<a href="#usuarios"><i class="ph ph-users-three"></i> Usuarios</a>
 <a href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
 <a href="#eventos"><i class="ph ph-calendar"></i> Eventos</a>
+<div class="admin-nav-group">Gestión</div>
 <a href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
-<a href="#verifactu"><i class="ph ph-file-text"></i> VERI*FACTU</a>
+<div class="admin-nav-group">Configuración</div>
 <a href="#configuracion"><i class="ph ph-gear"></i> Configuración</a>
+<a href="#verifactu"><i class="ph ph-file-text"></i> VERI*FACTU</a>
 </nav>
 <div class="admin-side-bottom">
 <a href="dashboard.html"><i class="ph ph-user"></i> Área de atleta</a>
@@ -96,21 +100,6 @@
 <div class="admin-stat"><strong id="statBalance">—</strong><span>Balance del mes</span></div>
 </section>
 
-<section class="admin-section" id="usuarios">
-<div class="admin-section-title"><div><h2>Usuarios</h2><p>Gestiona las personas vinculadas al box, sus datos, rol y acceso al box.</p></div></div>
-<section class="app-card">
-<div class="app-card-head"><div><h3>Editar usuario</h3><p>Modifica los datos básicos del usuario.</p></div></div>
-<form id="userForm" class="app-form"><input type="hidden" id="userEditId"><div class="app-form-grid">
-<div class="app-field"><label for="userEditFirst">Nombre</label><input id="userEditFirst" required></div>
-<div class="app-field"><label for="userEditLast">Apellidos</label><input id="userEditLast"></div>
-<div class="app-field"><label for="userEditEmail">Correo electrónico</label><input id="userEditEmail" type="email" readonly aria-readonly="true"></div>
-<div class="app-field"><label for="userEditPhone">Móvil</label><input id="userEditPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+34 600 000 000"></div>
-<div class="app-field"><label for="userEditRole">Rol</label><select id="userEditRole"><option value="athlete">Cliente / atleta</option><option value="coach">Coach</option></select></div><div class="app-field"><label class="admin-checkbox"><input type="checkbox" id="userEditBoxMembership"><span>Acceso a este box</span></label><div class="admin-mini">Permite al alumno seleccionar este box desde su área de clases.</div></div>
-</div><div class="admin-actions"><button class="app-btn primary" type="submit">Guardar usuario</button><button class="app-btn" type="button" id="userEditCancel">Cancelar</button></div></form>
-<div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div>
-</section>
-</section>
-
 <section class="admin-section" id="clases">
 <div class="admin-section-title"><div><h2>Clases</h2><p>Programa nuevas sesiones y controla las próximas reservas.</p></div></div>
 <div class="app-grid app-grid-2">
@@ -128,6 +117,21 @@
 </section>
 <section class="app-card"><div class="app-card-head"><div><h3>Próximas clases</h3><p>Sesiones programadas.</p></div></div><div id="classesList" class="app-list"></div></section>
 </div>
+</section>
+
+<section class="admin-section" id="usuarios">
+<div class="admin-section-title"><div><h2>Usuarios</h2><p>Gestiona las personas vinculadas al box, sus datos, rol y acceso al box.</p></div></div>
+<section class="app-card">
+<div class="app-card-head"><div><h3>Editar usuario</h3><p>Modifica los datos básicos del usuario.</p></div></div>
+<form id="userForm" class="app-form"><input type="hidden" id="userEditId"><div class="app-form-grid">
+<div class="app-field"><label for="userEditFirst">Nombre</label><input id="userEditFirst" required></div>
+<div class="app-field"><label for="userEditLast">Apellidos</label><input id="userEditLast"></div>
+<div class="app-field"><label for="userEditEmail">Correo electrónico</label><input id="userEditEmail" type="email" readonly aria-readonly="true"></div>
+<div class="app-field"><label for="userEditPhone">Móvil</label><input id="userEditPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+34 600 000 000"></div>
+<div class="app-field"><label for="userEditRole">Rol</label><select id="userEditRole"><option value="athlete">Cliente / atleta</option><option value="coach">Coach</option></select></div><div class="app-field"><label class="admin-checkbox"><input type="checkbox" id="userEditBoxMembership"><span>Acceso a este box</span></label><div class="admin-mini">Permite al alumno seleccionar este box desde su área de clases.</div></div>
+</div><div class="admin-actions"><button class="app-btn primary" type="submit">Guardar usuario</button><button class="app-btn" type="button" id="userEditCancel">Cancelar</button></div></form>
+<div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div>
+</section>
 </section>
 
 <section class="admin-section" id="coaches">
@@ -201,32 +205,6 @@
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="exportFinanceExcel"><i class="ph ph-file-xls"></i> Excel</button><button class="app-btn" type="button" id="exportFinancePdf"><i class="ph ph-file-pdf"></i> PDF</button></div></div><div id="financeTable" class="app-table-wrap"></div></section>
 </section>
 
-<section class="admin-section" id="verifactu">
-<div class="admin-section-title"><div><h2>VERI*FACTU</h2><p>Configuración fiscal y base de datos preparada para registros de facturación encadenados.</p></div></div>
-<section class="app-card">
-<div class="app-card-head"><div><h3>Configuración de facturación</h3><p>Datos para la futura generación y remisión de registros de facturación.</p></div></div>
-<form id="verifactuForm" class="app-form"><div class="app-form-grid">
-<div class="app-field"><label>Modalidad</label><select id="verifactuMode"><option value="verifactu">VERI*FACTU — remisión a la AEAT</option><option value="no_verifactu">No VERI*FACTU — conservación de registros</option></select></div>
-<div class="app-field"><label>Entorno AEAT</label><select id="verifactuEnvironment"><option value="test">Pruebas</option><option value="production">Producción</option></select></div>
-<div class="app-field"><label>Razón social / nombre</label><input id="verifactuIssuerName" placeholder="Titular que emite las facturas"></div>
-<div class="app-field"><label>NIF</label><input id="verifactuIssuerNif" placeholder="NIF/CIF"></div>
-<div class="app-field full"><label>Domicilio fiscal</label><input id="verifactuIssuerAddress" placeholder="Dirección fiscal"></div>
-<div class="app-field"><label>Serie de facturación</label><input id="verifactuSeries" value="F" maxlength="20"></div>
-<div class="app-field"><label>Próximo número</label><input id="verifactuNextNumber" type="number" min="1" value="1"></div>
-<div class="app-field"><label>IVA por defecto (%)</label><input id="verifactuVatRate" type="number" min="0" max="100" step=".01" value="21"></div>
-<div class="app-field"><label>Identificador del sistema</label><input id="verifactuSoftwareId" value="WODIO"></div>
-<div class="app-field"><label>Versión del sistema</label><input id="verifactuSoftwareVersion" value="1.0.0"></div>
-<div class="app-field"><label>NIF del productor</label><input id="verifactuSoftwareNif" placeholder="NIF del productor"></div>
-<div class="app-field"><label>Nº de instalación</label><input id="verifactuInstallation"></div>
-</div>
-<label class="admin-checkbox" style="margin:14px 0"><input type="checkbox" id="verifactuEnabled"><span>Activar preparación VERI*FACTU para este box</span></label>
-<div class="admin-mini" style="margin-bottom:14px">Se guardarán registros de alta/anulación, huella SHA-256 y encadenamiento. La remisión real a la AEAT y la declaración responsable requieren una fase específica de integración y certificación.</div>
-<div class="admin-actions"><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar configuración fiscal</button></div>
-</form>
-<div id="verifactuStatus" class="app-message" style="margin-top:14px"></div>
-</section>
-</section>
-
 <section class="admin-section" id="configuracion">
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h3>Política de reservas</h3><p>Define las reglas que se aplican a todos los atletas del box.</p></div></div>
@@ -253,6 +231,32 @@
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Métodos de pago del box</h3><p>Define dónde y cómo puede pagar cada atleta. Puedes usar enlaces de Stripe, PayPal u otras plataformas, o instrucciones para pagos manuales.</p></div></div><div id="paymentMethodsAdmin" class="app-list"><div class="app-loading">Cargando métodos de pago…</div></div><div class="admin-actions" style="margin-top:12px"><button class="app-btn primary" type="button" id="savePaymentMethods"><i class="ph ph-floppy-disk"></i> Guardar métodos de pago</button></div><div id="paymentMethodsMessage" class="app-message" style="margin-top:10px"></div></section><section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Programación mensual</h3><p>Clases disponibles y coach asignado.</p></div><input id="adminScheduleMonth" type="month" class="app-btn"></div><div id="adminMonthlySchedule" class="app-list"></div></section>
 </section>
 </section>
+<section class="admin-section" id="verifactu">
+<div class="admin-section-title"><div><h2>VERI*FACTU</h2><p>Configuración fiscal y base de datos preparada para registros de facturación encadenados.</p></div></div>
+<section class="app-card">
+<div class="app-card-head"><div><h3>Configuración de facturación</h3><p>Datos para la futura generación y remisión de registros de facturación.</p></div></div>
+<form id="verifactuForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Modalidad</label><select id="verifactuMode"><option value="verifactu">VERI*FACTU — remisión a la AEAT</option><option value="no_verifactu">No VERI*FACTU — conservación de registros</option></select></div>
+<div class="app-field"><label>Entorno AEAT</label><select id="verifactuEnvironment"><option value="test">Pruebas</option><option value="production">Producción</option></select></div>
+<div class="app-field"><label>Razón social / nombre</label><input id="verifactuIssuerName" placeholder="Titular que emite las facturas"></div>
+<div class="app-field"><label>NIF</label><input id="verifactuIssuerNif" placeholder="NIF/CIF"></div>
+<div class="app-field full"><label>Domicilio fiscal</label><input id="verifactuIssuerAddress" placeholder="Dirección fiscal"></div>
+<div class="app-field"><label>Serie de facturación</label><input id="verifactuSeries" value="F" maxlength="20"></div>
+<div class="app-field"><label>Próximo número</label><input id="verifactuNextNumber" type="number" min="1" value="1"></div>
+<div class="app-field"><label>IVA por defecto (%)</label><input id="verifactuVatRate" type="number" min="0" max="100" step=".01" value="21"></div>
+<div class="app-field"><label>Identificador del sistema</label><input id="verifactuSoftwareId" value="WODIO"></div>
+<div class="app-field"><label>Versión del sistema</label><input id="verifactuSoftwareVersion" value="1.0.0"></div>
+<div class="app-field"><label>NIF del productor</label><input id="verifactuSoftwareNif" placeholder="NIF del productor"></div>
+<div class="app-field"><label>Nº de instalación</label><input id="verifactuInstallation"></div>
+</div>
+<label class="admin-checkbox" style="margin:14px 0"><input type="checkbox" id="verifactuEnabled"><span>Activar preparación VERI*FACTU para este box</span></label>
+<div class="admin-mini" style="margin-bottom:14px">Se guardarán registros de alta/anulación, huella SHA-256 y encadenamiento. La remisión real a la AEAT y la declaración responsable requieren una fase específica de integración y certificación.</div>
+<div class="admin-actions"><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar configuración fiscal</button></div>
+</form>
+<div id="verifactuStatus" class="app-message" style="margin-top:14px"></div>
+</section>
+</section>
+
 <div class="admin-modal" id="editModal" hidden><section class="admin-modal-card"><div class="admin-modal-head"><h3 id="editModalTitle">Editar</h3><button class="app-btn" type="button" id="editModalClose">Cerrar</button></div><div id="editModalMessage" class="app-message" aria-live="polite"></div>
 <form id="editClassForm" class="app-form" hidden><input type="hidden" id="editClassId"><div class="app-form-grid">
 <div class="app-field"><label>Título</label><input id="editClassTitle" required></div><div class="app-field"><label>Inicio</label><input id="editClassStart" type="datetime-local" required></div>
