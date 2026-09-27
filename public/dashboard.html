@@ -1041,6 +1041,11 @@
              CONTENT GRID
         ================================================== -->
 
+                <section class="dashboard-section" id="coachAttendanceSection" hidden style="margin-bottom:24px">
+                    <div class="section-header"><div><h3>Control de asistencia</h3><span class="stat-description">Comprueba quién se ha apuntado y marca quién ha asistido.</span></div></div>
+                    <div id="coachAttendanceList"><div class="app-loading">Cargando tus clases…</div></div>
+                </section>
+
                 <section class="performance-grid" aria-label="Estadísticas de progreso">
                     <div class="performance-card"><span>Carga máxima registrada</span><strong id="perfMax">—</strong></div>
                     <div class="performance-card"><span>Peso corporal</span><strong id="perfWeight">—</strong></div>
@@ -1549,6 +1554,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("timerPause").addEventListener("click",()=>{clearInterval(timerState.interval);timerState.running=false;timerState.phase="Pausado";renderTimer();});
         document.getElementById("timerReset").addEventListener("click",()=>configureTimer());
         renderTimerConfig();configureTimer();
+
+        if (profile?.role === "coach") {
+            const coachSection=document.getElementById("coachAttendanceSection");
+            coachSection.hidden=false;
+            const attendanceList=document.getElementById("coachAttendanceList");
+            async function loadCoachAttendance(){
+                const start=new Date(); start.setHours(0,0,0,0);
+                const end=new Date(start); end.setDate(end.getDate()+7);
+                const {data:coachClasses,error:coachError}=await supabaseClient.from("classes")
+                    .select("id,title,starts_at,duration_minutes,capacity")
+                    .eq("coach_id",user.id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString())
+                    .order("starts_at");
+                if(coachError){attendanceList.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(coachError.message)+'</div>';return;}
+                if(!coachClasses?.length){attendanceList.innerHTML='<div class="app-empty">No tienes clases asignadas en los próximos 7 días.</div>';return;}
+                const rows=await Promise.all(coachClasses.map(async c=>{
+                    const {data:booked,error}=await supabaseClient.from("class_bookings")
+                        .select("id,user_id,status,profiles:user_id(first_name,last_name)")
+                        .eq("class_id",c.id).in("status",["booked","attended","absent"]).order("created_at");
+                    return {c,booked:booked||[],error};
+                }));
+                if(rows.some(r=>r.error)){attendanceList.innerHTML='<div class="app-empty">No se pudo consultar la asistencia.</div>';return;}
+                attendanceList.innerHTML=rows.map(({c,booked})=>{
+                    const attended=booked.filter(b=>b.status==="attended").length;
+                    const names=booked.map(b=>{
+                        const n=[b.profiles?.first_name,b.profiles?.last_name].filter(Boolean).join(" ")||"Usuario";
+                        return '<div class="app-item" style="margin-top:10px"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(n)+'</div><div class="app-item-meta"><span>'+ (b.status==="attended"?"Presente":b.status==="absent"?"Ausente":"Pendiente") +'</span></div></div><div class="app-item-actions"><button class="app-btn '+(b.status==="attended"?"primary":"")+'" data-attendance="'+b.id+'" data-status="attended">Presente</button><button class="app-btn '+(b.status==="absent"?"danger":"")+'" data-attendance="'+b.id+'" data-status="absent">Ausente</button></div></div>';
+                    }).join("");
+                    return '<div class="dashboard-section" style="padding:14px;border:1px solid var(--border-soft);border-radius:14px;margin-top:10px"><div class="section-header"><div><h4 style="margin:0">'+WodIOApp.escapeHtml(c.title)+'</h4><span class="stat-description">'+WodIOApp.formatDateTime(c.starts_at)+' · '+booked.length+' apuntados · '+attended+' presentes</span></div></div>'+ (booked.length?names:'<div class="app-empty">No hay usuarios apuntados.</div>') +'</div>';
+                }).join("");
+            }
+            attendanceList.addEventListener("click",async e=>{
+                const btn=e.target.closest("[data-attendance]");if(!btn)return;
+                btn.disabled=true;
+                const id=btn.dataset.attendance,status=btn.dataset.status;
+                const {error}=await supabaseClient.from("class_bookings").update({status}).eq("id",id);
+                if(error) WodIOApp.message(document.getElementById("pageMessage"),error.message);
+                await loadCoachAttendance();
+            });
+            await loadCoachAttendance();
+        }
 
         const activity=[];
         (progress||[]).slice(0,2).forEach(p=>activity.push({icon:"↗",title:"Nuevo registro de progreso",text:p.exercise+" · "+p.value+" "+p.unit+" · "+p.recorded_at}));
