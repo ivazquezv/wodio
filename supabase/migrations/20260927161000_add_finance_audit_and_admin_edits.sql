@@ -87,3 +87,4 @@ create or replace function public.update_expense_with_audit(p_id uuid,p_reason t
 revoke execute on function public.update_payment_with_audit(uuid,text,jsonb) from public,anon;
 revoke execute on function public.update_expense_with_audit(uuid,text,jsonb) from public,anon;
 grant execute on function public.update_payment_with_audit(uuid,text,jsonb) to authenticated; grant execute on function public.update_expense_with_audit(uuid,text,jsonb) to authenticated;
+grant select on table public.finance_audit_log to authenticated;
