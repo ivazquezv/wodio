@@ -430,9 +430,15 @@ grid-template-columns:1fr}
 </script>
 <script>
 document.addEventListener("DOMContentLoaded",async()=>{
-const ctx=await WodIOApp.requireUser({
-roles:["super_admin"]}
-);
+let ctx;
+try{
+  ctx=await WodIOApp.requireUser({roles:["super_admin"]});
+}catch(err){
+  console.error("[SuperAdmin] Error autenticando:",err);
+  document.getElementById("msg").textContent="Error de autenticación: "+(err?.message||err);
+  document.getElementById("msg").className="app-message show";
+  return;
+}
 if(!ctx)return;
 const $=id=>document.getElementById(id);
 let dashboard={
@@ -584,21 +590,42 @@ esc(x.payment_method||x.provider||"—")}
 </tr>';
 }
 async function load(showSuccess=false){
-if(showSuccess) WodIOApp.message($("msg"),"Actualizando datos…","success");
-const r=await supabaseClient.rpc("get_super_admin_dashboard");
-if(r.error){
-console.error("[SuperAdmin]",r.error);
-WodIOApp.message($("msg"),"No se ha podido cargar el panel: "+r.error.message);
-return;
-}
-dashboard=r.data||{
-summary:{
-}
-,boxes:[],users:[],payments:[]}
-;
-render();
-if(showSuccess) WodIOApp.message($("msg"),"Datos actualizados correctamente.","success");
-else WodIOApp.clearMessage($("msg"));
+  if(showSuccess) WodIOApp.message($("msg"),"Actualizando datos…","success");
+
+  const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+  if(sessionError || !sessionData?.session){
+    console.error("[SuperAdmin] Sesión no disponible:",sessionError);
+    WodIOApp.message($("msg"),"Sesión no disponible. Vuelve a iniciar sesión.");
+    return false;
+  }
+
+  const { data, error } = await supabaseClient.rpc("get_super_admin_dashboard");
+  if(error){
+    console.error("[SuperAdmin] Error RPC get_super_admin_dashboard:",error);
+    WodIOApp.message($("msg"),"No se ha podido cargar el panel: "+(error.message||"Error desconocido"));
+    $("rows").innerHTML='<tr><td colspan="9">Error cargando los datos.</td></tr>';
+    $("userRows").innerHTML='<tr><td colspan="6">Error cargando los datos.</td></tr>';
+    $("paymentRows").innerHTML='<tr><td colspan="7">Error cargando los datos.</td></tr>';
+    return false;
+  }
+
+  if(!data || typeof data !== "object"){
+    console.error("[SuperAdmin] Respuesta RPC inesperada:",data);
+    WodIOApp.message($("msg"),"El servidor devolvió una respuesta no válida.");
+    return false;
+  }
+
+  dashboard={
+    summary:data.summary||{},
+    boxes:Array.isArray(data.boxes)?data.boxes:[],
+    users:Array.isArray(data.users)?data.users:[],
+    payments:Array.isArray(data.payments)?data.payments:[]
+  };
+
+  render();
+  if(showSuccess) WodIOApp.message($("msg"),"Datos actualizados correctamente.","success");
+  else WodIOApp.clearMessage($("msg"));
+  return true;
 }
 function open(id){
 const x=dashboard.boxes.find(v=>v.id===id);
@@ -683,7 +710,12 @@ await load();
 setTimeout(close,400);
 }
 ;
-await load();
+try{
+  await load();
+}catch(err){
+  console.error("[SuperAdmin] Error inicial cargando el panel:",err);
+  WodIOApp.message($("msg"),"Error cargando el panel: "+(err?.message||err));
+}
 }
 );
 </script>
