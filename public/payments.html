@@ -35,6 +35,7 @@
 <script src="config/supabase-config.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/wodio-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>.payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}</style>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
@@ -55,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const {data:methods,error:methodsError}=await supabaseClient.from("box_payment_methods").select("method_key,name,icon,checkout_url,instructions,sort_order").eq("box_id",ctx.profile?.box_id).eq("enabled",true).order("sort_order");
   if(methodsError){WodIOApp.message(message,methodsError.message);methodsList.innerHTML="<div class=\"app-empty\">No se pudieron cargar las formas de pago.</div>";} else {
     const pendingRows=rows.filter(p=>p.status==="pending");
-    const cards=(methods||[]).map(m=>{const pending=pendingRows.filter(p=>p.payment_method===m.method_key);let actions="";if(m.checkout_url)actions=pending.map(p=>"<a class=\"app-btn primary\" target=\"_blank\" rel=\"noopener\" href=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar "+WodIOApp.euro(p.amount_cents)+"</a>").join("");return "<article class=\"payment-method-card\"><div class=\"payment-method-icon\"><i class=\"ph "+WodIOApp.escapeHtml(m.icon||"ph-credit-card")+"\"></i></div><div><h3>"+WodIOApp.escapeHtml(m.name)+"</h3><p>"+WodIOApp.escapeHtml(m.instructions||"Forma de pago disponible en tu box.")+"</p>"+actions+"</div></article>";}).join("");
+    const cards=(methods||[]).map(m=>{const actions=m.checkout_url?"<button type=\"button\" class=\"app-btn primary\" data-start-payment=\""+WodIOApp.escapeHtml(m.method_key)+"\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar</button>":"";return "<article class=\"payment-method-card\"><div class=\"payment-method-icon\"><i class=\"ph "+WodIOApp.escapeHtml(m.icon||"ph-credit-card")+"\"></i></div><div><h3>"+WodIOApp.escapeHtml(m.name)+"</h3><p>"+WodIOApp.escapeHtml(m.instructions||"Forma de pago disponible en tu box.")+"</p>"+actions+"</div></article>";}).join("");
     methodsList.innerHTML=cards||"<div class=\"app-empty\">El box todavía no ha configurado formas de pago.</div>";
   }
   const pending=rows.filter(p=>p.status==="pending").reduce((s,p)=>s+Number(p.amount_cents||0),0);
@@ -69,6 +70,48 @@ document.addEventListener("DOMContentLoaded", async () => {
   list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Método</th><th>Estado</th><th>Pagado</th></tr></thead><tbody>'+
     rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td>'+WodIOApp.escapeHtml((methods||[]).find(m=>m.method_key===p.payment_method)?.name||p.payment_method||"—")+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td></tr>').join('')+
     '</tbody></table>';
+  document.addEventListener("click",async ev=>{
+    const payBtn=ev.target.closest("[data-start-payment]");
+    if(payBtn){
+      payBtn.disabled=true;
+      try{
+        const method=payBtn.dataset.startPayment,url=payBtn.dataset.paymentUrl;
+        const methodInfo=(methods||[]).find(m=>m.method_key===method);
+        const existing=(rows||[]).find(p=>p.status==="pending"&&p.payment_method===method);
+        if(!existing){
+          const {error}=await supabaseClient.from("payments").insert({box_id:ctx.profile.box_id,user_id:ctx.user.id,concept:"Pago mediante "+(methodInfo?.name||method),amount_cents:0,currency:"EUR",status:"pending",payment_method:method});
+          if(error)throw error;
+        }
+        window.open(url,"_blank","noopener");
+      }catch(error){WodIOApp.message(message,error?.message||"No se pudo iniciar el pago.");}
+      finally{payBtn.disabled=false;}
+      return;
+    }
+    const invoiceBtn=ev.target.closest("[data-invoice]");
+    if(invoiceBtn){
+      invoiceBtn.disabled=true;
+      try{
+        const paymentId=invoiceBtn.dataset.invoice;
+        const {data:created,error:createError}=await supabaseClient.rpc("create_invoice_for_payment",{p_payment_id:paymentId});
+        if(createError)throw createError;
+        const invId=created?.[0]?.invoice_id;
+        const {data:inv,error:invError}=await supabaseClient.from("invoices").select("*").eq("id",invId).single();
+        if(invError)throw invError;
+        const {jsPDF}=window.jspdf;
+        const pdf=new jsPDF();
+        pdf.setFontSize(20);pdf.text("FACTURA",20,25);
+        pdf.setFontSize(11);pdf.text("Nº: "+inv.series+"-"+inv.number,20,34);pdf.text("Fecha: "+WodIOApp.formatDate(inv.issue_date,{withYear:true}),20,41);
+        pdf.setFontSize(12);pdf.text(inv.issuer_name||"",20,55);pdf.setFontSize(10);pdf.text(inv.issuer_nif?"NIF: "+inv.issuer_nif:"",20,62);pdf.text(inv.issuer_address||"",20,69);pdf.text([inv.issuer_postal_code,inv.issuer_city].filter(Boolean).join(" "),20,76);
+        pdf.setFontSize(12);pdf.text("Cliente",120,55);pdf.setFontSize(10);pdf.text(inv.recipient_name||"",120,62);pdf.text(inv.recipient_email||"",120,69);
+        pdf.line(20,88,190,88);pdf.setFontSize(11);pdf.text("Concepto",20,99);pdf.text("Base",120,99);pdf.text("IVA",150,99);pdf.text("Total",175,99);
+        pdf.setFontSize(10);pdf.text(inv.description||"",20,108);pdf.text(WodIOApp.euro(inv.base_cents),120,108);pdf.text(Number(inv.vat_rate).toFixed(2)+"% / "+WodIOApp.euro(inv.vat_cents),150,108);pdf.text(WodIOApp.euro(inv.total_cents),175,108);
+        pdf.line(20,116,190,116);pdf.setFontSize(13);pdf.text("TOTAL: "+WodIOApp.euro(inv.total_cents),145,128);pdf.setFontSize(9);pdf.text("Documento generado por WodIO.",20,145);
+        pdf.save("Factura-"+inv.series+"-"+inv.number+".pdf");
+      }catch(error){WodIOApp.message(message,error?.message||"No se pudo generar la factura.");}
+      finally{invoiceBtn.disabled=false;}
+    }
+  });
+
 });
 </script>
 </body>
