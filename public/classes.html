@@ -36,6 +36,15 @@
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div class="app-stat-value" id="statOpen">—</div><div class="app-stat-label">Plazas disponibles</div></div></div>
 </section>
 
+<section class="app-card" style="margin-top:18px;border-left:3px solid var(--primary)">
+<div class="app-card-head"><div><h2>Política de reservas</h2><p>Estas reglas las configura el administrador del box.</p></div></div>
+<div id="bookingPolicy" class="app-grid app-grid-3">
+<div><strong id="policyAdvance">—</strong><div class="app-stat-label">días máximos para reservar</div></div>
+<div><strong id="policyCutoff">—</strong><div class="app-stat-label">horas mínimas para cancelar</div></div>
+<div><strong id="policyWeekly">—</strong><div class="app-stat-label">cancelaciones máximas por semana</div></div>
+</div>
+<p class="app-help" style="margin-top:12px">Si intentas reservar fuera de este plazo o cancelar demasiado tarde, la aplicación no permitirá la operación.</p>
+</section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head">
 <div><h2>Próximas sesiones</h2><p>Las clases se muestran desde hoy en adelante.</p></div>
@@ -62,6 +71,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function load() {
     list.innerHTML = '<div class="app-loading">Cargando clases…</div>';
 
+    const {data:boxPolicy}=await supabaseClient.from("boxes").select("booking_advance_days,cancellation_cutoff_hours,weekly_cancellation_limit").eq("id",ctx.profile.box_id).single();
+    if(boxPolicy){document.getElementById("policyAdvance").textContent=boxPolicy.booking_advance_days;document.getElementById("policyCutoff").textContent=boxPolicy.cancellation_cutoff_hours;document.getElementById("policyWeekly").textContent=boxPolicy.weekly_cancellation_limit;}
     const from = new Date();
     from.setHours(0,0,0,0);
 
