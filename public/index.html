@@ -6,19 +6,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>WodIO — Gestión inteligente para boxes y atletas</title>
+    <title>WodIO | Software de gestión para boxes, gimnasios y atletas</title>
 
     <meta name="description"
-        content="WodIO centraliza la gestión de tu box: clases, atletas, WODs, reservas, eventos, progreso y pagos en una única plataforma.">
+        content="WodIO es un software de gestión para boxes de CrossTraining, gimnasios y entrenamiento funcional. Gestiona clases, reservas, atletas, coaches, eventos, pagos, facturación y progreso desde una sola plataforma.">
 
-    <meta name="robots" content="index, follow">
+    <meta name="keywords"
+        content="software gestión box, gestión box CrossTraining, software gimnasio, gestión gimnasio, reservas clases gimnasio, gestión atletas, gestión coaches, pagos gimnasio, facturación gimnasio, WOD, entrenamiento funcional">
+
+    <meta name="author" content="WodIO">
+    <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#000000">
+    <meta name="application-name" content="WodIO">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WodIO">
+
+    <!-- Social sharing: Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="WodIO">
+    <meta property="og:title" content="WodIO | Gestión inteligente para boxes, gimnasios y atletas">
+    <meta property="og:description" content="Clases, reservas, atletas, coaches, eventos, pagos, facturación y progreso en una sola plataforma.">
+    <meta property="og:image" content="assets/icons/Logo-WodIO_white.png">
+    <meta property="og:image:alt" content="WodIO — Plataforma de gestión para boxes y atletas">
+    <meta property="og:locale" content="es_ES">
+
+    <!-- Social sharing: X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="WodIO | Gestión inteligente para boxes y atletas">
+    <meta name="twitter:description" content="Software para gestionar tu box, mejorar la experiencia del atleta y fortalecer la comunidad.">
+    <meta name="twitter:image" content="assets/icons/Logo-WodIO_white.png">
+    <meta name="twitter:image:alt" content="WodIO — Plataforma de gestión para boxes y atletas">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
     <link rel="alternate icon" type="image/png" href="assets/icons/favicon/favicon-96x96.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png">
     <link rel="manifest" href="assets/icons/favicon/site.webmanifest">
+
+
+    <!-- Structured data: helps search engines understand WodIO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "WodIO",
+        "applicationCategory": ["BusinessApplication", "SportsApplication", "LifestyleApplication"],
+        "operatingSystem": "Web",
+        "description": "Software de gestión para boxes de CrossTraining, gimnasios y entrenamiento funcional. Centraliza clases, reservas, atletas, coaches, eventos, pagos, facturación y progreso.",
+        "inLanguage": "es",
+        "brand": {
+            "@type": "Brand",
+            "name": "WodIO"
+        },
+        "offers": [
+            {
+                "@type": "Offer",
+                "name": "Starter",
+                "price": "29",
+                "priceCurrency": "EUR"
+            },
+            {
+                "@type": "Offer",
+                "name": "Pro",
+                "price": "49",
+                "priceCurrency": "EUR"
+            },
+            {
+                "@type": "Offer",
+                "name": "Elite",
+                "price": "79",
+                "priceCurrency": "EUR"
+            }
+        ],
+        "featureList": [
+            "Gestión de clases y horarios",
+            "Reservas y asistencia",
+            "Gestión de atletas y coaches",
+            "Programación y WODs",
+            "Seguimiento del progreso",
+            "Eventos y comunidad",
+            "Pagos y facturación",
+            "Gestión financiera del box"
+        ]
+    }
+    </script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/wodio.css">
@@ -51,7 +123,9 @@
             <div class="nav-links">
                 <a href="#about">Plataforma</a>
                 <a href="#features">Funciones</a>
-                <a href="#benefits">Ventajas</a>
+                <a href="#management">Gestores</a>
+                <a href="#athletes">Atletas</a>
+                <a href="#community">Comunidad</a>
                 <a href="#pricing">Precios</a>
             </div>
 
@@ -85,7 +159,9 @@
             <a href="#hero">Inicio</a>
             <a href="#about">Plataforma</a>
             <a href="#features">Funciones</a>
-            <a href="#benefits">Ventajas</a>
+            <a href="#management">Gestores</a>
+            <a href="#athletes">Atletas</a>
+            <a href="#community">Comunidad</a>
             <a href="#pricing">Precios</a>
 
             <div class="mobile-menu-actions">
@@ -131,8 +207,9 @@
                     </h1>
 
                     <p class="hero-subtitle">
-                        WodIO reúne en una sola plataforma todo lo que necesitas
-                        para gestionar tu box y mejorar la experiencia de tus atletas.
+                        El software de gestión para boxes de CrossTraining, gimnasios
+                        y entrenamiento funcional. Centraliza clases, reservas, atletas,
+                        coaches, eventos, pagos, facturación y progreso en una sola plataforma.
                     </p>
 
                     <div class="hero-actions">
@@ -210,9 +287,9 @@
                 </h2>
 
                 <p class="text-muted">
-                    WodIO está diseñado para simplificar la gestión diaria
-                    de boxes de CrossTraining y entrenamiento funcional.
-                    Menos tareas administrativas. Más tiempo para tus atletas.
+                    WodIO conecta la gestión del box con la experiencia del atleta.
+                    Desde la planificación de clases y horarios hasta reservas, asistencia,
+                    pagos, facturación, eventos y seguimiento del progreso.
                 </p>
 
             </div>
@@ -436,6 +513,248 @@
 
 
         <hr class="section-divider-gradient">
+
+
+        <!-- =====================================================
+         COMUNIDAD
+    ====================================================== -->
+
+        <section class="container mt-64" id="community">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    COMUNIDAD
+                </span>
+
+                <h2>
+                    Un box conectado.
+                    <span>Una comunidad más activa.</span>
+                </h2>
+
+                <p class="text-muted">
+                    WodIO no se limita a la administración. Reúne en un mismo entorno
+                    a atletas, coaches y gestores para que la información del box esté
+                    disponible cuando se necesita.
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-3 mt-32">
+
+                <article class="card feature-card">
+                    <div class="card-icon">
+                        <i class="ph ph-users-three"></i>
+                    </div>
+                    <h3>Atletas conectados</h3>
+                    <p class="card-meta">
+                        Consulta horarios, reserva clases, revisa tus entrenamientos,
+                        registra resultados y sigue tu evolución.
+                    </p>
+                </article>
+
+                <article class="card feature-card">
+                    <div class="card-icon">
+                        <i class="ph ph-chats-circle"></i>
+                    </div>
+                    <h3>Comunidad del box</h3>
+                    <p class="card-meta">
+                        Eventos, actividades y programación ayudan a mantener al atleta
+                        informado y vinculado con la vida del box.
+                    </p>
+                </article>
+
+                <article class="card feature-card">
+                    <div class="card-icon">
+                        <i class="ph ph-person-simple-run"></i>
+                    </div>
+                    <h3>Experiencia continua</h3>
+                    <p class="card-meta">
+                        La relación con el box continúa antes, durante y después
+                        de cada entrenamiento.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+         GESTOR
+    ====================================================== -->
+
+        <section class="container mt-64" id="management">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    PARA EL GESTOR DEL BOX
+                </span>
+
+                <h2>
+                    Más control sobre el negocio.
+                    <span>Menos trabajo administrativo.</span>
+                </h2>
+
+                <p class="text-muted">
+                    Una visión centralizada de la actividad del box: usuarios, coaches,
+                    clases, horarios, reservas, eventos, contabilidad, pagos y configuración.
+                </p>
+
+            </div>
+
+            <div class="grid grid-2 mt-32">
+
+                <article class="card benefit-card">
+                    <i class="ph ph-chart-line-up"></i>
+                    <div>
+                        <h3>Control operativo</h3>
+                        <p class="card-meta">
+                            Consulta la actividad del box, organiza clases y coaches,
+                            gestiona reservas y controla la asistencia.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="card benefit-card">
+                    <i class="ph ph-wallet"></i>
+                    <div>
+                        <h3>Finanzas y pagos</h3>
+                        <p class="card-meta">
+                            Centraliza ingresos, gastos, pagos de atletas, métodos de pago,
+                            exportaciones y facturación.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="card benefit-card">
+                    <i class="ph ph-shield-check"></i>
+                    <div>
+                        <h3>Control y trazabilidad</h3>
+                        <p class="card-meta">
+                            Roles, permisos, gestión por box y registros de actividad
+                            ayudan a mantener la información organizada y controlada.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="card benefit-card">
+                    <i class="ph ph-calendar"></i>
+                    <div>
+                        <h3>Planificación</h3>
+                        <p class="card-meta">
+                            Horarios habituales, programación mensual, clases, eventos
+                            y disponibilidad de coaches desde un mismo entorno.
+                        </p>
+                    </div>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+         ATLETA
+    ====================================================== -->
+
+        <section class="container mt-64" id="athletes">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    PARA EL ATLETA
+                </span>
+
+                <h2>
+                    Todo lo que necesitas
+                    <span>para entrenar mejor organizado.</span>
+                </h2>
+
+            </div>
+
+            <div class="grid grid-3 mt-32">
+
+                <article class="card feature-card">
+                    <div class="card-icon">
+                        <i class="ph ph-calendar-check"></i>
+                    </div>
+                    <h3>Reserva tus clases</h3>
+                    <p class="card-meta">
+                        Consulta el horario del box y reserva tus sesiones desde tu cuenta.
+                    </p>
+                </article>
+
+                <article class="card feature-card">
+                    <div class="card-icon">
+                        <i class="ph ph-chart-line-up"></i>
+                    </div>
+                    <h3>Sigue tu progreso</h3>
+                    <p class="card-meta">
+                        Guarda resultados y observa tu evolución con tus principales métricas.
+                    </p>
+                </article>
+
+                <article class="card feature-card">
+                    <div class="card-icon">
+                        <i class="ph ph-receipt"></i>
+                    </div>
+                    <h3>Gestiona tus pagos</h3>
+                    <p class="card-meta">
+                        Consulta pagos y descarga tus facturas cuando estén disponibles.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+         APP
+    ====================================================== -->
+
+        <section class="container mt-64" id="mobile-app">
+
+            <div class="cta-section">
+
+                <div>
+                    <span class="section-eyebrow">
+                        EXPERIENCIA MÓVIL
+                    </span>
+
+                    <h2>
+                        WodIO está preparado para
+                        <span>evolucionar a una app móvil.</span>
+                    </h2>
+
+                    <p>
+                        La arquitectura actual basada en una aplicación web responsive
+                        permite plantear una evolución a app para iOS y Android.
+                        Podemos convertir la experiencia actual en una PWA instalable
+                        y, si el producto lo requiere, dar el siguiente paso hacia una
+                        app móvil empaquetada manteniendo la misma cuenta y backend.
+                    </p>
+
+                </div>
+
+                <div class="cta-actions">
+                    <a href="#features" class="btn-secondary">
+                        Ver funcionalidades
+                    </a>
+                    <a href="create-box.html" class="btn-primary">
+                        Crear mi box
+                    </a>
+                </div>
+
+            </div>
+
+        </section>
+
+
+                <hr class="section-divider-gradient">
 
 
         <!-- =====================================================
@@ -791,6 +1110,9 @@
 
                 <a href="#about">Plataforma</a>
                 <a href="#features">Funciones</a>
+                <a href="#management">Gestión del box</a>
+                <a href="#athletes">Atletas</a>
+                <a href="#community">Comunidad</a>
                 <a href="#pricing">Precios</a>
 
             </div>
