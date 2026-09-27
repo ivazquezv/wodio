@@ -18,6 +18,7 @@
 .admin-box small{display:block;color:var(--text-muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
 .admin-box-logo{width:46px;height:46px;display:block;object-fit:cover;border-radius:50%;margin-bottom:8px;background:var(--bg-main);border:1px solid var(--border-soft)}
 .admin-box strong{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-checkbox{display:flex;align-items:center;gap:8px;cursor:pointer}.admin-checkbox input{width:16px;height:16px;margin:0;flex:0 0 16px;accent-color:var(--primary)}.admin-checkbox span{line-height:1.2}
 .admin-nav{display:grid;gap:4px}
 .admin-nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--text-muted);font-weight:650;font-size:.86rem}
 .admin-nav a:hover,.admin-nav a.active{color:var(--primary-soft);background:rgba(255,107,0,.09)}
@@ -99,7 +100,7 @@
 <form id="userForm" class="app-form"><input type="hidden" id="userEditId"><div class="app-form-grid">
 <div class="app-field"><label for="userEditFirst">Nombre</label><input id="userEditFirst" required></div>
 <div class="app-field"><label for="userEditLast">Apellidos</label><input id="userEditLast"></div>
-<div class="app-field"><label for="userEditRole">Rol</label><select id="userEditRole"><option value="athlete">Cliente / atleta</option><option value="coach">Coach</option></select></div><div class="app-field"><label><input type="checkbox" id="userEditBoxMembership"> Acceso a este box</label><div class="admin-mini">Permite al alumno seleccionar este box desde su área de clases.</div></div>
+<div class="app-field"><label for="userEditRole">Rol</label><select id="userEditRole"><option value="athlete">Cliente / atleta</option><option value="coach">Coach</option></select></div><div class="app-field"><label class="admin-checkbox"><input type="checkbox" id="userEditBoxMembership"><span>Acceso a este box</span></label><div class="admin-mini">Permite al alumno seleccionar este box desde su área de clases.</div></div>
 </div><div class="admin-actions"><button class="app-btn primary" type="submit">Guardar usuario</button><button class="app-btn" type="button" id="userEditCancel">Cancelar</button></div></form>
 <div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div>
 </section>
