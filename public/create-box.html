@@ -293,7 +293,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     clearMessage();
 
     const { data: result, error } = await supabaseClient.functions.invoke("stripe-checkout", {
-      body: { plan: selectedPlan }
+      body: {
+        plan: selectedPlan,
+        success_url: `${window.location.origin}/stripe-success.html?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${window.location.origin}/create-box.html?plan=${selectedPlan}&payment=cancelled`
+      }
     });
 
     if (error) {
