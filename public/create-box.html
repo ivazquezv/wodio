@@ -372,14 +372,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const { data: profile } = await supabaseClient
         .from("profiles")
-        .select("box_id, role, boxes:boxes!profiles_box_id_fkey(status,subscription_plan)")
+         .select("box_id, role")
         .eq("id", sessionData.session.user.id)
         .maybeSingle();
 
       if (profile?.box_id && ["box_admin", "super_admin"].includes(profile.role)) {
-        const boxStatus = profile?.boxes?.status;
+        let boxStatus = null;
+        let pendingPlan = null;
+        if (profile?.box_id) {
+          const { data: boxState } = await supabaseClient
+            .from("boxes")
+            .select("status, subscription_plan")
+            .eq("id", profile.box_id)
+            .maybeSingle();
+          boxStatus = boxState?.status || null;
+          pendingPlan = boxState?.subscription_plan || null;
+        }
         if (boxStatus === "pending_payment") {
-          const pendingPlan = profile?.boxes?.subscription_plan;
           if (["starter", "pro", "elite"].includes(pendingPlan)) {
             await startStripeCheckout();
             return;
