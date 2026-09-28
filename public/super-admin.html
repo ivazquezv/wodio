@@ -266,6 +266,7 @@ grid-template-columns:1fr}
 <button class="sa-tab" data-tab="users">Usuarios</button>
 <button class="sa-tab" data-tab="billing">Facturación</button>
 <button class="sa-tab" data-tab="activity">Actividad</button>
+<button class="sa-tab" data-tab="operations">Operaciones</button>
 </nav>
 <section class="sa-charts" aria-label="Resumen visual"><div class="sa-chart-card"><h2>Estado de los boxes</h2><div class="sa-donut" id="boxStatusChart"></div><div class="sa-legend" id="boxStatusLegend"></div></div><div class="sa-chart-card"><h2>Ingresos</h2><div class="sa-bars" id="revenueChart"></div><div class="sa-chart-note">Cobrado este mes, cobrado acumulado y pendiente.</div></div></section><div class="sa-tools">
 <input id="search" type="search" placeholder="Buscar box o email">
@@ -385,6 +386,11 @@ grid-template-columns:1fr}
 <div class="sa-panel-head"><div><h2>Actividad administrativa</h2><p>Cambios realizados desde el panel de superadministración.</p></div></div>
 <div class="sa-table"><div class="sa-activity" id="activityRows"><div class="sa-activity-item">Cargando…</div></div></div>
 </section>
+<section class="sa-panel" id="panel-operations" hidden>
+<div class="sa-panel-head"><div><h2>Centro de operaciones</h2><p>Salud de la plataforma, métricas SaaS y funciones experimentales.</p></div></div>
+<div class="sa-stats" id="opsStats"></div>
+<div class="sa-chart-card" style="margin-top:14px"><h2>Feature flags</h2><div id="featureFlags"><div class="sa-activity-item">Cargando…</div></div></div>
+</section>
 </main>
 <div class="sa-modal" id="modal" hidden>
 <div class="sa-card">
@@ -463,7 +469,7 @@ try{
   return;
 }
 let dashboard={
-summary:{},boxes:[],users:[],payments:[],activity:[]}
+summary:{},boxes:[],users:[],payments:[],activity:[],operations:{}}}
 ;
 const euro=x=>new Intl.NumberFormat("es-ES",{
 style:"currency",currency:"EUR"}
@@ -510,6 +516,7 @@ $("rows").innerHTML = r.length ? r.map(x => `<tr>
 renderUsers();
 renderPayments();
 renderActivity();
+renderOperations();
 renderCharts();
 }
 function renderUsers(){
@@ -524,6 +531,7 @@ $("userRows").innerHTML = r.length ? r.map(x => `<tr>
 <td>${euro(x.paid_amount_cents)}</td>
 </tr>`).join("") : `<tr><td colspan="6">No hay resultados.</td></tr>`;
 }
+function renderOperations(){const o=dashboard.operations||{};const cards=[["MRR",euro(o.mrr_cents)],["ARR estimado",euro(o.arr_cents)],["Trials próximos",Number(o.trial_expiring||0)],["Pagos pendientes",Number(o.pending_payments||0)],["Boxes activos",Number(o.active_boxes||0)],["Suspendidos",Number(o.suspended||0)]];$("opsStats").innerHTML=cards.map(x=>`<div class="sa-stat"><b>${esc(x[1])}</b><span>${esc(x[0])}</span></div>`).join("");const flags=Array.isArray(o.feature_flags)?o.feature_flags:[];$("featureFlags").innerHTML=flags.length?flags.map(x=>`<div class="sa-activity-item"><div><b>${esc(x.name)}</b><small>${esc(x.description||"")}</small></div><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-feature="${esc(x.key)}" ${x.enabled?"checked":""}> ${x.enabled?"Activada":"Desactivada"}</label></div>`).join(""):"<div class=\"sa-activity-item\">No hay funciones configuradas.</div>";document.querySelectorAll("[data-feature]").forEach(el=>el.addEventListener("change",async()=>{el.disabled=true;const r=await supabaseClient.rpc("super_admin_set_feature_flag",{p_key:el.dataset.feature,p_enabled:el.checked});if(r.error){el.checked=!el.checked;showBootError(r.error.message)}else{await load();}}));}
 function renderActivity(){
 const rows=dashboard.activity||[];
 $("activityRows").innerHTML=rows.length?rows.map(x=>`<div class="sa-activity-item"><div><b>${esc(x.action||"Actividad")}</b><small>${esc(x.entity_name||x.entity_type||"") } · ${esc(x.actor_name||"Super admin")}</small></div><span class="sa-nowrap">${date(x.created_at)}</span></div>`).join(""):"<div class=\"sa-activity-item\"><div><b>Sin actividad administrativa</b><small>Los cambios realizados desde ahora aparecerán aquí.</small></div></div>";
@@ -606,6 +614,8 @@ async function load(showSuccess=false){
   try{
     const activityRpc=await supabaseClient.rpc("get_super_admin_activity");
     if(!activityRpc.error && Array.isArray(activityRpc.data)) dashboard.activity=activityRpc.data;
+    const operationsRpc=await supabaseClient.rpc("get_super_admin_operations");
+    if(!operationsRpc.error && operationsRpc.data) dashboard.operations=operationsRpc.data;
   }catch(activityError){ console.warn("[SuperAdmin] Actividad no disponible:",activityError); }
 
   render();
@@ -637,7 +647,7 @@ $("modal").hidden=true;
 }
 function setTab(tab){
 document.querySelectorAll(".sa-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
-["boxes","users","billing","activity"].forEach(k=>{
+["boxes","users","billing","activity","operations"].forEach(k=>{
 $("panel-"+k).hidden=k!==tab;
 }
 );
