@@ -192,11 +192,8 @@ width:100%}
 display:flex;
 justify-content:flex-end;
 gap:8px}
-#msg{
-position:fixed;
-right:20px;
-bottom:20px;
-z-index:30}
+#msg{position:fixed;right:20px;bottom:20px;z-index:30}
+.sa-alerts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.sa-alert{padding:14px;border:1px solid var(--border-soft);border-radius:14px;background:var(--bg-surface)}.sa-alert b{display:block;font-size:1.15rem}.sa-alert span{display:block;color:var(--text-muted);font-size:.72rem;margin-top:4px}.sa-alert.warning{border-color:rgba(245,158,11,.35)}.sa-alert.danger{border-color:rgba(239,68,68,.35)}.sa-activity{display:grid;gap:8px}.sa-activity-item{display:flex;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid var(--border-soft);font-size:.78rem}.sa-activity-item small{display:block;color:var(--text-muted);margin-top:3px}@media(max-width:1000px){.sa-alerts{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.sa-alerts{grid-template-columns:1fr}}
 @media(max-width:1000px){
 .sa-stats{
 grid-template-columns:repeat(3,1fr)}
@@ -258,13 +255,23 @@ grid-template-columns:1fr}
 <span>Ingresos cobrados</span>
 </div>
 </section>
+<section class="sa-alerts" aria-label="Alertas">
+<div class="sa-alert warning"><b id="alertTrials">0</b><span>Trials que vencen en 7 días</span></div>
+<div class="sa-alert warning"><b id="alertPending">0</b><span>Pagos pendientes o vencidos</span></div>
+<div class="sa-alert danger"><b id="alertSuspended">0</b><span>Boxes suspendidos</span></div>
+<div class="sa-alert"><b id="alertNoActivity">0</b><span>Boxes sin pagos registrados</span></div>
+</section>
 <nav class="sa-tabs" aria-label="Secciones del panel">
 <button class="sa-tab active" data-tab="boxes">Boxes</button>
 <button class="sa-tab" data-tab="users">Usuarios</button>
 <button class="sa-tab" data-tab="billing">Facturación</button>
+<button class="sa-tab" data-tab="activity">Actividad</button>
 </nav>
 <section class="sa-charts" aria-label="Resumen visual"><div class="sa-chart-card"><h2>Estado de los boxes</h2><div class="sa-donut" id="boxStatusChart"></div><div class="sa-legend" id="boxStatusLegend"></div></div><div class="sa-chart-card"><h2>Ingresos</h2><div class="sa-bars" id="revenueChart"></div><div class="sa-chart-note">Cobrado este mes, cobrado acumulado y pendiente.</div></div></section><div class="sa-tools">
 <input id="search" type="search" placeholder="Buscar box o email">
+<button type="button" class="app-btn" id="exportBoxes"><i class="ph ph-download-simple"></i> Exportar boxes</button>
+<button type="button" class="app-btn" id="exportUsers"><i class="ph ph-download-simple"></i> Exportar usuarios</button>
+<button type="button" class="app-btn" id="exportPayments"><i class="ph ph-download-simple"></i> Exportar pagos</button>
 <select id="status">
 <option value="">Todos</option>
 <option value="active">Activos</option>
@@ -374,14 +381,18 @@ grid-template-columns:1fr}
 </table>
 </div>
 </section>
+<section class="sa-panel" id="panel-activity" hidden>
+<div class="sa-panel-head"><div><h2>Actividad administrativa</h2><p>Cambios realizados desde el panel de superadministración.</p></div></div>
+<div class="sa-table"><div class="sa-activity" id="activityRows"><div class="sa-activity-item">Cargando…</div></div></div>
+</section>
 </main>
 <div class="sa-modal" id="modal" hidden>
 <div class="sa-card">
 <div class="sa-card-head">
 <div>
 <h2 id="mtitle">Gestionar box</h2>
-<p id="msub">
-</p>
+<p id="msub"></p>
+<div id="mdetail" class="sa-sub"></div>
 </div>
 <button type="button" class="app-btn" id="close">
 <i class="ph ph-x">
@@ -411,8 +422,8 @@ grid-template-columns:1fr}
 </div>
 </div>
 <p>Suspender bloqueará el acceso normal del box cuando se aplique la comprobación de estado. El cambio de plan actualiza WodIO, pero no cambia automáticamente el precio de una suscripción existente en Stripe.</p>
-<div id="mmsg" class="app-message">
-</div>
+<div id="mmsg" class="app-message"></div>
+<div class="sa-sub" id="mstats"></div>
 <div class="sa-actions">
 <button type="button" class="app-btn" id="cancel">Cancelar</button>
 <button class="app-btn primary">Guardar cambios</button>
@@ -452,9 +463,7 @@ try{
   return;
 }
 let dashboard={
-summary:{
-}
-,boxes:[],users:[],payments:[]}
+summary:{},boxes:[],users:[],payments:[],activity:[]}
 ;
 const euro=x=>new Intl.NumberFormat("es-ES",{
 style:"currency",currency:"EUR"}
@@ -472,7 +481,7 @@ box_admin:"Administrador",coach:"Coach",athlete:"Atleta"}
 const paymentLabels={
 paid:"Pagado",pending:"Pendiente",due:"Vencido",unpaid:"Impagado"}
 ;
-function renderCharts(){const s=dashboard.summary||{};const total=Math.max(Number(s.boxes||0),1);const values=[["Activos",Number(s.active_boxes||0)],["Demo",Number(s.trial_boxes||0)],["Pendientes",Number(s.pending_payment_boxes||0)],["Suspendidos",Number(s.suspended_boxes||0)]];let angle=0,stops=[];const colors=["var(--primary)","#5ee28a","#75aefc","#ff8585"];values.forEach((v,i)=>{const next=angle+v[1]/total*360;stops.push(colors[i]+" "+angle+"deg "+next+"deg");angle=next;});$("boxStatusChart").style.background="conic-gradient("+stops.join(",")+")";$("boxStatusLegend").innerHTML=values.map(v=>"<div class=\"sa-legend-item\"><span>"+esc(v[0])+"</span><b>"+v[1]+"</b></div>").join("");const revenue=[["Mes",Number(s.current_month_revenue_cents||0)],["Total",Number(s.revenue_cents||0)],["Pendiente",Number(s.pending_revenue_cents||0)]];const max=Math.max(...revenue.map(v=>v[1]),1);$("revenueChart").innerHTML=revenue.map(v=>"<div class=\"sa-bar-row\"><span>"+esc(v[0])+"</span><div class=\"sa-bar-track\"><div class=\"sa-bar-fill\" style=\"width:"+Math.max(2,v[1]/max*100)+"%\"></div></div><b>"+euro(v[1])+"</b></div>").join("")}function render(){
+function renderCharts(){const s=dashboard.summary||{};const total=Math.max(Number(s.boxes||0),1);const values=[["Activos",Number(s.active_boxes||0)],["Demo",Number(s.trial_boxes||0)],["Pendientes",Number(s.pending_boxes||0)],["Suspendidos",Number(s.suspended_boxes||0)]];let angle=0,stops=[];const colors=["var(--primary)","#5ee28a","#75aefc","#ff8585"];values.forEach((v,i)=>{const next=angle+v[1]/total*360;stops.push(colors[i]+" "+angle+"deg "+next+"deg");angle=next;});$("boxStatusChart").style.background="conic-gradient("+stops.join(",")+")";$("boxStatusLegend").innerHTML=values.map(v=>"<div class=\"sa-legend-item\"><span>"+esc(v[0])+"</span><b>"+v[1]+"</b></div>").join("");const revenue=[["Mes",Number(s.month_revenue_cents||0)],["Total",Number(s.revenue_cents||0)],["Pendiente",Number(s.pending_cents||0)]];const max=Math.max(...revenue.map(v=>v[1]),1);$("revenueChart").innerHTML=revenue.map(v=>"<div class=\"sa-bar-row\"><span>"+esc(v[0])+"</span><div class=\"sa-bar-track\"><div class=\"sa-bar-fill\" style=\"width:"+Math.max(2,v[1]/max*100)+"%\"></div></div><b>"+euro(v[1])+"</b></div>").join("")}function render(){
 const q=$("search").value.toLowerCase().trim(),s=$("status").value,p=$("plan").value;
 const r=dashboard.boxes.filter(x=>(!q||[x.name,x.contact_email,x.slug].some(v=>String(v||"").toLowerCase().includes(q)))&&(!s||x.status===s)&&(!p||x.subscription_plan===p));
 $("nBoxes").textContent=dashboard.summary.boxes??0;
@@ -481,6 +490,12 @@ $("nTrial").textContent=dashboard.summary.trial_boxes??0;
 $("nSusp").textContent=dashboard.summary.suspended_boxes??0;
 $("nUsers").textContent=dashboard.summary.users??0;
 $("nRevenue").textContent=euro(dashboard.summary.revenue_cents);
+const now=Date.now(),week=now+7*86400000;
+const trialAlerts=dashboard.boxes.filter(x=>x.status==="trial"&&x.trial_ends_at&&new Date(x.trial_ends_at).getTime()<=week).length;
+const pendingPayments=dashboard.payments.filter(x=>["pending","due","unpaid"].includes(x.status)).length;
+const suspended=dashboard.boxes.filter(x=>x.status==="suspended").length;
+const noActivity=dashboard.boxes.filter(x=>!x.last_payment_at).length;
+$("alertTrials").textContent=trialAlerts;$("alertPending").textContent=pendingPayments;$("alertSuspended").textContent=suspended;$("alertNoActivity").textContent=noActivity;
 $("rows").innerHTML = r.length ? r.map(x => `<tr>
 <td><b>${esc(x.name)}</b><small>${esc(x.contact_email||x.slug)}</small></td>
 <td><span class="pill ${esc(x.status)}">${esc(labels[x.status]||x.status)}</span></td>
@@ -494,6 +509,7 @@ $("rows").innerHTML = r.length ? r.map(x => `<tr>
 </tr>`).join("") : `<tr><td colspan="9">No hay resultados.</td></tr>`;
 renderUsers();
 renderPayments();
+renderActivity();
 renderCharts();
 }
 function renderUsers(){
@@ -507,6 +523,10 @@ $("userRows").innerHTML = r.length ? r.map(x => `<tr>
 <td>${Number(x.payment_count||0)}</td>
 <td>${euro(x.paid_amount_cents)}</td>
 </tr>`).join("") : `<tr><td colspan="6">No hay resultados.</td></tr>`;
+}
+function renderActivity(){
+const rows=dashboard.activity||[];
+$("activityRows").innerHTML=rows.length?rows.map(x=>`<div class="sa-activity-item"><div><b>${esc(x.action||"Actividad")}</b><small>${esc(x.entity_name||x.entity_type||"") } · ${esc(x.actor_name||"Super admin")}</small></div><span class="sa-nowrap">${date(x.created_at)}</span></div>`).join(""):"<div class=\"sa-activity-item\"><div><b>Sin actividad administrativa</b><small>Los cambios realizados desde ahora aparecerán aquí.</small></div></div>";
 }
 function renderPayments(){
 const s=$("paymentStatus").value;
@@ -580,8 +600,13 @@ async function load(showSuccess=false){
     summary:data.summary||{},
     boxes:Array.isArray(data.boxes)?data.boxes:[],
     users:Array.isArray(data.users)?data.users:[],
-    payments:Array.isArray(data.payments)?data.payments:[]
+    payments:Array.isArray(data.payments)?data.payments:[],
+    activity:[]
   };
+  try{
+    const activityRpc=await supabaseClient.rpc("get_super_admin_activity");
+    if(!activityRpc.error && Array.isArray(activityRpc.data)) dashboard.activity=activityRpc.data;
+  }catch(activityError){ console.warn("[SuperAdmin] Actividad no disponible:",activityError); }
 
   render();
   console.info("[SuperAdmin] Datos cargados:",{
@@ -601,6 +626,8 @@ $("mtitle").textContent=x.name;
 $("msub").textContent=x.contact_email||x.slug;
 $("mstatus").value=x.status;
 $("mplan").value=x.subscription_plan||"demo";
+$("mdetail").textContent=[x.city,x.phone,x.slug].filter(Boolean).join(" · ");
+$("mstats").textContent="Usuarios: "+Number(x.user_count||0)+" · Cobrado: "+euro(x.paid_revenue_cents)+" · Pendiente: "+euro(x.pending_revenue_cents)+" · Último pago: "+date(x.last_payment_at);
 $("mmsg").className="app-message";
 $("mmsg").textContent="";
 $("modal").hidden=false;
@@ -610,7 +637,7 @@ $("modal").hidden=true;
 }
 function setTab(tab){
 document.querySelectorAll(".sa-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
-["boxes","users","billing"].forEach(k=>{
+["boxes","users","billing","activity"].forEach(k=>{
 $("panel-"+k).hidden=k!==tab;
 }
 );
@@ -623,6 +650,15 @@ if(b)open(b.dataset.id)}
 ["search","status","plan"].forEach(id=>$(id).addEventListener("input",render));
 $("userSearch").addEventListener("input",renderUsers);
 $("paymentStatus").addEventListener("change",renderPayments);
+function csvValue(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
+function downloadCsv(name,headers,rows){
+const csv=[headers.map(csvValue).join(","),...rows.map(r=>r.map(csvValue).join(","))].join("\n");
+const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+$("exportBoxes").addEventListener("click",()=>downloadCsv("wodio-boxes.csv",["Box","Estado","Plan","Suscripcion","Usuarios","Ingresos mes","Ingresos totales","Pendiente","Ultimo pago"],dashboard.boxes.map(x=>[x.name,x.status,x.subscription_plan,x.subscription_status,x.user_count,euro(x.current_month_revenue_cents),euro(x.paid_revenue_cents),euro(x.pending_revenue_cents),date(x.last_payment_at)])));
+$("exportUsers").addEventListener("click",()=>downloadCsv("wodio-usuarios.csv",["Nombre","Email","Rol","Box","Alta","Pagos","Pagado"],dashboard.users.map(x=>[[x.first_name,x.last_name].filter(Boolean).join(" "),x.email,roles[x.role]||x.role,x.box_name,date(x.created_at),x.payment_count,euro(x.paid_amount_cents)])));
+$("exportPayments").addEventListener("click",()=>downloadCsv("wodio-pagos.csv",["Fecha","Box","Usuario","Concepto","Importe","Estado","Metodo"],dashboard.payments.map(x=>[date(x.payment_date),x.box_name,x.user_name,x.concept||x.category,euro(x.amount_cents),paymentLabels[x.status]||x.status,x.payment_method||x.provider])));
 $("refresh").addEventListener("click",async e=>{
 e.preventDefault();
 const b=$("refresh");
