@@ -555,8 +555,9 @@ function renderOperations(){
   ).join("");
 
   const incidents=Array.isArray(o.incidents)?o.incidents:[];
+  const resolvedIncidents=Array.isArray(o.resolved_incidents)?o.resolved_incidents:[];
 
-  renderFeatureFlagIncidents(incidents);
+  renderFeatureFlagIncidents(incidents,resolvedIncidents);
 
   const flags=Array.isArray(o.feature_flags)?o.feature_flags:[];
   const hist=Array.isArray(o.history)?o.history:[];
@@ -632,7 +633,7 @@ async function resolveFeatureFlagIncident(id, action){
   $("msg").className="app-message show success";
   await load();
 }
-function renderFeatureFlagIncidents(incidents){
+function renderFeatureFlagIncidents(incidents,resolvedIncidents){
   const el=$("featureFlagIncidents");
   if(!el) return;
   if(!incidents.length){
@@ -650,7 +651,8 @@ function renderFeatureFlagIncidents(incidents){
       '<span class="sa-sub">Ocurrencias: '+Number(x.occurrence_count||0)+' · Último evento: '+esc(x.last_seen_at?date(x.last_seen_at):"—")+'</span></div>'+
       '<div class="sa-incident-actions"><select data-incident-action="'+esc(x.id)+'"><option value="reviewed">Marcar revisada</option><option value="keep_active">Resolver y mantener activa</option><option value="disable">Resolver y desactivar flag</option></select><button type="button" class="app-btn" data-resolve-incident="'+esc(x.id)+'"><i class="ph ph-check-circle"></i> Resolver</button></div>'+
       '</article>';
-  }).join("");
+  }).join("")+
+    (resolvedIncidents.length ? '<div class="sa-chart-note" style="margin-top:16px"><b>Últimas incidencias resueltas</b></div><div class="sa-table" style="margin-top:8px"><table><thead><tr><th>Fecha</th><th>Flag</th><th>Incidencia</th><th>Acción</th></tr></thead><tbody>'+resolvedIncidents.map(x=>'<tr><td class="sa-nowrap">'+esc(x.resolved_at?date(x.resolved_at):"—")+'</td><td>'+esc(x.flag_key)+'</td><td>'+esc(x.title||"Incidencia")+'</td><td>'+esc(x.resolution_action||"—")+(x.resolution_note?'<small>'+esc(x.resolution_note)+'</small>':"")+"</td></tr>").join("")+"</tbody></table></div>" : "");
   el.querySelectorAll("[data-resolve-incident]").forEach(btn=>btn.addEventListener("click",async()=>{
     const id=btn.dataset.resolveIncident;
     const select=el.querySelector('[data-incident-action="'+id+'"]');
