@@ -122,7 +122,7 @@ grant execute on function public.super_admin_resolve_feature_flag_incident(uuid,
 create or replace function public.get_super_admin_operations()
 returns jsonb language plpgsql security definer set search_path=''
 as $function$
-declare current_metrics jsonb; history jsonb; health jsonb; flags jsonb; incidents jsonb;
+declare current_metrics jsonb; history jsonb; health jsonb; flags jsonb; incidents jsonb; resolved_incidents jsonb;
 begin
   if not private.is_super_admin() then raise exception 'super_admin_required'; end if;
   perform private.refresh_super_admin_feature_flag_incidents();
@@ -154,6 +154,15 @@ begin
                 join public.platform_feature_flags pf on pf.key=i.flag_key
                 where i.status='open'
               ) i);
+  resolved_incidents:=(select coalesce(jsonb_agg(to_jsonb(i) order by i.resolved_at desc),'[]'::jsonb)
+              from (
+                select i.*,pf.name flag_name,pf.enabled flag_enabled
+                from public.platform_feature_flag_incidents i
+                join public.platform_feature_flags pf on pf.key=i.flag_key
+                where i.status='resolved'
+                order by i.resolved_at desc
+                limit 10
+              ) i);
   return jsonb_build_object(
     'mrr_cents',coalesce((current_metrics->>'mrr_cents')::bigint,0),
     'arr_cents',coalesce((current_metrics->>'mrr_cents')::bigint,0)*12,
@@ -161,7 +170,8 @@ begin
     'trial_expiring',(select count(*) from public.boxes where status='trial' and trial_ends_at between now() and now()+interval '7 days'),
     'suspended',current_metrics->'suspended_boxes',
     'pending_payments',(select count(*) from public.payments where status in ('pending','due','unpaid')),
-    'feature_flags',flags,'incidents',incidents,'health',health,'history',history);
+    'feature_flags',flags,'incidents',incidents,'resolved_incidents',resolved_incidents,
+    'health',health,'history',history);
 end;
 $function$;
 
