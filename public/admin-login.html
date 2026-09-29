@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .maybeSingle();
 
     if (!profileError && ["box_admin", "super_admin"].includes(profile?.role)) {
-      window.location.href = "box-admin.html";
+      window.location.href = profile?.role === "super_admin" ? "super-admin.html" : "box-admin.html";
       return;
     }
 
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       showMessage("Acceso autorizado. Entrando en administración...", "success");
-      window.setTimeout(() => { window.location.href = "box-admin.html"; }, 300);
+      window.setTimeout(() => { window.location.href = profile.role === "super_admin" ? "super-admin.html" : "box-admin.html"; }, 300);
     } catch (error) {
       showMessage(error?.message || "Se ha producido un error inesperado.");
     } finally {
