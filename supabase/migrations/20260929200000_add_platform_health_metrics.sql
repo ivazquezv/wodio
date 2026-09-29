@@ -90,7 +90,7 @@ $function$;
 
 revoke execute on function private.super_admin_current_metrics() from public,anon,authenticated;
 revoke execute on function private.get_super_admin_health() from public,anon,authenticated;
-revoke execute on function public.record_super_admin_metrics_snapshot() from anon;
-revoke execute on function public.get_super_admin_operations() from anon;
+revoke execute on function public.record_super_admin_metrics_snapshot() from public;
+revoke execute on function public.get_super_admin_operations() from public;
 grant execute on function public.record_super_admin_metrics_snapshot() to authenticated;
 grant execute on function public.get_super_admin_operations() to authenticated;
