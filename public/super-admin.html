@@ -531,7 +531,36 @@ $("userRows").innerHTML = r.length ? r.map(x => `<tr>
 <td>${euro(x.paid_amount_cents)}</td>
 </tr>`).join("") : `<tr><td colspan="6">No hay resultados.</td></tr>`;
 }
-function renderOperations(){const o=dashboard.operations||{},h=o.health||{};const healthLabel=h.status==="healthy"?"Saludable":h.status==="degraded"?"Atención requerida":"Crítico";$("opsHealth").innerHTML=`<div class="sa-health"><span class="sa-health-dot ${esc(h.status||"healthy")}"></span><div><b>${healthLabel}</b><small>${Number(h.problem_count||0)} incidencia(s) detectada(s) · Último snapshot: ${esc(h.last_snapshot||"pendiente")}</small></div></div>`;const cards=[["MRR",euro(o.mrr_cents)],["ARR estimado",euro(o.arr_cents)],["Trials próximos",Number(o.trial_expiring||0)],["Pagos pendientes",Number(o.pending_payments||0)],["Boxes activos",Number(o.active_boxes||0)],["Suspendidos",Number(o.suspended||0)]];$("opsStats").innerHTML=cards.map(x=>`<div class="sa-stat"><b>${esc(x[1])}</b><span>${esc(x[0])}</span></div>`).join("");const flags=Array.isArray(o.feature_flags)?o.feature_flags:[];const hist=Array.isArray(o.history)?o.history:[];const maxM=Math.max(...hist.map(x=>Number(x.mrr_cents||0)),1),maxR=Math.max(...hist.map(x=>Number(x.paid_revenue_cents||0)),1);$("mrrHistory").innerHTML=hist.length?hist.slice().reverse().map(x=>`<div class="sa-history-row"><span>${esc(x.metric_date)}</span><div class="sa-history-track"><div class="sa-history-fill" style="width:${Math.max(2,Number(x.mrr_cents||0)/maxM*100)}%"></div></div><b>${euro(x.mrr_cents)}</b></div>`).join(""):"<div class="sa-activity-item">Aún no hay snapshots.</div>";$("revenueHistory").innerHTML=hist.length?hist.slice().reverse().map(x=>`<div class="sa-history-row"><span>${esc(x.metric_date)}</span><div class="sa-history-track"><div class="sa-history-fill" style="width:${Math.max(2,Number(x.paid_revenue_cents||0)/maxR*100)}%"></div></div><b>${euro(x.paid_revenue_cents)}</b></div>`).join(""):"<div class="sa-activity-item">Aún no hay snapshots.</div>";$("featureFlags").innerHTML=flags.length?flags.map(x=>`<div class="sa-activity-item"><div><b>${esc(x.name)}</b><small>${esc(x.description||"")}</small></div><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-feature="${esc(x.key)}" ${x.enabled?"checked":""}> ${x.enabled?"Activada":"Desactivada"}</label></div>`).join(""):"<div class=\"sa-activity-item\">No hay funciones configuradas.</div>";document.querySelectorAll("[data-feature]").forEach(el=>el.addEventListener("change",async()=>{el.disabled=true;const r=await supabaseClient.rpc("super_admin_set_feature_flag",{p_key:el.dataset.feature,p_enabled:el.checked});if(r.error){el.checked=!el.checked;showBootError(r.error.message)}else{await load();}}));}
+function renderOperations(){
+  const o=dashboard.operations||{};
+  const h=o.health||{};
+  const healthLabel=h.status==="healthy"?"Saludable":h.status==="degraded"?"Atención requerida":"Crítico";
+  $("opsHealth").innerHTML=`<div class="sa-health"><span class="sa-health-dot ${esc(h.status||"healthy")}"></span><div><b>${healthLabel}</b><small>${Number(h.problem_count||0)} incidencia(s) detectada(s) · Último snapshot: ${esc(h.last_snapshot||"pendiente")}</small></div></div>`;
+  const cards=[
+    ["MRR",euro(o.mrr_cents)],["ARR estimado",euro(o.arr_cents)],
+    ["Trials próximos",Number(o.trial_expiring||0)],["Pagos pendientes",Number(o.pending_payments||0)],
+    ["Boxes activos",Number(o.active_boxes||0)],["Suspendidos",Number(o.suspended||0)]
+  ];
+  $("opsStats").innerHTML=cards.map(x=>`<div class="sa-stat"><b>${esc(x[1])}</b><span>${esc(x[0])}</span></div>`).join("");
+  const flags=Array.isArray(o.feature_flags)?o.feature_flags:[];
+  const hist=Array.isArray(o.history)?o.history:[];
+  const maxM=Math.max(...hist.map(x=>Number(x.mrr_cents||0)),1);
+  const maxR=Math.max(...hist.map(x=>Number(x.paid_revenue_cents||0)),1);
+  $("mrrHistory").innerHTML=hist.length?hist.slice().reverse().map(x=>`<div class="sa-history-row"><span>${esc(x.metric_date)}</span><div class="sa-history-track"><div class="sa-history-fill" style="width:${Math.max(2,Number(x.mrr_cents||0)/maxM*100)}%"></div></div><b>${euro(x.mrr_cents)}</b></div>`).join(""):"<div class="sa-activity-item">Aún no hay snapshots.</div>";
+  $("revenueHistory").innerHTML=hist.length?hist.slice().reverse().map(x=>`<div class="sa-history-row"><span>${esc(x.metric_date)}</span><div class="sa-history-track"><div class="sa-history-fill" style="width:${Math.max(2,Number(x.paid_revenue_cents||0)/maxR*100)}%"></div></div><b>${euro(x.paid_revenue_cents)}</b></div>`).join(""):"<div class="sa-activity-item">Aún no hay snapshots.</div>";
+  $("featureFlags").innerHTML=flags.length?flags.map(x=>`<div class="sa-activity-item"><div><b>${esc(x.name)}</b><small>${esc(x.description||"")}</small></div><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-feature="${esc(x.key)}" ${x.enabled?"checked":""}> ${x.enabled?"Activada":"Desactivada"}</label></div>`).join(""):"<div class=\"sa-activity-item\">No hay funciones configuradas.</div>";
+  document.querySelectorAll("[data-feature]").forEach(el=>el.addEventListener("change",async()=>{
+    el.disabled=true;
+    const r=await supabaseClient.rpc("super_admin_set_feature_flag",{p_key:el.dataset.feature,p_enabled:el.checked});
+    if(r.error){
+      el.checked=!el.checked;
+      el.disabled=false;
+      showBootError(r.error.message);
+    }else{
+      await load();
+    }
+  }));
+}
 function renderActivity(){
 const rows=dashboard.activity||[];
 $("activityRows").innerHTML=rows.length?rows.map(x=>`<div class="sa-activity-item"><div><b>${esc(x.action||"Actividad")}</b><small>${esc(x.entity_name||x.entity_type||"") } · ${esc(x.actor_name||"Super admin")}</small></div><span class="sa-nowrap">${date(x.created_at)}</span></div>`).join(""):"<div class=\"sa-activity-item\"><div><b>Sin actividad administrativa</b><small>Los cambios realizados desde ahora aparecerán aquí.</small></div></div>";
@@ -609,7 +638,8 @@ async function load(showSuccess=false){
     boxes:Array.isArray(data.boxes)?data.boxes:[],
     users:Array.isArray(data.users)?data.users:[],
     payments:Array.isArray(data.payments)?data.payments:[],
-    activity:[]
+    activity:[],
+    operations:data.operations||{}
   };
   try{
     const activityRpc=await supabaseClient.rpc("get_super_admin_activity");
