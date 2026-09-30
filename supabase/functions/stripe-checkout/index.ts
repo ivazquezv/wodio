@@ -33,6 +33,57 @@ Deno.serve(async (req: Request) => {
     if (userError || !user) return new Response(JSON.stringify({ error: "invalid_session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const body = await req.json();
+    const paymentId = String(body?.payment_id || "").trim();
+
+    if (paymentId) {
+      const { data: payment, error: paymentError } = await adminClient
+        .from("payments")
+        .select("id,user_id,box_id,concept,amount_cents,currency,status")
+        .eq("id", paymentId)
+        .single();
+      if (paymentError || !payment) throw new Error("payment_not_found");
+      if (payment.user_id !== user.id) throw new Error("payment_not_owned");
+      if (payment.status !== "pending") throw new Error("payment_not_pending");
+      if (!Number(payment.amount_cents) || Number(payment.amount_cents) <= 0) throw new Error("invalid_payment_amount");
+
+      const origin = new URL(req.url).origin;
+      const successUrl = body?.success_url || origin + "/payments.html?payment=success&session_id={CHECKOUT_SESSION_ID}";
+      const cancelUrl = body?.cancel_url || origin + "/payments.html?payment=cancelled";
+      const params = new URLSearchParams();
+      params.set("mode", "payment");
+      params.set("customer_email", user.email || "");
+      params.set("success_url", successUrl);
+      params.set("cancel_url", cancelUrl);
+      params.set("line_items[0][price_data][currency]", String(payment.currency || "EUR").toLowerCase());
+      params.set("line_items[0][price_data][unit_amount]", String(payment.amount_cents));
+      params.set("line_items[0][price_data][product_data][name]", payment.concept || "Pago WodIO");
+      params.set("line_items[0][quantity]", "1");
+      params.set("metadata[payment_id]", payment.id);
+      params.set("metadata[box_id]", payment.box_id);
+      params.set("metadata[user_id]", payment.user_id);
+      params.set("payment_intent_data[metadata][payment_id]", payment.id);
+      params.set("payment_intent_data[metadata][box_id]", payment.box_id);
+      params.set("payment_intent_data[metadata][user_id]", payment.user_id);
+
+      const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${stripeSecret}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body: params,
+      });
+      const session = await response.json();
+      if (!response.ok) throw new Error(session?.error?.message || "stripe_checkout_failed");
+
+      await adminClient.from("payments").update({
+        provider: "stripe",
+        provider_reference: session.id,
+        updated_at: new Date().toISOString(),
+      }).eq("id", payment.id).eq("user_id", user.id);
+
+      return new Response(JSON.stringify({ url: session.url, session_id: session.id, payment_id: payment.id }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const plan = String(body?.plan || "").toLowerCase() as keyof typeof PLANS;
     const selected = PLANS[plan];
     if (!selected) return new Response(JSON.stringify({ error: "invalid_plan" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
