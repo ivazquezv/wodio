@@ -25,7 +25,7 @@
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-check-circle"></i></div><div><div class="app-stat-value" id="paidAmount">—</div><div class="app-stat-label">Pagado este año</div></div></div>
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-receipt"></i></div><div><div class="app-stat-value" id="paymentCount">—</div><div class="app-stat-label">Movimientos</div></div></div>
 </section>
-<section class="app-card" id="paymentOptions" style="margin-top:18px"><div class="app-card-head"><div><h2>Formas de pago</h2><p>Elige cómo realizar el pago cuando tu box tenga métodos configurados.</p></div></div><div id="paymentMethods" class="payment-method-grid"><div class="app-loading">Cargando formas de pago…</div></div></section>
+<section class="app-card" id="paymentOptions" style="margin-top:18px"><div class="app-card-head"><div><h2>Formas de pago</h2><p>Elige cómo realizar el pago. Las cuotas pendientes pueden pagarse directamente con tarjeta mediante Stripe.</p></div></div><div id="paymentMethods" class="payment-method-grid"><div class="app-loading">Cargando formas de pago…</div></div></section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h2>Historial</h2><p>Los pagos se gestionan desde la administración del box.</p></div></div>
 <div id="paymentList" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div>
@@ -53,10 +53,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
   const rows=payments||[];
+  const paymentResult=new URLSearchParams(window.location.search).get("payment");
+  if(paymentResult==="success") WodIOApp.message(message,"Pago enviado a Stripe. El estado se actualizará automáticamente cuando Stripe confirme el cobro.","success");
+  if(paymentResult==="cancelled") WodIOApp.message(message,"Pago cancelado. La cuota sigue pendiente.","warning");
+  const pendingRows=rows.filter(p=>p.status==="pending");
+  const stripeMethod = pendingRows.length ? {method_key:"stripe",name:"Tarjeta bancaria",icon:"ph-credit-card",instructions:"Pago seguro mediante Stripe. Puedes pagar cada cuota pendiente directamente desde WodIO."} : null;
   const {data:methods,error:methodsError}=await supabaseClient.from("box_payment_methods").select("method_key,name,icon,checkout_url,instructions,sort_order").eq("box_id",ctx.profile?.box_id).eq("enabled",true).order("sort_order");
   if(methodsError){WodIOApp.message(message,methodsError.message);methodsList.innerHTML="<div class=\"app-empty\">No se pudieron cargar las formas de pago.</div>";} else {
-    const pendingRows=rows.filter(p=>p.status==="pending");
-    const cards=(methods||[]).map(m=>{const actions=m.checkout_url?"<button type=\"button\" class=\"app-btn primary\" data-start-payment=\""+WodIOApp.escapeHtml(m.method_key)+"\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar con "+WodIOApp.escapeHtml(m.name)+"</button>":"";return "<article class=\"payment-method-card\"><div class=\"payment-method-icon\"><i class=\"ph "+WodIOApp.escapeHtml(m.icon||"ph-credit-card")+"\"></i></div><div><h3>"+WodIOApp.escapeHtml(m.name)+"</h3><p>"+WodIOApp.escapeHtml(m.instructions||"Forma de pago disponible en tu box.")+"</p>"+actions+"</div></article>";}).join("");
+    const configuredMethods=methods||[];
+    const cards=(stripeMethod?[stripeMethod]:[]).concat(configuredMethods).map(m=>{const actions=m.method_key==="stripe" ? "<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\">Pagar cuota pendiente</button>" : m.checkout_url?"<button type=\"button\" class=\"app-btn primary\" data-start-payment=\""+WodIOApp.escapeHtml(m.method_key)+"\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar con "+WodIOApp.escapeHtml(m.name)+"</button>":"";return "<article class=\"payment-method-card\"><div class=\"payment-method-icon\"><i class=\"ph "+WodIOApp.escapeHtml(m.icon||"ph-credit-card")+"\"></i></div><div><h3>"+WodIOApp.escapeHtml(m.name)+"</h3><p>"+WodIOApp.escapeHtml(m.instructions||"Forma de pago disponible en tu box.")+"</p>"+actions+"</div></article>";}).join("");
     methodsList.innerHTML=cards||"<div class=\"app-empty\">El box todavía no ha configurado formas de pago.</div>";
   }
   const pending=rows.filter(p=>p.status==="pending").reduce((s,p)=>s+Number(p.amount_cents||0),0);
@@ -67,15 +72,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("paymentCount").textContent=rows.length;
   if(!rows.length){list.innerHTML='<div class="app-empty">Todavía no hay movimientos.</div>';return;}
   const labels={pending:["Pendiente","warning"],paid:["Pagado","success"],failed:["Fallido","danger"],cancelled:["Cancelado","danger"],refunded:["Reembolsado","primary"]};
-  list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Método</th><th>Estado</th><th>Pagado</th></tr></thead><tbody>'+
-    rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td>'+WodIOApp.escapeHtml((methods||[]).find(m=>m.method_key===p.payment_method)?.name||p.payment_method||"—")+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td></tr>').join('')+
+  list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Método</th><th>Estado</th><th>Pagado</th><th></th></tr></thead><tbody>'+
+    rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td>'+WodIOApp.escapeHtml((methods||[]).find(m=>m.method_key===p.payment_method)?.name||p.payment_method||"—")+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td><td>'+(p.status==="pending"?'<button type="button" class="app-btn primary" data-pay-payment="'+WodIOApp.escapeHtml(p.id)+'">Pagar ahora</button>':"")+"</td></tr>").join('')+
     '</tbody></table>';
   document.addEventListener("click",async ev=>{
+    const stripeBtn=ev.target.closest("[data-start-stripe-payment]");
+    const rowPayBtn=ev.target.closest("[data-pay-payment]");
+    if(stripeBtn || rowPayBtn){
+      const paymentId=rowPayBtn?.dataset.payPayment || pendingRows[0]?.id;
+      if(!paymentId){WodIOApp.message(message,"No hay ninguna cuota pendiente para pagar.");return;}
+      const btn=stripeBtn||rowPayBtn;
+      btn.disabled=true;
+      btn.textContent="Conectando con Stripe…";
+      try{
+        const {data,error}=await supabaseClient.functions.invoke("stripe-checkout",{
+          body:{payment_id:paymentId}
+        });
+        if(error) throw error;
+        if(!data?.url) throw new Error("Stripe no devolvió una URL de pago.");
+        window.location.href=data.url;
+      }catch(error){
+        WodIOApp.message(message,error?.message||"No se pudo iniciar el pago con Stripe.");
+        btn.disabled=false;
+        btn.textContent="Pagar ahora";
+      }
+      return;
+    }
     const payBtn=ev.target.closest("[data-start-payment]");
     if(payBtn){
       payBtn.disabled=true;
       try{
         const url=payBtn.dataset.paymentUrl;
+        if(!url) throw new Error("Esta forma de pago no tiene una pasarela configurada.");
         window.open(url,"_blank","noopener");
       }catch(error){WodIOApp.message(message,error?.message||"No se pudo iniciar el pago.");}
       finally{payBtn.disabled=false;}
