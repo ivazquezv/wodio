@@ -64,9 +64,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   if(methodsError){WodIOApp.message(message,methodsError.message);methodsList.innerHTML="<div class=\"app-empty\">No se pudieron cargar las formas de pago.</div>";} else {
     const logoFor=(key)=>key==="paypal"?"<img class=\"payment-method-logo\" src=\"https://www.paypalobjects.com/webstatic/icon/pp258.png\" alt=\"PayPal\">":key==="bizum"?'<span class="payment-method-icon" aria-label="Bizum">B</span>':key==="transfer"?'<i class="ph ph-bank"></i>':key==="direct_debit"?'<i class="ph ph-arrows-left-right"></i>':'<i class="ph ph-credit-card"></i>';
     const actionsFor=(m)=>{
-      if(m.method_key==="stripe") return "<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"card\">Pagar con tarjeta</button>";
-      if(m.method_key==="bizum") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"bizum\">Pagar con Bizum</button>":"";
-      if(m.method_key==="direct_debit") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"sepa_debit\">Configurar domiciliación</button>":"";
+      if(m.method_key==="stripe") return "<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"card\">Pagar</button>";
+      if(m.method_key==="bizum") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"bizum\">Pagar</button>":"";
+      if(m.method_key==="direct_debit") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"sepa_debit\">Pagar</button>":"";
       if(m.checkout_url) return "<button type=\"button\" class=\"app-btn primary\" data-start-payment=\"true\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar</button>";
       if(m.method_key==="paypal") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-paypal=\"true\">Pagar</button>":"";
       return "<div class=\"payment-method-note\">El box debe configurar las instrucciones de este método.</div>";
