@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(m.method_key==="stripe") return "<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"card\">Pagar</button>";
       if(m.method_key==="bizum") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"bizum\">Pagar</button>":"";
       if(m.method_key==="direct_debit") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"sepa_debit\">Pagar</button>":"";
-      if(m.method_key==="paypal") return pendingRows.length?"<button type="button" class="app-btn primary" data-start-paypal="true">Pagar</button>":"";
+      if(m.method_key==="paypal") return pendingRows.length?'<button type="button" class="app-btn primary" data-start-paypal="true">Pagar</button>':"";
       if(m.method_key==="transfer" || m.method_key==="cash") return "<div class=\"payment-method-note\">Pago manual. Sigue las instrucciones del box y espera a que el administrador confirme el cobro.</div>";
       if(m.checkout_url) return "<button type=\"button\" class=\"app-btn primary\" data-start-payment=\"true\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar</button>";
       return "<div class=\"payment-method-note\">El box debe configurar la pasarela o las instrucciones de este método.</div>";
