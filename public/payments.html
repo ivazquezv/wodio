@@ -57,10 +57,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   if(paymentResult==="success") WodIOApp.message(message,"Pago enviado a Stripe. El estado se actualizará automáticamente cuando Stripe confirme el cobro.","success");
   if(paymentResult==="cancelled") WodIOApp.message(message,"Pago cancelado. La cuota sigue pendiente.","warning");
   const pendingRows=rows.filter(p=>p.status==="pending");
-  const stripeMethod = pendingRows.length ? {method_key:"stripe",name:"Tarjeta bancaria",icon:"ph-credit-card",instructions:"Pago seguro mediante Stripe.",payment_action:"stripe"} : null;
+  const stripeMethod = {method_key:"stripe",name:"Stripe",icon:"ph-credit-card",instructions:"Pago seguro con tarjeta y los métodos habilitados en tu cuenta de Stripe.",payment_action:"stripe"};
   const {data:methods,error:methodsError}=await supabaseClient.from("box_payment_methods").select("method_key,name,icon,checkout_url,instructions,sort_order,enabled").eq("box_id",ctx.profile?.box_id).eq("enabled",true).order("sort_order");
   const configuredMethods=(methods||[]).filter(m=>["paypal","bizum","transfer","direct_debit"].includes(m.method_key));
-  const paymentMethods=(stripeMethod?[stripeMethod]:[]).concat(configuredMethods);
+  const paymentMethods=[stripeMethod].concat(configuredMethods);
   if(methodsError){WodIOApp.message(message,methodsError.message);methodsList.innerHTML="<div class=\"app-empty\">No se pudieron cargar las formas de pago.</div>";} else {
     const logoFor=(key)=>key==="paypal"?"<img class=\"payment-method-logo\" src=\"https://www.paypalobjects.com/webstatic/icon/pp258.png\" alt=\"PayPal\">":key==="bizum"?'<span class="payment-method-icon" aria-label="Bizum">B</span>':key==="transfer"?'<i class="ph ph-bank"></i>':key==="direct_debit"?'<i class="ph ph-arrows-left-right"></i>':'<i class="ph ph-credit-card"></i>';
     const actionsFor=(m)=>{
@@ -91,14 +91,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(stripeBtn || rowPayBtn || paypalBtn){
       const paymentId=rowPayBtn?.dataset.payPayment || pendingRows[0]?.id;
       if(!paymentId){WodIOApp.message(message,"No hay ninguna cuota pendiente para pagar.");return;}
-      const btn=stripeBtn||rowPayBtn;
+      const btn=stripeBtn||rowPayBtn||paypalBtn;
       btn.disabled=true;
       btn.textContent=paypalBtn?"Conectando con PayPal…":"Conectando con la pasarela…";
       try{
         const gateway=paypalBtn?"paypal-checkout":"stripe-checkout";
         const {data,error}=await supabaseClient.functions.invoke(gateway,{body:{payment_id:paymentId,payment_method:stripeBtn?.dataset.paymentMethod||"card"}});
         if(error) throw error;
-        if(!data?.url) throw new Error("Stripe no devolvió una URL de pago.");
+        if(!data?.url) throw new Error(paypalBtn?"PayPal no devolvió una URL de pago.":"Stripe no devolvió una URL de pago.");
         window.location.href=data.url;
       }catch(error){
         WodIOApp.message(message,error?.message||"No se pudo iniciar el pago con Stripe.");
