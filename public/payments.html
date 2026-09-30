@@ -36,7 +36,7 @@
 <script src="js/supabase.js"></script>
 <script src="js/wodio-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-<style>.payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-logo{width:42px;height:42px;display:block;object-fit:contain}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}.payment-method-disabled{opacity:.72}.payment-method-note{margin-top:7px;font-size:.72rem;color:var(--text-muted)}</style>
+<style>.payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-logo{width:42px;height:42px;display:block;object-fit:contain}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}.payment-method-disabled{opacity:.72}.payment-method-note{margin-top:7px;font-size:.72rem;color:var(--text-muted)}.payment-method-card .app-btn{width:auto;max-width:100%;padding:9px 14px;font-size:.82rem;white-space:nowrap}.payment-method-card>div:last-child{min-width:0}.payment-method-card .payment-method-note{max-width:280px}</style>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const ctx = await WodIOApp.requireUser();
@@ -67,8 +67,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(m.method_key==="stripe") return "<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"card\">Pagar con tarjeta</button>";
       if(m.method_key==="bizum") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"bizum\">Pagar con Bizum</button>":"";
       if(m.method_key==="direct_debit") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-stripe-payment=\"true\" data-payment-method=\"sepa_debit\">Configurar domiciliación</button>":"";
-      if(m.checkout_url) return "<button type=\"button\" class=\"app-btn primary\" data-start-payment=\"true\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar con "+WodIOApp.escapeHtml(m.name)+"</button>";
-      if(m.method_key==="paypal") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-paypal=\"true\">Pagar con PayPal</button>":"";
+      if(m.checkout_url) return "<button type=\"button\" class=\"app-btn primary\" data-start-payment=\"true\" data-payment-url=\""+WodIOApp.escapeHtml(m.checkout_url)+"\">Pagar</button>";
+      if(m.method_key==="paypal") return pendingRows.length?"<button type=\"button\" class=\"app-btn primary\" data-start-paypal=\"true\">Pagar</button>":"";
       return "<div class=\"payment-method-note\">El box debe configurar las instrucciones de este método.</div>";
     };
     methodsList.innerHTML=paymentMethods.map(m=>"<article class=\"payment-method-card\"><div class=\"payment-method-icon\">"+logoFor(m.method_key)+"</div><div><h3>"+WodIOApp.escapeHtml(m.name)+"</h3><p>"+WodIOApp.escapeHtml(m.instructions||"Forma de pago disponible en tu box.")+"</p>"+actionsFor(m)+"</div></article>").join("")||"<div class=\"app-empty\">El box todavía no ha configurado formas de pago.</div>";
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }catch(error){
         WodIOApp.message(message,error?.message||"No se pudo iniciar el pago con Stripe.");
         btn.disabled=false;
-        btn.textContent=paypalBtn?"Pagar con PayPal":"Pagar ahora";
+        btn.textContent=paypalBtn?"Pagar":"Pagar ahora";
       }
       return;
     }
