@@ -85,10 +85,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td>'+WodIOApp.escapeHtml((methods||[]).find(m=>m.method_key===p.payment_method)?.name||p.payment_method||"—")+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td><td>'+(p.status==="pending"?'<button type="button" class="app-btn primary" data-pay-payment="'+WodIOApp.escapeHtml(p.id)+'">Pagar ahora</button>':"")+"</td></tr>").join('')+
     '</tbody></table>';
   document.addEventListener("click",async ev=>{
+    console.log("[WodIO Payments] click", {target: ev.target, tag: ev.target?.tagName, text: ev.target?.textContent?.trim()});
     const stripeBtn=ev.target.closest("[data-start-stripe-payment]");
     const paypalBtn=ev.target.closest("[data-start-paypal]");
     const rowPayBtn=ev.target.closest("[data-pay-payment]");
     if(stripeBtn || rowPayBtn || paypalBtn){
+      console.log("[WodIO Payments] payment button detected", {
+        type: stripeBtn ? "stripe" : rowPayBtn ? "payment-row" : "paypal",
+        paymentId: rowPayBtn?.dataset.payPayment || pendingRows[0]?.id,
+        pendingRows,
+        stripeMethod: stripeBtn?.dataset.paymentMethod,
+        session: supabaseClient?.auth ? "supabase-client-ok" : "supabase-client-missing"
+      });
       const paymentId=rowPayBtn?.dataset.payPayment || pendingRows[0]?.id;
       if(!paymentId){WodIOApp.message(message,"No hay ninguna cuota pendiente para pagar.");return;}
       const btn=stripeBtn||rowPayBtn||paypalBtn;
@@ -96,11 +104,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.textContent=paypalBtn?"Conectando con PayPal…":"Conectando con la pasarela…";
       try{
         const gateway=paypalBtn?"paypal-checkout":"stripe-checkout";
-        const {data,error}=await supabaseClient.functions.invoke(gateway,{body:{payment_id:paymentId,payment_method:stripeBtn?.dataset.paymentMethod||"card"}});
+        const payload={body:{payment_id:paymentId,payment_method:stripeBtn?.dataset.paymentMethod||"card"}};
+        console.log("[WodIO Payments] invoking Edge Function", {gateway, payload});
+        const {data,error}=await supabaseClient.functions.invoke(gateway,payload);
+        console.log("[WodIO Payments] Edge Function response", {gateway, data, error});
         if(error) throw error;
         if(!data?.url) throw new Error(paypalBtn?"PayPal no devolvió una URL de pago.":"Stripe no devolvió una URL de pago.");
         window.location.href=data.url;
       }catch(error){
+        console.error("[WodIO Payments] payment error", error);
         WodIOApp.message(message,error?.message||"No se pudo iniciar el pago con Stripe.");
         btn.disabled=false;
         btn.textContent=paypalBtn?"Pagar":"Pagar ahora";
@@ -109,12 +121,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const payBtn=ev.target.closest("[data-start-payment]");
     if(payBtn){
+      console.log("[WodIO Payments] external payment button detected", {url: payBtn.dataset.paymentUrl});
       payBtn.disabled=true;
       try{
         const url=payBtn.dataset.paymentUrl;
         if(!url) throw new Error("Esta forma de pago no tiene una pasarela configurada.");
         window.open(url,"_blank","noopener");
-      }catch(error){WodIOApp.message(message,error?.message||"No se pudo iniciar el pago.");}
+      }catch(error){console.error("[WodIO Payments] external payment error", error);WodIOApp.message(message,error?.message||"No se pudo iniciar el pago.");}
       finally{payBtn.disabled=false;}
       return;
     }
