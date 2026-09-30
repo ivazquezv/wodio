@@ -1,0 +1,17 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+const corsHeaders={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json"}});
+async function paypalToken(id:string,secret:string){const r=await fetch("https://api-m.paypal.com/v1/oauth2/token",{method:"POST",headers:{Authorization:"Basic "+btoa(id+":"+secret),"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=client_credentials"});const d=await r.json();if(!r.ok)throw new Error(d?.error_description||"paypal_auth_failed");return d.access_token;}
+Deno.serve(async(req:Request)=>{if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});if(req.method!=="POST")return json({error:"method_not_allowed"},405);try{
+const clientId=Deno.env.get("PAYPAL_CLIENT_ID"),clientSecret=Deno.env.get("PAYPAL_CLIENT_SECRET");if(!clientId||!clientSecret)throw new Error("PAYPAL_CREDENTIALS_not_configured");
+const auth=req.headers.get("Authorization");if(!auth)return json({error:"authentication_required"},401);
+const url=Deno.env.get("SUPABASE_URL")!,anon=Deno.env.get("SUPABASE_ANON_KEY")!,service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const userClient=createClient(url,anon,{global:{headers:{Authorization:auth}},auth:{autoRefreshToken:false,persistSession:false}});const admin=createClient(url,service,{auth:{autoRefreshToken:false,persistSession:false}});
+const {data,error}=await userClient.auth.getUser();if(error||!data.user)return json({error:"invalid_session"},401);const user=data.user;const body=await req.json();const paymentId=String(body?.payment_id||"").trim();if(!paymentId)throw new Error("payment_id_required");
+const {data:p,error:pe}=await admin.from("payments").select("id,user_id,box_id,concept,amount_cents,currency,status").eq("id",paymentId).single();if(pe||!p)throw new Error("payment_not_found");if(p.user_id!==user.id)throw new Error("payment_not_owned");if(p.status!=="pending")throw new Error("payment_not_pending");
+const token=await paypalToken(clientId,clientSecret);const origin=new URL(req.url).origin;
+const r=await fetch("https://api-m.paypal.com/v2/checkout/orders",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:p.id,custom_id:p.id,description:p.concept||"Pago WodIO",amount:{currency_code:String(p.currency||"EUR").toUpperCase(),value:(Number(p.amount_cents)/100).toFixed(2)}}],application_context:{brand_name:"WodIO",user_action:"PAY_NOW",return_url:origin+"/payments.html?paypal=success",cancel_url:origin+"/payments.html?paypal=cancelled"}})});
+const d=await r.json();if(!r.ok)throw new Error(d?.message||"paypal_order_failed");const approve=d.links?.find((x:{rel:string})=>x.rel==="approve")?.href;if(!approve)throw new Error("paypal_approval_url_missing");
+await admin.from("payments").update({provider:"paypal",provider_reference:d.id,updated_at:new Date().toISOString()}).eq("id",p.id).eq("user_id",user.id);return json({url:approve,order_id:d.id,payment_id:p.id});
+}catch(e){const m=e instanceof Error?e.message:"unexpected_error";return json({error:m},m==="PAYPAL_CREDENTIALS_not_configured"?503:400);}});
