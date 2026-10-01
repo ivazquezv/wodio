@@ -539,10 +539,20 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   };
   groups.forEach(group=>{
    const button=group.querySelector("button");
-   button?.addEventListener("click",()=>{
-    const collapsed=group.classList.toggle("collapsed");
+   const syncGroup=()=>{
+    const collapsed=group.classList.contains("collapsed");
     button.setAttribute("aria-expanded",String(!collapsed));
+    let next=group.nextElementSibling;
+    while(next&&!next.classList.contains("admin-nav-group")){
+     if(next.matches(".admin-nav-link")) next.hidden=collapsed;
+     next=next.nextElementSibling;
+    }
+   };
+   button?.addEventListener("click",()=>{
+    group.classList.toggle("collapsed");
+    syncGroup();
    });
+   syncGroup();
   });
   links.forEach(link=>link.addEventListener("click",ev=>{
    const hash=link.getAttribute("href")||"#inicio";
