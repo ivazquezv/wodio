@@ -580,7 +580,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   activate(location.hash||"#inicio",false);
  }
  setupAdminNavigation();
- $("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();
+ $("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();await loadRecurringPayments();
 });
 </script>
 </body>
