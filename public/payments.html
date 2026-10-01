@@ -41,11 +41,15 @@
 console.info("[WodIO Payments] script loaded");
 document.addEventListener("DOMContentLoaded", async () => {
   console.info("[WodIO Payments] DOM ready");
-  const ctx = await WodIOApp.requireUser();
-  if (!ctx) return;
+  console.info("[WodIO Payments] requesting user context");
+  let ctx;
+  try { ctx = await WodIOApp.requireUser(); } catch (e) { console.error("[WodIO Payments] requireUser failed", e); WodIOApp.message(document.getElementById("pageMessage"), e?.message || "No se pudo iniciar la sesión."); return; }
+  console.info("[WodIO Payments] user context ready", {userId:ctx?.user?.id, boxId:ctx?.profile?.box_id});
+  if (!ctx) { console.error("[WodIO Payments] no user context"); return; }
   const list = document.getElementById("paymentList");
   const methodsList = document.getElementById("paymentMethods");
   const message = document.getElementById("pageMessage");
+  console.info("[WodIO Payments] loading payments");
   const {data: payments,error} = await supabaseClient.from("payments")
     .select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at,payment_method,provider_reference")
     .eq("user_id",ctx.user.id).order("created_at",{ascending:false});
@@ -54,15 +58,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     list.innerHTML='<div class="app-empty">No se pudieron cargar los pagos.</div>';
     return;
   }
+  console.info("[WodIO Payments] payments query result", {error, count:(payments||[]).length});
   const rows=payments||[];
   const paymentResult=new URLSearchParams(window.location.search).get("payment");
   if(paymentResult==="success") WodIOApp.message(message,"Pago enviado a Stripe. El estado se actualizará automáticamente cuando Stripe confirme el cobro.","success");
   if(paymentResult==="cancelled") WodIOApp.message(message,"Pago cancelado. La cuota sigue pendiente.","warning");
   const pendingRows=rows.filter(p=>p.status==="pending");
-  const stripeMethod = {method_key:"stripe",name:"Stripe",icon:"ph-credit-card",instructions:"Pago seguro con tarjeta y los métodos habilitados en tu cuenta de Stripe.",payment_action:"stripe"};
+  const stripeMethod = {method_key:"stripe",name:"Stripe",icon:"ph-credit-card",instructions:"Pago seguro con tarjeta y los métodos habilitados en tu cuenta de Stripe.",payment_action:"stripe",sort_order:10};
+  console.info("[WodIO Payments] loading payment methods", {boxId:ctx.profile?.box_id});
   const {data:methods,error:methodsError}=await supabaseClient.from("box_payment_methods").select("method_key,name,icon,checkout_url,instructions,sort_order,enabled").eq("box_id",ctx.profile?.box_id).eq("enabled",true).order("sort_order");
-  const configuredMethods=(methods||[]).filter(m=>["paypal","bizum","transfer","direct_debit"].includes(m.method_key));
-  const paymentMethods=[stripeMethod].concat(configuredMethods);
+  console.info("[WodIO Payments] methods query result", {error:methodsError, methods});
+  const configuredMethods=(methods||[]).filter(m=>["paypal","bizum","transfer","direct_debit","cash"].includes(m.method_key));
+  const paymentMethods=[stripeMethod].concat(configuredMethods).sort((a,b)=>Number(a.sort_order??10)-Number(b.sort_order??10));
+  console.info("[WodIO Payments] sorted payment methods", paymentMethods.map(m=>({key:m.method_key,order:m.sort_order})));
   if(methodsError){WodIOApp.message(message,methodsError.message);methodsList.innerHTML="<div class=\"app-empty\">No se pudieron cargar las formas de pago.</div>";} else {
     const logoFor=(key)=>key==="paypal"?'<i class="ph ph-paypal-logo"></i>':key==="bizum"?'<span class="payment-method-icon" aria-label="Bizum">B</span>':key==="transfer"?'<i class="ph ph-bank"></i>':key==="direct_debit"?'<i class="ph ph-arrows-left-right"></i>':'<i class="ph ph-credit-card"></i>';
     const actionsFor=(m)=>{
