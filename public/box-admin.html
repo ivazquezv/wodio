@@ -183,9 +183,15 @@
 <div class="app-field"><label for="paymentRequestAmount">Importe (€)</label><input id="paymentRequestAmount" type="number" min="0.01" step=".01" required placeholder="30,00"></div>
 <div class="app-field"><label for="paymentRequestDue">Fecha de vencimiento</label><input id="paymentRequestDue" type="date"></div>
 <div class="app-field"><label for="paymentRequestCategory">Categoría</label><input id="paymentRequestCategory" placeholder="Cuota, matrícula, evento…"></div>
+<div class="app-field"><label class="app-check"><input id="paymentRequestRecurring" type="checkbox"> <span>Pago recurrente mensual</span></label></div>
+<div class="app-field" id="paymentRecurringDayWrap" style="display:none"><label for="paymentRecurringDay">Día de cobro mensual</label><input id="paymentRecurringDay" type="number" min="1" max="28" value="1"><span class="field-help">Se generará automáticamente una nueva cuota cada mes.</span></div>
 <div class="app-field full"><label for="paymentRequestNotes">Notas para el cliente</label><input id="paymentRequestNotes" placeholder="Información adicional sobre este pago"></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-paper-plane-tilt"></i> Crear pago pendiente</button></form>
 <div id="paymentRequestMessage" class="app-message" style="margin-top:10px"></div>
+<div class="app-card" style="margin-top:14px">
+<div class="app-card-head"><div><h4>Pagos recurrentes activos</h4><p>Cuotas que WodIO generará automáticamente al inicio de cada mes.</p></div></div>
+<div id="recurringPaymentsList" class="app-list"><div class="app-loading">Cargando…</div></div>
+</div>
 </section>
 <div class="app-grid app-grid-2">
 <section class="app-card">
@@ -491,39 +497,49 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
  document.addEventListener("click",ev=>{const id=ev.target.closest("[data-edit-user]")?.dataset.editUser;if(!id)return;const v=users.find(x=>x.id===id);if(!v)return;$("userEditId").value=v.id;$("userEditFirst").value=v.first_name||"";$("userEditLast").value=v.last_name||"";$("userEditEmail").value=v.email||"";$("userEditPhone").value=v.phone||"";$("userEditRole").value=["athlete","coach"].includes(v.role)?v.role:"athlete";$("userEditBoxMembership").checked=true;$("userForm").scrollIntoView({behavior:"smooth",block:"center"});});
  
  const paymentRequestForm=$("paymentRequestForm");
+ const recurringToggle=$("paymentRequestRecurring"), recurringDayWrap=$("paymentRecurringDayWrap");
+ recurringToggle?.addEventListener("change",()=>{recurringDayWrap.style.display=recurringToggle.checked?"block":"none";});
+ async function loadRecurringPayments(){
+  const list=$("recurringPaymentsList"); if(!list||!boxId)return;
+  const {data,error}=await supabaseClient.from("recurring_payment_schedules").select("id,user_id,concept,amount_cents,currency,due_day,category,active,next_run_date").eq("box_id",boxId).eq("active",true).order("next_run_date");
+  if(error){list.innerHTML='<div class="app-message">'+WodIOApp.escapeHtml(error.message)+'</div>';return;}
+  if(!data?.length){list.innerHTML='<div class="app-empty">No hay pagos recurrentes activos.</div>';return;}
+  const userMap=new Map(users.map(u=>[u.id,u]));
+  list.innerHTML=data.map(r=>{
+   const u=userMap.get(r.user_id); const label=name(u||{});
+   return '<div class="app-list-row"><div><strong>'+WodIOApp.escapeHtml(label)+'</strong><div class="app-muted">'+WodIOApp.escapeHtml(r.concept)+' · '+WodIOApp.euro(r.amount_cents)+' · día '+r.due_day+' de cada mes</div></div><button class="app-btn" type="button" data-disable-recurring="'+r.id+'"><i class="ph ph-pause"></i> Desactivar</button></div>';
+  }).join("");
+  list.querySelectorAll("[data-disable-recurring]").forEach(btn=>btn.addEventListener("click",async()=>{
+   btn.disabled=true;
+   const {error}=await supabaseClient.from("recurring_payment_schedules").update({active:false,updated_at:new Date().toISOString()}).eq("id",btn.dataset.disableRecurring).eq("box_id",boxId);
+   if(error)WodIOApp.message($("paymentRequestMessage"),error.message); else await loadRecurringPayments();
+   btn.disabled=false;
+  }));
+ }
  if(paymentRequestForm){
   paymentRequestForm.addEventListener("submit",async ev=>{
    ev.preventDefault();
-   const btn=ev.submitter;
-   const requestMsg=$("paymentRequestMessage");
-   const userId=$("paymentRequestUser").value;
-   const concept=$("paymentRequestConcept").value.trim();
-   const amount=Math.round(Number($("paymentRequestAmount").value)*100);
+   const btn=ev.submitter, requestMsg=$("paymentRequestMessage"), userId=$("paymentRequestUser").value;
+   const concept=$("paymentRequestConcept").value.trim(), amount=Math.round(Number($("paymentRequestAmount").value)*100);
+   const recurring=recurringToggle.checked, dueDate=$("paymentRequestDue").value||null;
+   const dueDay=Math.max(1,Math.min(28,Number($("paymentRecurringDay").value)||1));
    if(!userId||!concept||amount<=0){WodIOApp.message(requestMsg,"Selecciona un cliente e introduce un importe válido.");return;}
    btn.disabled=true;
    try{
-    const {error}=await supabaseClient.from("payments").insert({
-      box_id:boxId,
-      user_id:userId,
-      concept,
-      amount_cents:amount,
-      currency:"EUR",
-      status:"pending",
-      due_date:$("paymentRequestDue").value||null,
-      paid_at:null,
-      provider:null,
-      provider_reference:null,
-      category:$("paymentRequestCategory").value.trim()||null,
-      payment_method:null,
-      notes:$("paymentRequestNotes").value.trim()||null
-    });
-    if(error)throw error;
-    WodIOApp.message(requestMsg,"Pago pendiente creado. El cliente ya puede verlo en Pagos.","success");
-    paymentRequestForm.reset();
-    await load();
-   }catch(error){WodIOApp.message(requestMsg,error?.message||"No se pudo crear el pago pendiente.");}
+    const base={box_id:boxId,user_id:userId,concept,amount_cents:amount,currency:"EUR",status:"pending",due_date:dueDate,paid_at:null,provider:null,provider_reference:null,category:$("paymentRequestCategory").value.trim()||null,payment_method:null,notes:$("paymentRequestNotes").value.trim()||null};
+    const {error}=await supabaseClient.from("payments").insert(base); if(error)throw error;
+    if(recurring){
+      const firstOfNextMonth=new Date(); firstOfNextMonth.setDate(1); firstOfNextMonth.setMonth(firstOfNextMonth.getMonth()+1);
+      const nextRun=firstOfNextMonth.toISOString().slice(0,10);
+      const {error:recError}=await supabaseClient.from("recurring_payment_schedules").insert({box_id:boxId,user_id:userId,concept,amount_cents:amount,currency:"EUR",due_day:dueDay,category:base.category,notes:base.notes,active:true,next_run_date:nextRun});
+      if(recError)throw recError;
+    }
+    WodIOApp.message(requestMsg,recurring?"Pago creado y programado mensualmente. A partir del próximo mes WodIO generará automáticamente la nueva cuota.":"Pago pendiente creado. El cliente ya puede verlo en Pagos.","success");
+    paymentRequestForm.reset(); recurringDayWrap.style.display="none"; await load(); await loadRecurringPayments();
+   }catch(error){WodIOApp.message(requestMsg,error?.message||"No se pudo crear el pago.");}
    finally{btn.disabled=false;}
   });
+  loadRecurringPayments();
  }
  function setupAdminNavigation(){
   const links=[...document.querySelectorAll(".admin-nav a[href^='#']")];
