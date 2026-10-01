@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
 <link rel="stylesheet" href="css/wodio.css">
 <link rel="stylesheet" href="css/wodio-app.css">
-<script src="https://unpkg.com/phosphor-icons" defer></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 </head>
 <body class="app-page">
 <div class="app-shell">
@@ -38,7 +38,9 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>.payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-logo{width:42px;height:42px;display:block;object-fit:contain}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}.payment-method-disabled{opacity:.72}.payment-method-note{margin-top:7px;font-size:.72rem;color:var(--text-muted)}.payment-method-card .app-btn{width:auto;max-width:100%;padding:9px 14px;font-size:.82rem;white-space:nowrap}.payment-method-card>div:last-child{min-width:0}.payment-method-card .payment-method-note{max-width:280px}</style>
 <script>
+console.info("[WodIO Payments] script loaded");
 document.addEventListener("DOMContentLoaded", async () => {
+  console.info("[WodIO Payments] DOM ready");
   const ctx = await WodIOApp.requireUser();
   if (!ctx) return;
   const list = document.getElementById("paymentList");
@@ -85,6 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   list.innerHTML='<table class="app-table"><thead><tr><th>Concepto</th><th>Importe</th><th>Vencimiento</th><th>Método</th><th>Estado</th><th>Pagado</th><th></th></tr></thead><tbody>'+
     rows.map(p=>'<tr><td>'+WodIOApp.escapeHtml(p.concept)+'</td><td>'+WodIOApp.euro(p.amount_cents)+'</td><td>'+WodIOApp.formatDate(p.due_date)+'</td><td>'+WodIOApp.escapeHtml((methods||[]).find(m=>m.method_key===p.payment_method)?.name||p.payment_method||"—")+'</td><td><span class="app-badge '+labels[p.status]?.[1]+'">'+(labels[p.status]?.[0]||p.status)+'</span></td><td>'+WodIOApp.formatDate(p.paid_at,{withYear:true})+'</td><td>'+(p.status==="pending"?'<button type="button" class="app-btn primary" data-pay-payment="'+WodIOApp.escapeHtml(p.id)+'">Pagar ahora</button>':"")+"</td></tr>").join('')+
     '</tbody></table>';
+  console.info("[WodIO Payments] payment UI ready", {buttons: document.querySelectorAll("[data-start-stripe-payment],[data-start-paypal],[data-pay-payment]").length, pending: pendingRows.length});
   document.addEventListener("click",async ev=>{
     console.log("[WodIO Payments] click", {target: ev.target, tag: ev.target?.tagName, text: ev.target?.textContent?.trim()});
     const stripeBtn=ev.target.closest("[data-start-stripe-payment]");
