@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const ctx=await WodIOApp.requireUser({roles:["box_admin","super_admin"]}); if(!ctx)return;
  const boxId=ctx.profile?.box_id, msg=document.getElementById("pageMessage");
  if(!boxId){WodIOApp.message(msg,"La cuenta de administración no tiene un box asignado.");return;}
- const $=id=>document.getElementById(id), name=u=>[u?.first_name,u?.last_name].filter(Boolean).join(" ")||"Usuario";
+ const $=id=>document.getElementById(id), name=u=>[u?.first_name,u?.last_name].filter(Boolean).join(" ")||u?.email||u?.phone||"Usuario";
  let box=null, users=[], coaches=[], classes=[], events=[], paymentMethods=[];
  async function load(){
   const refreshBtn=$("refreshBtn");
