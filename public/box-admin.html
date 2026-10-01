@@ -23,9 +23,19 @@
 .admin-checkbox{display:flex;align-items:center;gap:8px;cursor:pointer}.admin-checkbox input{width:16px;height:16px;margin:0;flex:0 0 16px;accent-color:var(--primary)}.admin-checkbox span{line-height:1.2}
 .admin-nav{display:grid;gap:4px}
 .admin-nav-group{margin:14px 8px 5px;color:var(--text-muted);font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.admin-nav-group button{width:100%;display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
+.admin-nav-group button i{width:auto;transition:transform .18s ease}
+.admin-nav-group.collapsed button i{transform:rotate(-90deg)}
+.admin-nav-group.collapsed + .admin-nav-link{display:none}
 .admin-nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--text-muted);font-weight:650;font-size:.86rem}
 .admin-nav a:hover,.admin-nav a.active{color:var(--primary-soft);background:rgba(255,107,0,.09)}
 .admin-nav i{width:21px;text-align:center}
+.admin-section.is-hidden{display:none}
+.admin-section.is-visible{display:block}
+.admin-section-title{scroll-margin-top:20px}
+.payment-request-card{margin-bottom:18px;border:1px solid rgba(255,107,0,.22);background:linear-gradient(180deg,rgba(255,107,0,.06),var(--bg-surface))}
+.payment-request-card .app-card-head h3{display:flex;align-items:center;gap:8px}
+.payment-request-help{margin:0 0 14px;color:var(--text-muted);font-size:.8rem;line-height:1.5}
 .admin-side-bottom{margin-top:auto;border-top:1px solid var(--border-soft);padding-top:14px}
 .admin-side-bottom button,.admin-side-bottom a{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;background:none;color:var(--text-muted);cursor:pointer;text-align:left}
 .admin-main{grid-column:2;min-width:0;padding:28px clamp(18px,3vw,42px) 60px}
@@ -71,16 +81,16 @@
 <div class="admin-box"><img class="admin-box-logo" id="adminBoxLogo" alt="Logotipo del box" hidden><small>Box activo</small><strong id="boxName">Cargando…</strong></div>
 <nav class="admin-nav" aria-label="Administración">
 <a href="#inicio" class="active"><i class="ph ph-squares-four"></i> Inicio</a>
-<div class="admin-nav-group">Operativa</div>
-<a href="#clases"><i class="ph ph-barbell"></i> Clases</a>
-<a href="#usuarios"><i class="ph ph-users-three"></i> Usuarios</a>
-<a href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
-<a href="#eventos"><i class="ph ph-calendar"></i> Eventos</a>
-<div class="admin-nav-group">Gestión</div>
-<a href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
-<div class="admin-nav-group">Configuración</div>
-<a href="#configuracion"><i class="ph ph-gear"></i> Configuración</a>
-<a href="#verifactu"><i class="ph ph-file-text"></i> VERI*FACTU</a>
+<div class="admin-nav-group" data-nav-group="operativa"><button type="button" aria-expanded="true">Operativa <i class="ph ph-caret-down"></i></button></div>
+<a class="admin-nav-link" href="#clases"><i class="ph ph-barbell"></i> Clases</a>
+<a class="admin-nav-link" href="#usuarios"><i class="ph ph-users-three"></i> Usuarios</a>
+<a class="admin-nav-link" href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
+<a class="admin-nav-link" href="#eventos"><i class="ph ph-calendar"></i> Eventos</a>
+<div class="admin-nav-group" data-nav-group="gestion"><button type="button" aria-expanded="true">Gestión <i class="ph ph-caret-down"></i></button></div>
+<a class="admin-nav-link" href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
+<div class="admin-nav-group" data-nav-group="configuracion"><button type="button" aria-expanded="true">Configuración <i class="ph ph-caret-down"></i></button></div>
+<a class="admin-nav-link" href="#configuracion"><i class="ph ph-gear"></i> Configuración</a>
+<a class="admin-nav-link" href="#verifactu"><i class="ph ph-file-text"></i> VERI*FACTU</a>
 </nav>
 <div class="admin-side-bottom">
 <a href="dashboard.html"><i class="ph ph-user"></i> Área de atleta</a>
@@ -164,6 +174,19 @@
 
 <section class="admin-section" id="finanzas">
 <div class="admin-section-title"><div><h2>Contabilidad</h2><p>Registra ingresos y gastos con detalle y consulta estadísticas por cliente, categoría y proveedor.</p></div></div>
+<section class="app-card payment-request-card">
+<div class="app-card-head"><div><h3><i class="ph ph-bell-ringing"></i> Solicitar un pago a un cliente</h3><p>Crea una cuota pendiente. El cliente la verá en su área de Pagos y podrá realizarla con los métodos habilitados por el box.</p></div></div>
+<p class="payment-request-help">Usa esta opción para cuotas, matrículas, eventos u otros importes que el cliente todavía tiene que pagar. No lo marques como pagado hasta que el cobro se haya confirmado.</p>
+<form id="paymentRequestForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label for="paymentRequestUser">Cliente</label><select id="paymentRequestUser" required><option value="">Selecciona un cliente</option></select></div>
+<div class="app-field"><label for="paymentRequestConcept">Concepto</label><input id="paymentRequestConcept" required placeholder="Matrícula, cuota octubre…"></div>
+<div class="app-field"><label for="paymentRequestAmount">Importe (€)</label><input id="paymentRequestAmount" type="number" min="0.01" step=".01" required placeholder="30,00"></div>
+<div class="app-field"><label for="paymentRequestDue">Fecha de vencimiento</label><input id="paymentRequestDue" type="date"></div>
+<div class="app-field"><label for="paymentRequestCategory">Categoría</label><input id="paymentRequestCategory" placeholder="Cuota, matrícula, evento…"></div>
+<div class="app-field full"><label for="paymentRequestNotes">Notas para el cliente</label><input id="paymentRequestNotes" placeholder="Información adicional sobre este pago"></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-paper-plane-tilt"></i> Crear pago pendiente</button></form>
+<div id="paymentRequestMessage" class="app-message" style="margin-top:10px"></div>
+</section>
 <div class="app-grid app-grid-2">
 <section class="app-card">
 <div class="app-card-head"><div><h3>Registrar ingreso</h3><p>Cuotas y otros cobros.</p></div></div>
@@ -465,6 +488,71 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
  $("userForm").addEventListener("submit",async ev=>{ev.preventDefault();const btn=ev.submitter,id=$("userEditId").value;if(!id)return;btn.disabled=true;btn.textContent="Guardando…";WodIOApp.message(msg,"Guardando usuario…","success");try{const {data:updated,error}=await supabaseClient.from("profiles").update({first_name:$("userEditFirst").value.trim(),last_name:$("userEditLast").value.trim()||null,phone:$("userEditPhone").value.trim()||null,role:$("userEditRole").value}).eq("id",id).eq("box_id",boxId).select("id").single();if(error)throw error;if(!updated?.id)throw new Error("No se pudo actualizar el usuario.");const membership={data:null,error:null};membership.error=(await supabaseClient.rpc("set_box_membership",{p_user_id:id,p_box_id:boxId,p_enabled:$("userEditBoxMembership").checked})).error;if(membership.error)throw membership.error;WodIOApp.message(msg,"Usuario guardado.","success");$("userForm").reset();$("userEditId").value="";await load();}catch(error){WodIOApp.message(msg,error?.message||"No se pudo guardar el usuario.");}finally{btn.disabled=false;btn.textContent="Guardar usuario";}});
  $("userEditCancel").addEventListener("click",()=>{$("userForm").reset();$("userEditId").value="";});
  document.addEventListener("click",ev=>{const id=ev.target.closest("[data-edit-user]")?.dataset.editUser;if(!id)return;const v=users.find(x=>x.id===id);if(!v)return;$("userEditId").value=v.id;$("userEditFirst").value=v.first_name||"";$("userEditLast").value=v.last_name||"";$("userEditEmail").value=v.email||"";$("userEditPhone").value=v.phone||"";$("userEditRole").value=["athlete","coach"].includes(v.role)?v.role:"athlete";$("userEditBoxMembership").checked=true;$("userForm").scrollIntoView({behavior:"smooth",block:"center"});});
+ 
+ const paymentRequestForm=$("paymentRequestForm");
+ if(paymentRequestForm){
+  paymentRequestForm.addEventListener("submit",async ev=>{
+   ev.preventDefault();
+   const btn=ev.submitter;
+   const requestMsg=$("paymentRequestMessage");
+   const userId=$("paymentRequestUser").value;
+   const concept=$("paymentRequestConcept").value.trim();
+   const amount=Math.round(Number($("paymentRequestAmount").value)*100);
+   if(!userId||!concept||amount<=0){WodIOApp.message(requestMsg,"Selecciona un cliente e introduce un importe válido.");return;}
+   btn.disabled=true;
+   try{
+    const {error}=await supabaseClient.from("payments").insert({
+      box_id:boxId,
+      user_id:userId,
+      concept,
+      amount_cents:amount,
+      currency:"EUR",
+      status:"pending",
+      due_date:$("paymentRequestDue").value||null,
+      paid_at:null,
+      provider:null,
+      provider_reference:null,
+      category:$("paymentRequestCategory").value.trim()||null,
+      payment_method:null,
+      notes:$("paymentRequestNotes").value.trim()||null
+    });
+    if(error)throw error;
+    WodIOApp.message(requestMsg,"Pago pendiente creado. El cliente ya puede verlo en Pagos.","success");
+    paymentRequestForm.reset();
+    await load();
+   }catch(error){WodIOApp.message(requestMsg,error?.message||"No se pudo crear el pago pendiente.");}
+   finally{btn.disabled=false;}
+  });
+ }
+ function setupAdminNavigation(){
+  const links=[...document.querySelectorAll(".admin-nav a[href^='#']")];
+  const sections=[...document.querySelectorAll(".admin-section")];
+  const groups=[...document.querySelectorAll(".admin-nav-group")];
+  const activate=(hash,scroll=true)=>{
+   const id=(hash||"#inicio").replace(/^#/,'');
+   const target=id==="inicio"?null:document.getElementById(id);
+   sections.forEach(section=>section.classList.toggle("is-hidden",!!target&&section!==target));
+   links.forEach(link=>link.classList.toggle("active",link.getAttribute("href")==="#"+id));
+   if(id==="inicio") links[0]?.classList.add("active");
+   if(target&&scroll) target.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+  groups.forEach(group=>{
+   const button=group.querySelector("button");
+   button?.addEventListener("click",()=>{
+    const collapsed=group.classList.toggle("collapsed");
+    button.setAttribute("aria-expanded",String(!collapsed));
+   });
+  });
+  links.forEach(link=>link.addEventListener("click",ev=>{
+   const hash=link.getAttribute("href")||"#inicio";
+   if(location.hash!==hash) history.pushState(null,"",hash);
+   activate(hash,true);
+   ev.preventDefault();
+  }));
+  window.addEventListener("popstate",()=>activate(location.hash,false));
+  activate(location.hash||"#inicio",false);
+ }
+ setupAdminNavigation();
  $("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();
 });
 </script>
