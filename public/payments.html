@@ -41,6 +41,9 @@
 console.info("[WodIO Payments] script loaded");
 document.addEventListener("DOMContentLoaded", async () => {
   console.info("[WodIO Payments] DOM ready");
+  window.addEventListener("error", ev => console.error("[WodIO Payments] window error", {message:ev.message, source:ev.filename, line:ev.lineno, column:ev.colno, error:ev.error}));
+  window.addEventListener("unhandledrejection", ev => console.error("[WodIO Payments] unhandled rejection", ev.reason));
+  document.addEventListener("click", ev => console.info("[WodIO Payments] raw click", {tag:ev.target?.tagName, text:ev.target?.textContent?.trim(), stripe:!!ev.target?.closest?.("[data-start-stripe-payment]"), paypal:!!ev.target?.closest?.("[data-start-paypal]"), row:!!ev.target?.closest?.("[data-pay-payment]")}), true);
   console.info("[WodIO Payments] requesting user context");
   let ctx;
   try { ctx = await WodIOApp.requireUser(); } catch (e) { console.error("[WodIO Payments] requireUser failed", e); WodIOApp.message(document.getElementById("pageMessage"), e?.message || "No se pudo iniciar la sesión."); return; }
