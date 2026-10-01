@@ -363,7 +363,10 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   function renderPaymentMethodsAdmin(){
   const defaults=[["stripe","Stripe","ph-stripe-logo"],["paypal","PayPal","ph-credit-card"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
   const byKey=new Map(paymentMethods.map(v=>[v.method_key,v]));
-  $("paymentMethodsAdmin").innerHTML=defaults.map(d=>{
+  const defaultOrder={stripe:10,paypal:20,bizum:30,transfer:40,direct_debit:50,cash:60};
+  const orderedDefaults=defaults.slice().sort((a,b)=>Number(byKey.get(a[0])?.sort_order ?? defaultOrder[a[0]])-Number(byKey.get(b[0])?.sort_order ?? defaultOrder[b[0]]));
+  console.info("[WodIO Box Admin] payment method order", orderedDefaults.map(d=>({key:d[0],order:byKey.get(d[0])?.sort_order ?? defaultOrder[d[0]]})));
+  $("paymentMethodsAdmin").innerHTML=orderedDefaults.map(d=>{
     const v=byKey.get(d[0])||{method_key:d[0],name:d[1],icon:d[2],enabled:false,sort_order:(d[0]==="stripe"?10:d[0]==="paypal"?20:d[0]==="bizum"?30:d[0]==="transfer"?40:d[0]==="direct_debit"?50:60),checkout_url:"",instructions:""};
     const iconClass=d[0]==="paypal"?"ph-paypal-logo":(v.icon||d[2]);
     const help={
@@ -392,11 +395,14 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("saveBoxHours").addEventListener("click",async()=>{const rows=[...document.querySelectorAll("#boxHoursRows tr")];const payload=rows.map(tr=>{const open=tr.querySelector("[data-hour-open]").checked,day=+tr.querySelector("[data-hour-open]").dataset.hourOpen;return {box_id:boxId,weekday:day,closed:!open,open_time:open?(tr.querySelector("[data-hour-start]").value||null):null,close_time:open?(tr.querySelector("[data-hour-end]").value||null):null};});const bad=payload.find(x=>!x.closed&&(!x.open_time||!x.close_time||x.open_time>=x.close_time));if(bad)return WodIOApp.message($("boxHoursMessage"),"Revisa las horas de apertura y cierre.");const {error}=await supabaseClient.from("box_hours").upsert(payload,{onConflict:"box_id,weekday"});if(error)WodIOApp.message($("boxHoursMessage"),error.message);else WodIOApp.message($("boxHoursMessage"),"Horarios guardados correctamente.","success");});
   $("savePaymentMethods").addEventListener("click",async()=>{
   const btn=$("savePaymentMethods");btn.disabled=true;
+  console.info("[WodIO Box Admin] saving payment methods");
   try{
     const defaults=[["stripe","Stripe","ph-stripe-logo"],["paypal","PayPal","ph-credit-card"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
     const payload=defaults.map(d=>({box_id:boxId,method_key:d[0],name:document.querySelector('[data-pm-name="'+d[0]+'"]').value.trim()||d[1],icon:d[2],enabled:document.querySelector('[data-pm-enabled="'+d[0]+'"]').checked,sort_order:+document.querySelector('[data-pm-order="'+d[0]+'"]').value||0,checkout_url:document.querySelector('[data-pm-url="'+d[0]+'"]').value.trim()||null,instructions:document.querySelector('[data-pm-instructions="'+d[0]+'"]').value.trim()||null}));
     const {error}=await supabaseClient.from("box_payment_methods").upsert(payload,{onConflict:"box_id,method_key"});
+    console.info("[WodIO Box Admin] payment methods payload", payload);
     if(error)throw error;
+    console.info("[WodIO Box Admin] payment methods saved");
     WodIOApp.message($("paymentMethodsMessage"),"Métodos de pago guardados.","success");
     await load();
   }catch(error){WodIOApp.message($("paymentMethodsMessage"),error?.message||"No se pudieron guardar los métodos.");}
