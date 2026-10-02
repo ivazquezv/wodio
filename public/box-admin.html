@@ -412,7 +412,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
     const v=byKey.get(d[0])||{method_key:d[0],name:d[1],icon:d[2],enabled:false,sort_order:(d[0]==="stripe"?10:d[0]==="paypal"?20:d[0]==="bizum"?30:d[0]==="transfer"?40:d[0]==="direct_debit"?50:60),checkout_url:"",instructions:""};
     const iconClass=d[0]==="paypal"?"ph-paypal-logo":(v.icon||d[2]);
     const help={
-      stripe:"Copia aquí la URL de un Payment Link creado en Stripe.",
+      stripe:"Opcional. Es un Payment Link externo; el Checkout dinámico de WodIO no utiliza este campo.",
       paypal:"Copia aquí el enlace de pago generado desde PayPal Business.",
       bizum:"Si tu banco te proporciona un checkout o enlace Bizum, pégalo aquí.",
       transfer:"Normalmente no necesitas enlace: escribe IBAN, titular y concepto en las instrucciones.",
