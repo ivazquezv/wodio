@@ -44,6 +44,31 @@ Deno.serve(async (req: Request) => {
 
     const boxId = object?.metadata?.box_id || null;
     const plan = object?.metadata?.plan || null;
+    const paymentId = object?.metadata?.payment_id || object?.payment_intent_data?.metadata?.payment_id || null;
+    if (event.type === "account.updated" && event.account) {
+      const account = object;
+      const status = account.charges_enabled && account.payouts_enabled ? "connected" : account.details_submitted ? "restricted" : "pending";
+      await adminClient.from("boxes").update({
+        stripe_connect_status: status,
+        stripe_connect_charges_enabled: !!account.charges_enabled,
+        stripe_connect_payouts_enabled: !!account.payouts_enabled,
+        stripe_connect_details_submitted: !!account.details_submitted,
+        stripe_connect_updated_at: new Date().toISOString(),
+      }).eq("stripe_account_id", event.account);
+      return json({ received: true });
+    }
+    if (paymentId && event.type === "checkout.session.completed") {
+      const paid = object.payment_status === "paid";
+      await adminClient.from("payments").update({
+        status: paid ? "paid" : "pending",
+        payment_method: "card",
+        provider: "stripe",
+        provider_reference: object.id || undefined,
+        paid_at: paid ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", paymentId).eq("box_id", boxId || "");
+      return json({ received: true });
+    }
     if (!boxId) return json({ received: true });
 
     if (event.type === "checkout.session.completed") {
