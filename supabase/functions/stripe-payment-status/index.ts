@@ -1,0 +1,14 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+const C={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const out=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{...C,"Content-Type":"application/json"}});
+Deno.serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{headers:C});if(req.method!=="POST")return out({error:"method_not_allowed"},405);try{
+ const ah=req.headers.get("Authorization"),key=Deno.env.get("STRIPE_SECRET_KEY");if(!ah)return out({error:"authentication_required"},401);if(!key)throw Error("STRIPE_SECRET_KEY_not_configured");
+ const url=Deno.env.get("SUPABASE_URL")!,anon=Deno.env.get("SUPABASE_ANON_KEY")!,srv=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,auth=createClient(url,anon,{global:{headers:{Authorization:ah}},auth:{autoRefreshToken:false,persistSession:false}}),admin=createClient(url,srv,{auth:{autoRefreshToken:false,persistSession:false}});
+ const {data:u,error:ue}=await auth.auth.getUser();if(ue||!u?.user)return out({error:"invalid_session"},401);const body=await req.json(),sessionId=String(body?.session_id||"").trim();if(!sessionId)return out({error:"session_id_required"},400);
+ const {data:payment,error:pe}=await admin.from("payments").select("id,user_id,box_id,status,provider_reference").eq("user_id",u.user.id).eq("provider_reference",sessionId).single();if(pe||!payment)return out({error:"payment_not_found"},404);
+ const {data:box,error:be}=await admin.from("boxes").select("stripe_account_id,stripe_connect_status").eq("id",payment.box_id).single();if(be||!box?.stripe_account_id||box.stripe_connect_status!=="connected")return out({error:"box_stripe_not_ready"},400);
+ const r=await fetch("https://api.stripe.com/v1/checkout/sessions/"+encodeURIComponent(sessionId),{headers:{Authorization:"Bearer "+key,"Stripe-Account":box.stripe_account_id}}),session=await r.json();if(!r.ok)throw Error(session?.error?.message||"stripe_session_failed");const paid=session.payment_status==="paid";
+ if(paid)await admin.from("payments").update({status:"paid",payment_method:"card",provider:"stripe",provider_reference:session.id,paid_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",payment.id).eq("user_id",u.user.id);
+ return out({paid,payment_id:payment.id,status:paid?"paid":payment.status});
+}catch(e){const m=e instanceof Error?e.message:"unexpected_error";return out({error:m},m==="STRIPE_SECRET_KEY_not_configured"?503:400)}});
