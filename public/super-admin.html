@@ -784,6 +784,14 @@ $("panel-"+k).hidden=k!==tab;
 );
 }
 document.querySelectorAll(".sa-tab").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+$("mplan").addEventListener("change",()=>{
+  if($("mplan").value!=="demo" && $("mstatus").value==="trial"){
+    $("mstatus").value="active";
+  }
+  if($("mplan").value==="demo" && $("mstatus").value==="active"){
+    $("mstatus").value="trial";
+  }
+});
 $("rows").addEventListener("click",e=>{
 const b=e.target.closest("[data-id]");
 if(b)open(b.dataset.id)}
