@@ -611,7 +611,8 @@ function renderStripeStatus(){refreshStripeStatus();}
   const activate=(hash,scroll=true)=>{
    const id=(hash||"#inicio").replace(/^#/,'');
    const target=id==="inicio"?null:document.getElementById(id);
-   sections.forEach(section=>section.classList.toggle("is-hidden",!!target&&section!==target));
+   const dashboard=document.getElementById("inicioDashboard");
+   sections.forEach(section=>section.classList.toggle("is-hidden",id==="inicio"?section!==dashboard:section!==target));
    links.forEach(link=>link.classList.toggle("active",link.getAttribute("href")==="#"+id));
    if(id==="inicio") links[0]?.classList.add("active");
    if(target&&scroll) target.scrollIntoView({behavior:"smooth",block:"start"});
