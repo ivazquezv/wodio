@@ -398,7 +398,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
   ]);
   const err=b.error||u.error||c.error||e.error||p.error||x.error||pm.error;if(err){WodIOApp.message(msg,err.message);return;}
   box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];paymentMethods=pm.data||[];coaches=users.filter(v=>v.role==="coach");
-  renderHomeCharts(); renderUsersChart();
   renderStripeStatus();
 
   $("boxName").textContent=box.name;$("welcomeTitle").textContent="Hola, "+name(ctx.profile);
@@ -439,6 +438,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("verifactuEnabled").checked=!!vfConfig?.enabled;
   $("verifactuStatus").innerHTML=vfConfig?.enabled?'<span class="app-badge success">Preparación activada</span>':'<span class="app-badge">Sin activar</span>';
   const allPayments=p.data||[], allExpenses=x.data||[];
+  renderHomeCharts(); renderUsersChart();
   async function renderAdminMonthlySchedule(){const month=$("adminScheduleMonth").value;if(!month)return;const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);const {data,error}=await supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",boxId).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at");if(error)throw error;$("adminMonthlySchedule").innerHTML=(data||[]).length?(data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(name(v.coach)||"Sin coach")+'</span><span>'+v.capacity+' plazas</span></div></div></article>').join(""):'<div class="app-empty">No hay clases programadas en este mes.</div>';}
   function financeRange(){const mode=$("financePeriod").value,now=new Date(),start=new Date(0);if(mode==="month"){start.setTime(new Date(now.getFullYear(),now.getMonth(),1).getTime());}else if(mode==="3months"){start.setTime(new Date(now.getFullYear(),now.getMonth()-2,1).getTime());}else if(mode==="year"){start.setTime(new Date(now.getFullYear(),0,1).getTime());}return {start,now};}
   function renderFinanceStats(){const {start,now}=financeRange(),incomes=allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return v.status==="paid"&&d>=start&&d<=now;}),expenses=allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;});const incomeTotal=incomes.reduce((s,v)=>s+v.amount_cents,0),expenseTotal=expenses.reduce((s,v)=>s+v.amount_cents,0);$("financeIncome").textContent=WodIOApp.euro(incomeTotal);$("financeExpense").textContent=WodIOApp.euro(expenseTotal);$("financeBalance").textContent=WodIOApp.euro(incomeTotal-expenseTotal);$("financePending").textContent=WodIOApp.euro(allPayments.filter(v=>v.status==="pending").reduce((s,v)=>s+v.amount_cents,0));
