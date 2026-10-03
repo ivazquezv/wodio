@@ -80,6 +80,7 @@
 .bar-chart{display:grid;grid-template-columns:repeat(6,1fr);align-items:end;gap:10px;height:150px;padding-top:10px}.bar-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}.bar-fill{width:100%;max-width:42px;min-height:3px;border-radius:7px 7px 2px 2px;background:var(--primary);opacity:.82}.bar-value{font-size:.68rem;color:var(--text-main)}.bar-label{font-size:.62rem;color:var(--text-muted)}
 .poster-preview{display:block;width:100%;max-width:360px;max-height:210px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);margin-top:8px}
 @media(max-width:760px){.admin-chart-grid{grid-template-columns:1fr}}
+.users-bottom-grid{margin-top:18px;align-items:start}.users-bottom-grid .app-card{min-width:0}.users-bottom-grid .app-table-wrap{min-width:0}
 </style>
 </head>
 <body class="app-page">
@@ -173,8 +174,10 @@
 </div><div class="admin-actions"><button class="app-btn primary" type="submit">Guardar usuario</button><button class="app-btn" type="button" id="userEditCancel">Cancelar</button></div></form>
 </section>
 </div>
-<div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div>
-<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Evolución de usuarios</h3><p>Altas por mes y usuarios activos actuales. Las bajas históricas se mostrarán cuando exista un registro de baja.</p></div></div><div id="usersChart" class="bar-chart"></div></section>
+<div class="app-grid app-grid-2 users-bottom-grid">
+<section class="app-card"><div class="app-card-head"><div><h3>Listado de usuarios</h3><p>Clientes y usuarios vinculados al box.</p></div></div><div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div></section>
+<section class="app-card"><div class="app-card-head"><div><h3>Evolución de usuarios</h3><p>Altas por mes y usuarios activos actuales. Las bajas históricas se mostrarán cuando exista un registro de baja.</p></div></div><div id="usersChart" class="bar-chart"></div></section>
+</div>
 </section>
 
 <section class="admin-section" id="coaches">
