@@ -72,6 +72,13 @@
 @media(max-width:1050px){.admin-stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.admin-layout{display:block}.admin-side{position:relative;width:100%;height:auto}.admin-nav{grid-template-columns:repeat(3,1fr)}.admin-side-bottom{display:none}.admin-main{padding-top:20px}.admin-stat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.admin-nav{grid-template-columns:repeat(2,1fr)}.admin-stat-grid{grid-template-columns:1fr}}
+
+.admin-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.admin-chart{padding:18px;border:1px solid var(--border-soft);border-radius:14px;background:var(--bg-surface)}
+.admin-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-chart-head h3{margin:0;font-size:.95rem}.admin-chart-head p{margin:4px 0 0;color:var(--text-muted);font-size:.72rem}
+.bar-chart{display:grid;grid-template-columns:repeat(6,1fr);align-items:end;gap:10px;height:150px;padding-top:10px}.bar-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}.bar-fill{width:100%;max-width:42px;min-height:3px;border-radius:7px 7px 2px 2px;background:var(--primary);opacity:.82}.bar-value{font-size:.68rem;color:var(--text-main)}.bar-label{font-size:.62rem;color:var(--text-muted)}
+.poster-preview{display:block;width:100%;max-width:360px;max-height:210px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);margin-top:8px}
+@media(max-width:760px){.admin-chart-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body class="app-page">
@@ -113,9 +120,14 @@
 <div class="admin-stat"><strong id="statPending">—</strong><span>Pagos pendientes</span></div>
 <div class="admin-stat"><strong id="statBalance">—</strong><span>Balance del mes</span></div>
 </section>
+<div class="admin-chart-grid">
+<section class="admin-chart"><div class="admin-chart-head"><div><h3>Altas de usuarios</h3><p>Últimos 6 meses.</p></div></div><div id="homeUsersChart" class="bar-chart"></div></section>
+<section class="admin-chart"><div class="admin-chart-head"><div><h3>Ingresos</h3><p>Ingresos cobrados por mes.</p></div></div><div id="homeRevenueChart" class="bar-chart"></div></section>
+</div>
 
 <section class="admin-section" id="clases">
-<div class="admin-section-title"><div><h2>Clases</h2><p>Programa nuevas sesiones y controla las próximas reservas.</p></div></div>
+<div class="admin-section-title"><div><h2>Clases</h2><p>Programa nuevas sesiones y controla las próximas reservas.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="downloadClassTemplate"><i class="ph ph-file-xls"></i> Descargar plantilla Excel</button><label class="app-btn" for="classImportFile"><i class="ph ph-upload-simple"></i> Subir clases</label><input id="classImportFile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
+<div id="classImportMessage" class="app-message" style="margin-bottom:12px"></div>
 <div class="app-grid app-grid-2">
 <section class="app-card">
 <div class="app-card-head"><div><h3>Nueva clase</h3><p>Programa una sesión.</p></div></div>
@@ -131,6 +143,7 @@
 </section>
 <section class="app-card"><div class="app-card-head"><div><h3>Próximas clases</h3><p>Sesiones programadas.</p></div></div><div id="classesList" class="app-list"></div></section>
 </div>
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Programación mensual</h3><p>Vista completa de las clases del mes.</p></div><input id="adminScheduleMonth" type="month" class="app-btn"></div><div id="adminMonthlySchedule" class="app-list"></div></section>
 </section>
 
 <section class="admin-section" id="usuarios">
@@ -158,6 +171,7 @@
 </section>
 </div>
 <div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div>
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Evolución de usuarios</h3><p>Altas por mes y usuarios activos actuales. Las bajas históricas se mostrarán cuando exista un registro de baja.</p></div></div><div id="usersChart" class="bar-chart"></div></section>
 </section>
 
 <section class="admin-section" id="coaches">
@@ -179,6 +193,7 @@
 <div class="app-field"><label>Plazas</label><input id="eventCapacity" type="number" min="1"></div>
 <div class="app-field"><label>Precio (€)</label><input id="eventPrice" type="number" min="0" step=".01" value="0"></div>
 <div class="app-field full"><label>Ubicación</label><input id="eventLocation" placeholder="Box WodIO"></div>
+<div class="app-field full"><label for="eventPosterFile">Cartel del evento</label><input id="eventPosterFile" type="file" accept="image/jpeg,image/png,image/webp"><span class="admin-mini">JPG, PNG o WebP. Máximo 5 MB.</span><img id="eventPosterPreview" class="poster-preview" alt="Vista previa del cartel" hidden></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear evento</button></form>
 </section>
 <section class="app-card"><div class="app-card-head"><div><h3>Próximos eventos</h3><p>Eventos publicados.</p></div></div><div id="eventsList" class="app-list"></div></section>
@@ -187,6 +202,8 @@
 
 <section class="admin-section" id="finanzas">
 <div class="admin-section-title"><div><h2>Contabilidad</h2><p>Registra ingresos y gastos con detalle y consulta estadísticas por cliente, categoría y proveedor.</p></div></div>
+
+<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Periodo</h3><p>Las estadísticas se actualizan con este periodo.</p></div><select id="financePeriod" class="app-btn"><option value="month">Este mes</option><option value="3months">Últimos 3 meses</option><option value="year">Este año</option><option value="all">Todo</option></select></div></section>
 <section class="app-card payment-request-card">
 <div class="app-card-head"><div><h3><i class="ph ph-bell-ringing"></i> Solicitar un pago a un cliente</h3><p>Crea una cuota pendiente. El cliente la verá en su área de Pagos y podrá realizarla con los métodos habilitados por el box.</p></div></div>
 <p class="payment-request-help">Usa esta opción para cuotas, matrículas, eventos u otros importes que el cliente todavía tiene que pagar. No lo marques como pagado hasta que el cobro se haya confirmado.</p>
@@ -240,9 +257,7 @@
 <div class="admin-stat"><strong id="financeBalance">—</strong><span>Balance del periodo</span></div>
 <div class="admin-stat"><strong id="financePending">—</strong><span>Ingresos pendientes</span></div>
 </div>
-<section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h3>Estadísticas</h3><p>Desglose del periodo seleccionado.</p></div><select id="financePeriod" class="app-btn"><option value="month">Este mes</option><option value="3months">Últimos 3 meses</option><option value="year">Este año</option><option value="all">Todo</option></select></div>
-</section>
+
 <div class="finance-breakdown">
 <section class="app-card"><div class="app-card-head"><div><h3>Ingresos por cliente</h3><p>Total cobrado y número de movimientos.</p></div></div><div id="incomeStats" class="app-table-wrap"></div></section>
 <section class="app-card"><div class="app-card-head"><div><h3>Gastos por proveedor</h3><p>Total gastado y número de movimientos.</p></div></div><div id="supplierStats" class="app-table-wrap"></div></section>
@@ -312,8 +327,7 @@
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h3>Forma de pago</h3><p>Los atletas pagan sus cuotas exclusivamente con tarjeta mediante el Checkout de Stripe de WodIO.</p></div></div>
 <div class="app-item" style="margin-top:14px"><div class="app-item-main"><div style="display:flex;align-items:center;gap:10px"><i class="ph ph-credit-card" style="font-size:24px"></i><strong>Pago con tarjeta</strong></div><div class="app-item-meta"><span>Stripe</span><span>Checkout seguro de WodIO</span></div><p class="admin-mini" style="margin-top:8px">No se ofrecen Bizum, PayPal, transferencia, domiciliación ni efectivo como métodos de pago online.</p></div></div>
-</section><section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Programación mensual</h3><p>Clases disponibles y coach asignado.</p></div><input id="adminScheduleMonth" type="month" class="app-btn"></div><div id="adminMonthlySchedule" class="app-list"></div></section>
-</section>
+</section></section>
 </section>
 <section class="admin-section" id="verifactu">
 <div class="admin-section-title"><div><h2>VERI*FACTU</h2><p>Configuración fiscal y base de datos preparada para registros de facturación encadenados.</p></div></div>
@@ -377,13 +391,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
    supabaseClient.from("boxes").select("*").eq("id",boxId).single(),
    supabaseClient.rpc("get_box_users",{p_box_id:boxId}),
    supabaseClient.from("classes").select("id,title,description,starts_at,duration_minutes,capacity,coach_id,workout,location").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
-   supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
+   supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents,poster_url").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
    supabaseClient.from("payments").select("id,user_id,concept,amount_cents,status,due_date,paid_at,provider,provider_reference,category,payment_method,notes,created_at").eq("box_id",boxId).order("created_at",{ascending:false}),
    supabaseClient.from("expenses").select("id,concept,amount_cents,expense_date,category,supplier,notes").eq("box_id",boxId).order("expense_date",{ascending:false}),
    supabaseClient.from("box_payment_methods").select("id,method_key,name,icon,enabled,sort_order,checkout_url,instructions").eq("box_id",boxId).order("sort_order")
   ]);
   const err=b.error||u.error||c.error||e.error||p.error||x.error||pm.error;if(err){WodIOApp.message(msg,err.message);return;}
   box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];paymentMethods=pm.data||[];coaches=users.filter(v=>v.role==="coach");
+  renderHomeCharts(); renderUsersChart();
   renderStripeStatus();
 
   $("boxName").textContent=box.name;$("welcomeTitle").textContent="Hola, "+name(ctx.profile);
@@ -404,7 +419,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("paymentRequestUser").innerHTML='<option value="">Selecciona un cliente</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
   $("clientsTable").innerHTML='<table class="app-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Móvil</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody>'+users.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td>'+WodIOApp.escapeHtml(v.email||"—")+'</td><td>'+WodIOApp.escapeHtml(v.phone||"—")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+ '</td><td><div class="admin-actions"><button class="app-btn" data-edit-user="'+v.id+'">Editar</button>'+(v.email?'<button class="app-btn" data-reset-user="'+v.id+'">Enviar recuperación</button>':'')+'</div></td></tr>').join("")+'</tbody></table>';
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
-  $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
+  $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main">'+(v.poster_url?'<img class="poster-preview" src="'+WodIOApp.escapeHtml(v.poster_url)+'" alt="Cartel de '+WodIOApp.escapeHtml(v.title)+'">':'')+'<div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
   $("eventsList").innerHTML=(e.data||[]).length?(e.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+(v.price_cents?WodIOApp.euro(v.price_cents):"Gratis")+'</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-event="'+v.id+'">Editar</button><button class="app-btn danger" data-del-event="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
   const vf=await supabaseClient.from("verifactu_config").select("*").eq("box_id",boxId).maybeSingle();
   if(vf.error)throw vf.error;
@@ -451,7 +466,24 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
     }
     btn.dataset.stripeAction="connect";
   }
-  function renderStripeStatus(){refreshStripeStatus();}
+  function renderBarChart(el,items){
+ const node=$(el); if(!node)return; const max=Math.max(1,...items.map(x=>Number(x.value||0)));
+ node.innerHTML=items.map(x=>'<div class="bar-col" title="'+WodIOApp.escapeHtml(String(x.label)+': '+x.value)+'"><span class="bar-value">'+WodIOApp.escapeHtml(String(x.value))+'</span><div class="bar-fill" style="height:'+Math.max(3,Math.round((Number(x.value||0)/max)*110))+'px"></div><span class="bar-label">'+WodIOApp.escapeHtml(x.label)+'</span></div>').join("");
+}
+function lastMonths(n=6){const out=[];const now=new Date();for(let i=n-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);out.push({key:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),label:d.toLocaleDateString("es-ES",{month:"short"}).replace(".","")});}return out;}
+function renderHomeCharts(){
+ const months=lastMonths(6), usersBy=Object.fromEntries(months.map(m=>[m.key,0])), revenueBy=Object.fromEntries(months.map(m=>[m.key,0]));
+ users.forEach(u=>{const d=new Date(u.created_at),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");if(k in usersBy)usersBy[k]++;});
+ allPayments.forEach(p=>{if(p.status!=="paid")return;const d=new Date(p.paid_at||p.created_at),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");if(k in revenueBy)revenueBy[k]+=Number(p.amount_cents||0)/100;});
+ renderBarChart("homeUsersChart",months.map(m=>({label:m.label,value:usersBy[m.key]||0})));
+ renderBarChart("homeRevenueChart",months.map(m=>({label:m.label,value:Math.round(revenueBy[m.key]||0)})));
+}
+function renderUsersChart(){
+ const months=lastMonths(6), by=Object.fromEntries(months.map(m=>[m.key,0]));
+ users.filter(u=>u.role==="athlete").forEach(u=>{const d=new Date(u.created_at),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");if(k in by)by[k]++;});
+ renderBarChart("usersChart",months.map(m=>({label:m.label,value:by[m.key]||0})));
+}
+function renderStripeStatus(){refreshStripeStatus();}
   async function openStripeOnboarding(){
     const btn=$("stripeConnectBtn"),msg=$("stripeMessage");btn.disabled=true;WodIOApp.message(msg,"Abriendo configuración segura de Stripe...");
     const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"connect",return_url:location.origin+"/box-admin.html#stripe",refresh_url:location.origin+"/box-admin.html#stripe"}});
@@ -489,7 +521,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   finally{if(refreshBtn) refreshBtn.disabled=false;}
  }
  $("classForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando clase…","success");const payload={box_id:boxId,created_by:ctx.user.id,title:$("classTitle").value.trim(),starts_at:new Date($("classStart").value).toISOString(),duration_minutes:+$("classDuration").value,capacity:+$("classCapacity").value,coach_id:$("classCoach").value||null,location:$("classLocation").value.trim()||null,workout:$("classWorkout").value.trim()||null};const {error}=await supabaseClient.from("classes").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Clase creada.","success");await load();}});
- $("eventForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando evento…","success");const payload={box_id:boxId,created_by:ctx.user.id,title:$("eventTitle").value.trim(),starts_at:new Date($("eventStart").value).toISOString(),ends_at:$("eventEnd").value?new Date($("eventEnd").value).toISOString():null,capacity:$("eventCapacity").value?+$("eventCapacity").value:null,price_cents:Math.round(+$("eventPrice").value*100),location:$("eventLocation").value.trim()||null};const {error}=await supabaseClient.from("events").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Evento creado.","success");await load();}});
+ $("eventForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando evento…","success");let posterUrl=null;const posterFile=$("eventPosterFile").files?.[0];if(posterFile){if(!["image/jpeg","image/png","image/webp"].includes(posterFile.type)||posterFile.size>5*1024*1024){WodIOApp.message(msg,"El cartel debe ser JPG, PNG o WebP y pesar como máximo 5 MB.");return;}const path="boxes/"+boxId+"/events/"+Date.now()+"-"+posterFile.name.replace(/[^a-zA-Z0-9._-]/g,"-");const up=await supabaseClient.storage.from("wodio-media").upload(path,posterFile,{cacheControl:"3600",upsert:false,contentType:posterFile.type});if(up.error){WodIOApp.message(msg,up.error.message);return;}posterUrl=supabaseClient.storage.from("wodio-media").getPublicUrl(path).data.publicUrl;}const payload={box_id:boxId,created_by:ctx.user.id,title:$("eventTitle").value.trim(),starts_at:new Date($("eventStart").value).toISOString(),ends_at:$("eventEnd").value?new Date($("eventEnd").value).toISOString():null,capacity:$("eventCapacity").value?+$("eventCapacity").value:null,price_cents:Math.round(+$("eventPrice").value*100),location:$("eventLocation").value.trim()||null,poster_url:posterUrl};const {error}=await supabaseClient.from("events").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Evento creado.","success");await load();}});
  $("paymentForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando ingreso…","success");const status=$("paymentStatus").value,paidDate=$("paymentPaidAt").value;const payload={box_id:boxId,user_id:$("paymentUser").value,concept:$("paymentConcept").value.trim(),amount_cents:Math.round(+$("paymentAmount").value*100),due_date:$("paymentDue").value||null,status,paid_at:status==="paid"?(paidDate?new Date(paidDate+"T12:00:00").toISOString():new Date().toISOString()):null,category:$("paymentCategory").value.trim()||null,payment_method:$("paymentMethod").value||null,provider_reference:$("paymentReference").value.trim()||null,notes:$("paymentNotes").value.trim()||null};const {error}=await supabaseClient.from("payments").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Ingreso registrado.","success");await load();}});
  $("expenseForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando gasto…","success");const payload={box_id:boxId,created_by:ctx.user.id,concept:$("expenseConcept").value.trim(),amount_cents:Math.round(+$("expenseAmount").value*100),expense_date:$("expenseDate").value||new Date().toISOString().slice(0,10),category:$("expenseCategory").value.trim()||null,supplier:$("expenseSupplier").value.trim()||null,notes:$("expenseNotes").value.trim()||null};const {error}=await supabaseClient.from("expenses").insert(payload);if(error)WodIOApp.message(msg,error.message);else{ev.target.reset();WodIOApp.message(msg,"Gasto registrado.","success");await load();}});
  $("verifactuForm").addEventListener("submit",async ev=>{
@@ -506,6 +538,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
 });
 
  $("bookingPolicyForm").addEventListener("submit",async ev=>{ev.preventDefault();WodIOApp.message(msg,"Guardando política…","success");const payload={booking_advance_days:+$("bookingAdvanceDays").value,cancellation_cutoff_hours:+$("cancellationCutoffHours").value,weekly_cancellation_limit:+$("weeklyCancellationLimit").value};const {error}=await supabaseClient.from("boxes").update(payload).eq("id",boxId);if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Política de reservas guardada.","success");await load();}});
+ $("eventPosterFile").addEventListener("change",ev=>{const file=ev.target.files?.[0];if(!file)return;const url=URL.createObjectURL(file);$("eventPosterPreview").src=url;$("eventPosterPreview").hidden=false;});
  $("boxLogoFile").addEventListener("change",ev=>{const file=ev.target.files?.[0];if(!file)return;if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){ev.target.value="";WodIOApp.message(msg,"El logotipo debe ser JPG, PNG o WebP y pesar como máximo 5 MB.");return;}const url=URL.createObjectURL(file);$("boxLogoPreview").src=url;$("boxLogoPreview").hidden=false;});
  $("boxForm").addEventListener("submit",async ev=>{ev.preventDefault();const btn=ev.submitter;btn.disabled=true;WodIOApp.message(msg,"Guardando configuración…","success");const file=$("boxLogoFile").files?.[0];let logoUrl=box?.logo_url||null;if(file){const {error:uploadError}=await supabaseClient.storage.from("wodio-media").upload("boxes/"+boxId+"/logo",file,{cacheControl:"3600",upsert:true,contentType:file.type});if(uploadError){btn.disabled=false;WodIOApp.message(msg,uploadError.message);return;}const pub=supabaseClient.storage.from("wodio-media").getPublicUrl("boxes/"+boxId+"/logo");logoUrl=pub.data.publicUrl+"?v="+Date.now();}const payload={name:$("boxNameInput").value.trim(),contact_email:$("boxEmail").value.trim()||null,phone:$("boxPhone").value.trim()||null,tax_id:$("boxTax").value.trim()||null,address:$("boxAddress").value.trim()||null,city:$("boxCity").value.trim()||null,postal_code:$("boxPostal").value.trim()||null,logo_url:logoUrl,booking_advance_days:+$("bookingAdvanceDays").value,cancellation_cutoff_hours:+$("cancellationCutoffHours").value,weekly_cancellation_limit:+$("weeklyCancellationLimit").value};const {error}=await supabaseClient.from("boxes").update(payload).eq("id",boxId);btn.disabled=false;if(error)WodIOApp.message(msg,error.message);else{WodIOApp.message(msg,"Configuración guardada.","success");$("boxLogoFile").value="";await load();}});
  document.addEventListener("click",async ev=>{const cls=ev.target.closest("[data-del-class]")?.dataset.delClass,evt=ev.target.closest("[data-del-event]")?.dataset.delEvent,pay=ev.target.closest("[data-pay]")?.dataset.pay;if(cls&&confirm("¿Eliminar esta clase?")){const r=await supabaseClient.from("classes").delete().eq("id",cls).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else await load();}if(evt&&confirm("¿Eliminar este evento?")){const r=await supabaseClient.from("events").delete().eq("id",evt).eq("box_id",boxId);if(r.error)WodIOApp.message(msg,r.error.message);else await load();}});
@@ -606,7 +639,26 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   activate(location.hash||"#inicio",false);
  }
  setupAdminNavigation();
- $("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();await loadRecurringPayments();
+ $("downloadClassTemplate").addEventListener("click",()=>{
+ const rows=[["titulo","inicio","duracion_minutos","plazas","coach_email","sala","wod"],["CrossTraining","2026-10-05 18:00",60,12,"coach@box.com","Sala principal","Fran 21-15-9"]];
+ const ws=XLSX.utils.aoa_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Clases");XLSX.writeFile(wb,"WodIO-plantilla-clases.xlsx");
+});
+$("classImportFile").addEventListener("change",async ev=>{
+ const file=ev.target.files?.[0], m=$("classImportMessage");if(!file)return;ev.target.value="";
+ try{
+  const data=await file.arrayBuffer(),wb=XLSX.read(data,{type:"array"}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
+  if(!rows.length)throw new Error("La plantilla no contiene filas.");
+  let ok=0;
+  for(const row of rows){
+   const title=String(row.titulo||row.Título||"").trim(),start=String(row.inicio||row.Inicio||"").trim();if(!title||!start)continue;
+   const coachEmail=String(row.coach_email||"").trim().toLowerCase(),coach=coaches.find(x=>(x.email||"").toLowerCase()===coachEmail);
+   const payload={box_id:boxId,created_by:ctx.user.id,title,starts_at:new Date(start).toISOString(),duration_minutes:Number(row.duracion_minutos||60)||60,capacity:Number(row.plazas||12)||12,coach_id:coach?.id||null,location:String(row.sala||"").trim()||null,workout:String(row.wod||"").trim()||null};
+   const {error}=await supabaseClient.from("classes").insert(payload);if(error)throw error;ok++;
+  }
+  WodIOApp.message(m,ok+" clases importadas correctamente.","success");await load();
+ }catch(error){WodIOApp.message(m,error?.message||"No se pudo importar la plantilla.");}
+});
+$("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();await loadRecurringPayments();
 });
 </script>
 </body>
