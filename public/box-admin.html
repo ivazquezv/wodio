@@ -57,9 +57,9 @@
 @media(max-width:760px){.payment-help-grid{grid-template-columns:1fr}}
 .finance-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.finance-stat-grid .admin-stat{min-width:0}
 .finance-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.finance-chart{min-width:0}.finance-chart .bar-chart{min-height:180px;height:180px}
-.finance-entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.finance-entry-grid .app-card{min-width:0}
-.finance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.finance-breakdown .app-card{min-width:0}
-@media(max-width:1050px){.finance-stat-grid{grid-template-columns:repeat(2,1fr)}.finance-chart-grid,.finance-entry-grid,.finance-breakdown{grid-template-columns:1fr}}
+.finance-entry-grid{display:contents}.finance-entry-grid .app-card{min-width:0}
+.finance-management-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:18px;align-items:start}.finance-management-grid .app-card{min-width:0}.finance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.finance-breakdown .app-card{min-width:0}
+@media(max-width:1050px){.finance-stat-grid{grid-template-columns:repeat(2,1fr)}.finance-chart-grid,.finance-management-grid,.finance-breakdown{grid-template-columns:1fr}}
 
 @media(max-width:480px){.finance-stat-grid{grid-template-columns:1fr}}
 #pageMessage{position:fixed;right:22px;bottom:22px;z-index:1000;max-width:min(420px,calc(100vw - 32px));margin:0;box-shadow:0 12px 30px rgba(0,0,0,.28);pointer-events:none}
@@ -207,13 +207,7 @@
 <div class="admin-section-title"><div><h2>Contabilidad</h2><p>Registra ingresos y gastos con detalle y consulta estadísticas por cliente, categoría y proveedor.</p></div></div>
 
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Periodo</h3><p>Las estadísticas se actualizan con este periodo.</p></div><select id="financePeriod" class="app-btn"><option value="month">Este mes</option><option value="3months">Últimos 3 meses</option><option value="year">Este año</option><option value="all">Todo</option></select></div></section>
-<div class="finance-stat-grid">
-<div class="finance-chart-grid"><section class="app-card finance-chart"><div class="app-card-head"><div><h3>Ingresos mensuales</h3><p>Ingresos cobrados durante los últimos 6 meses.</p></div></div><div id="financeIncomeChart" class="bar-chart"></div></section><section class="app-card finance-chart"><div class="app-card-head"><div><h3>Gastos mensuales</h3><p>Gastos registrados durante los últimos 6 meses.</p></div></div><div id="financeExpenseChart" class="bar-chart"></div></section></div>
-<div class="admin-stat"><strong id="financeIncome">—</strong><span>Ingresos del periodo</span></div>
-<div class="admin-stat"><strong id="financeExpense">—</strong><span>Gastos del periodo</span></div>
-<div class="admin-stat"><strong id="financeBalance">—</strong><span>Balance del periodo</span></div>
-<div class="admin-stat"><strong id="financePending">—</strong><span>Ingresos pendientes</span></div>
-<section class="app-card payment-request-card">
+<div class="finance-management-grid"><section class="app-card payment-request-card">
 <div class="app-card-head"><div><h3><i class="ph ph-bell-ringing"></i> Solicitar un pago a un cliente</h3><p>Crea una cuota pendiente. El cliente la verá en su área de Pagos y podrá realizarla con los métodos habilitados por el box.</p></div></div>
 <p class="payment-request-help">Usa esta opción para cuotas, matrículas, eventos u otros importes que el cliente todavía tiene que pagar. No lo marques como pagado hasta que el cobro se haya confirmado.</p>
 <form id="paymentRequestForm" class="app-form"><div class="app-form-grid">
@@ -263,7 +257,7 @@
 
 </div>
 
-<div class="finance-breakdown">
+</div><div class="finance-breakdown">
 <section class="app-card"><div class="app-card-head"><div><h3>Ingresos por cliente</h3><p>Total cobrado y número de movimientos.</p></div></div><div id="incomeStats" class="app-table-wrap"></div></section>
 <section class="app-card"><div class="app-card-head"><div><h3>Gastos por proveedor</h3><p>Total gastado y número de movimientos.</p></div></div><div id="supplierStats" class="app-table-wrap"></div></section>
 </div>
