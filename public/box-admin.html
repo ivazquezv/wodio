@@ -58,8 +58,8 @@
 .finance-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.finance-stat-grid .admin-stat{min-width:0}
 .finance-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.finance-chart{min-width:0}.finance-chart .bar-chart{min-height:180px;height:180px}
 .finance-entry-grid{display:contents}.finance-entry-grid .app-card{min-width:0}
-.finance-management-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:18px;align-items:start}.finance-management-grid .app-card{min-width:0}.finance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.finance-breakdown .app-card{min-width:0}
-@media(max-width:1050px){.finance-stat-grid{grid-template-columns:repeat(2,1fr)}.finance-chart-grid,.finance-management-grid,.finance-breakdown{grid-template-columns:1fr}}
+.finance-management-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:18px;align-items:start}.finance-recent-card{margin-top:18px;min-width:0}.finance-management-grid .app-card{min-width:0}.finance-lower-grid{width:100%;min-width:0;margin-top:18px}.finance-lower-grid>*{min-width:0}.finance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:0}.finance-breakdown .app-card{min-width:0}
+@media(max-width:1050px){.finance-breakdown{grid-template-columns:1fr}.finance-stat-grid{grid-template-columns:repeat(2,1fr)}.finance-chart-grid,.finance-management-grid,.finance-breakdown{grid-template-columns:1fr}}
 
 @media(max-width:480px){.finance-stat-grid{grid-template-columns:1fr}}
 #pageMessage{position:fixed;right:22px;bottom:22px;z-index:1000;max-width:min(420px,calc(100vw - 32px));margin:0;box-shadow:0 12px 30px rgba(0,0,0,.28);pointer-events:none}
@@ -275,11 +275,13 @@
 
 </div>
 
-</div><div class="finance-breakdown">
+</div><div class="finance-lower-grid">
+<div class="finance-breakdown">
 <section class="app-card"><div class="app-card-head"><div><h3>Ingresos por cliente</h3><p>Total cobrado y número de movimientos.</p></div></div><div id="incomeStats" class="app-table-wrap"></div></section>
 <section class="app-card"><div class="app-card-head"><div><h3>Gastos por proveedor</h3><p>Total gastado y número de movimientos.</p></div></div><div id="supplierStats" class="app-table-wrap"></div></section>
 </div>
-<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="exportFinanceExcel"><i class="ph ph-file-xls"></i> Excel</button><button class="app-btn" type="button" id="exportFinancePdf"><i class="ph ph-file-pdf"></i> PDF</button></div></div><div id="financeTable" class="app-table-wrap"></div></section>
+<section class="app-card finance-recent-card"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="exportFinanceExcel"><i class="ph ph-file-xls"></i> Excel</button><button class="app-btn" type="button" id="exportFinancePdf"><i class="ph ph-file-pdf"></i> PDF</button></div></div><div id="financeTable" class="app-table-wrap"></div></section>
+</div>
 </section>
 
 <section class="admin-section" id="stripe">
