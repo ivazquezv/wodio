@@ -56,10 +56,10 @@
 .payment-help h4{margin:0 0 7px;font-size:.95rem}.payment-help p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.5}.payment-help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.payment-help-item{padding:11px;border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-surface)}.payment-help-item strong{display:block;font-size:.82rem;margin-bottom:4px}.payment-help-item span{display:block;color:var(--text-muted);font-size:.72rem;line-height:1.4}.payment-help-item a{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:.74rem;font-weight:700;color:var(--primary-soft)}
 @media(max-width:760px){.payment-help-grid{grid-template-columns:1fr}}
 .finance-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
-.finance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.finance-entry-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(360px,1fr);gap:18px;margin-top:18px}.finance-entry-grid .app-card{min-width:0}
 .finance-breakdown .app-card{min-width:0}
-@media(max-width:1050px){.finance-stat-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:760px){.finance-breakdown{grid-template-columns:1fr}}
+@media(max-width:1050px){.finance-stat-grid{grid-template-columns:repeat(2,1fr)}.finance-entry-grid{grid-template-columns:1fr}}
+
 @media(max-width:480px){.finance-stat-grid{grid-template-columns:1fr}}
 #pageMessage{position:fixed;right:22px;bottom:22px;z-index:1000;max-width:min(420px,calc(100vw - 32px));margin:0;box-shadow:0 12px 30px rgba(0,0,0,.28);pointer-events:none}
 @media(max-width:760px){#pageMessage{left:14px;right:14px;bottom:14px;max-width:none;text-align:center}}
@@ -230,7 +230,7 @@
 <div id="recurringPaymentsList" class="app-list"><div class="app-loading">Cargando…</div></div>
 </div>
 </section>
-<div class="app-grid app-grid-2">
+<div class="finance-entry-grid">
 <section class="app-card">
 <div class="app-card-head"><div><h3>Registrar ingreso</h3><p>Cuotas y otros cobros.</p></div></div>
 <form id="paymentForm" class="app-form"><div class="app-form-grid">
