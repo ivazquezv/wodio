@@ -36,11 +36,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   let ctx; try{ctx=await WodIOApp.requireUser();}catch(e){console.error("[WodIO Payments] requireUser failed",e);WodIOApp.message(document.getElementById("pageMessage"),e?.message||"No se pudo iniciar la sesión.");return;}
   console.info("[WodIO Payments] user context ready",{userId:ctx?.user?.id,boxId:ctx?.profile?.box_id}); if(!ctx)return;
   const list=document.getElementById("paymentList"),methodsList=document.getElementById("paymentMethods"),message=document.getElementById("pageMessage");
+  const paymentResult=new URLSearchParams(window.location.search).get("payment"), sessionId=new URLSearchParams(window.location.search).get("session_id");
+  if(paymentResult==="success"&&sessionId){try{await supabaseClient.functions.invoke("stripe-payment-status",{body:{session_id:sessionId}});}catch(e){console.warn("[WodIO Payments] payment status check failed",e);}}
   console.info("[WodIO Payments] loading payments");
   const {data:payments,error}=await supabaseClient.from("payments").select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at,payment_method,provider_reference").eq("user_id",ctx.user.id).order("created_at",{ascending:false});
   if(error){WodIOApp.message(message,error.message);list.innerHTML='<div class="app-empty">No se pudieron cargar los pagos.</div>';return;}
   const rows=payments||[];console.info("[WodIO Payments] payments query result",{error,count:rows.length});
-  const paymentResult=new URLSearchParams(window.location.search).get("payment");if(paymentResult==="success")WodIOApp.message(message,"Pago enviado a Stripe. El estado se actualizará automáticamente cuando Stripe confirme el cobro.","success");if(paymentResult==="cancelled")WodIOApp.message(message,"Pago cancelado. La cuota sigue pendiente.","warning");
+  if(paymentResult==="success")WodIOApp.message(message,"Pago procesado correctamente.","success");if(paymentResult==="cancelled")WodIOApp.message(message,"Pago cancelado. La cuota sigue pendiente.","warning");
   const pendingRows=rows.filter(p=>p.status==="pending");
   console.info("[WodIO Payments] loading payment methods",{boxId:ctx.profile?.box_id});
   const {data:methods,error:methodsError}=await supabaseClient.from("box_payment_methods").select("method_key,name,icon,checkout_url,instructions,sort_order,enabled").eq("box_id",ctx.profile?.box_id).eq("enabled",true).order("sort_order");
