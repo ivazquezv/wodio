@@ -840,16 +840,39 @@ if(e.target===$("modal"))close()}
 ;
 $("form").onsubmit=async e=>{
 e.preventDefault();
-const r=await supabaseClient.rpc("super_admin_update_box",{
-p_box_id:$("bid").value,p_status:$("mstatus").value,p_plan:$("mplan").value}
-);
-if(r.error){
-$("mmsg").textContent=r.error.message;$("mmsg").className="app-message show";
+const boxId=$("bid").value;
+const status=$("mstatus").value;
+const plan=$("mplan").value;
+const saveButton=document.querySelector('#form button[type="submit"]');
+if(!boxId || !status || !plan){
+$("mmsg").textContent="Selecciona un estado y un plan válidos.";
+$("mmsg").className="app-message show";
 return;
 }
-$("mmsg").textContent="Cambios guardados.";$("mmsg").className="app-message show success";
+if(saveButton) saveButton.disabled=true;
+$("mmsg").textContent="Guardando cambios…";
+$("mmsg").className="app-message show";
+try{
+const r=await supabaseClient.rpc("super_admin_update_box",{
+p_box_id:boxId,p_status:status,p_plan:plan
+});
+if(r.error){
+console.error("[SuperAdmin] Error actualizando box:",r.error);
+$("mmsg").textContent="No se pudieron guardar los cambios: "+(r.error.message||"error desconocido");
+$("mmsg").className="app-message show";
+return;
+}
+$("mmsg").textContent="Cambios guardados correctamente.";
+$("mmsg").className="app-message show success";
 await load();
 setTimeout(close,400);
+}catch(err){
+console.error("[SuperAdmin] Error actualizando box:",err);
+$("mmsg").textContent="No se pudieron guardar los cambios: "+(err?.message||String(err));
+$("mmsg").className="app-message show";
+}finally{
+if(saveButton) saveButton.disabled=false;
+};
 }
 ;
 try{
