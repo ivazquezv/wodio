@@ -8,6 +8,10 @@
 <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg">
 <link rel="stylesheet" href="css/wodio.css">
 <link rel="stylesheet" href="css/wodio-app.css">
+<style>
+.event-poster{display:block;width:min(100%,420px);max-height:360px;object-fit:cover;border-radius:12px;border:1px solid var(--border-soft);margin:0 0 14px}
+@media(max-width:600px){.event-poster{max-height:300px}}
+</style>
 <script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
 <body class="app-page">
@@ -41,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     list.innerHTML = '<div class="app-loading">Cargando eventos…</div>';
     const from = new Date().toISOString();
     const [{ data: events, error }, { data: registrations, error: regError }] = await Promise.all([
-      supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents,currency").gte("starts_at", from).order("starts_at").limit(50),
+      supabaseClient.from("events").select("id,title,description,starts_at,ends_at,location,capacity,price_cents,currency,poster_url").gte("starts_at", from).order("starts_at").limit(50),
       supabaseClient.from("event_registrations").select("id,event_id,status").eq("user_id", ctx.user.id)
     ]);
     if (error || regError) {
@@ -64,6 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const count = countMap.get(ev.id) || 0;
       const open = ev.capacity == null ? null : Math.max(0, ev.capacity - count);
       return '<article class="app-item"><div class="app-item-main">' +
+        (ev.poster_url ? '<img class="event-poster" src="' + WodIOApp.escapeHtml(ev.poster_url) + '" alt="Cartel de ' + WodIOApp.escapeHtml(ev.title) + '">' : '') +
         '<div class="app-item-title">' + WodIOApp.escapeHtml(ev.title) + '</div>' +
         '<div class="app-item-meta"><span><i class="ph ph-calendar"></i> ' + WodIOApp.formatDateTime(ev.starts_at) + '</span>' +
         (ev.location ? '<span><i class="ph ph-map-pin"></i> ' + WodIOApp.escapeHtml(ev.location) + '</span>' : '') +
