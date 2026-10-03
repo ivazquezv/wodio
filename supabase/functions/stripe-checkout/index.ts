@@ -58,7 +58,6 @@ Deno.serve(async (req: Request) => {
       params.set("line_items[0][price_data][unit_amount]", String(payment.amount_cents));
       params.set("line_items[0][price_data][product_data][name]", payment.concept || "Pago WodIO");
       params.set("line_items[0][quantity]", "1");
-      params.set("automatic_payment_methods[enabled]", "true");
       params.set("metadata[payment_id]", payment.id);
       params.set("metadata[box_id]", payment.box_id);
       params.set("metadata[user_id]", payment.user_id);
