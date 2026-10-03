@@ -254,21 +254,36 @@
 <div class="admin-section-title"><div><h2>Stripe y pagos</h2><p>Configura la cuenta de Stripe del box y revisa los pasos necesarios para empezar a cobrar cuotas con tarjeta.</p></div></div>
 
 <section class="app-card">
-<div class="app-card-head"><div><h3>Conexión con Stripe</h3><p>WodIO utiliza Stripe Checkout para que los atletas paguen sus cuotas con tarjeta.</p></div><span class="app-badge warning">Configuración requerida</span></div>
+<div class="app-card-head"><div><h3>Cuenta de Stripe</h3><p>Conecta la cuenta de Stripe de tu box para recibir directamente los pagos de tus atletas.</p></div><span id="stripeStatus" class="app-badge warning">No conectada</span></div>
 <div class="app-item" style="margin-top:14px">
 <div class="app-item-main">
-<div style="display:flex;align-items:center;gap:10px"><i class="ph ph-plug" style="font-size:24px"></i><strong>Cuenta de Stripe</strong></div>
-<div class="app-item-meta"><span>Pagos con tarjeta</span><span>Stripe Checkout</span></div>
-<p class="admin-mini" style="margin-top:8px">La clave secreta de Stripe no debe introducirse en esta pantalla ni guardarse en el navegador. La integración API de WodIO se ejecuta en el servidor y las credenciales sensibles deben mantenerse como secretos del backend.</p>
+<div style="display:flex;align-items:center;gap:10px"><i class="ph ph-credit-card" style="font-size:24px"></i><strong id="stripeTitle">Conecta Stripe</strong></div>
+<p id="stripeDescription" class="admin-mini" style="margin-top:8px">Stripe te guiará durante la configuración de tu negocio, identidad y cuenta de cobro. No necesitas introducir claves API ni configurar aspectos técnicos en WodIO.</p>
 <div class="admin-actions" style="margin-top:12px">
-<a class="app-btn primary" href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer"><i class="ph ph-arrow-square-out"></i> Abrir Stripe</a>
-<a class="app-btn" href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer"><i class="ph ph-key"></i> API de Stripe</a>
-<a class="app-btn" href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener noreferrer"><i class="ph ph-webhooks-logo"></i> Webhooks</a>
+<button id="stripeConnectBtn" type="button" class="app-btn primary"><i class="ph ph-link"></i> Conectar con Stripe</button>
+<button id="stripeManageBtn" type="button" class="app-btn" hidden><i class="ph ph-arrow-square-out"></i> Continuar configuración</button>
 </div>
+<div id="stripeMessage" class="admin-mini" style="margin-top:10px"></div>
 </div>
 </div>
 </section>
 
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Cómo funciona</h3><p>La configuración se realiza directamente en Stripe.</p></div></div>
+<div class="app-list" style="margin-top:14px">
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">1. Conecta tu cuenta</div><p class="admin-mini">Pulsa “Conectar con Stripe” y completa los datos que Stripe te solicite.</p></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">2. Stripe verifica tu negocio</div><p class="admin-mini">Stripe gestiona la verificación de identidad, negocio y datos bancarios necesarios para recibir pagos.</p></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">3. Cobra a tus atletas</div><p class="admin-mini">Los atletas pagarán sus cuotas exclusivamente con tarjeta mediante el Checkout de WodIO. Los pagos se procesarán en la cuenta Stripe conectada de tu box.</p></div></div>
+</div>
+</section>
+
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Ayuda</h3><p>Si necesitas revisar tu cuenta, puedes hacerlo desde Stripe.</p></div></div>
+<div class="admin-actions" style="margin-top:14px">
+<a class="app-btn" href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer"><i class="ph ph-arrow-square-out"></i> Abrir Stripe</a>
+<a class="app-btn" href="https://docs.stripe.com/connect" target="_blank" rel="noopener noreferrer">Ayuda de Stripe</a>
+</div>
+</section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h3>Cómo configurar Stripe</h3><p>Hazlo en este orden antes de activar los cobros para los atletas.</p></div></div>
 <div class="app-list" style="margin-top:14px">
@@ -397,6 +412,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
   ]);
   const err=b.error||u.error||c.error||e.error||p.error||x.error||pm.error;if(err){WodIOApp.message(msg,err.message);return;}
   box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];paymentMethods=pm.data||[];coaches=users.filter(v=>v.role==="coach");
+  renderStripeStatus();
+
   $("boxName").textContent=box.name;$("welcomeTitle").textContent="Hola, "+name(ctx.profile);
   $("boxNameInput").value=box.name||"";$("boxEmail").value=box.contact_email||"";
   if(box.logo_url){$("adminBoxLogo").src=box.logo_url;$("adminBoxLogo").hidden=false;$("boxLogoPreview").src=box.logo_url;$("boxLogoPreview").hidden=false;}else{$("adminBoxLogo").hidden=true;$("boxLogoPreview").hidden=true;}$("boxPhone").value=box.phone||"";$("boxTax").value=box.tax_id||"";$("boxAddress").value=box.address||"";$("boxCity").value=box.city||"";$("boxPostal").value=box.postal_code||"";
@@ -446,6 +463,32 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
     $("financeTable").innerHTML=rows.length?'<table class="app-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Cliente / proveedor</th><th>Concepto</th><th>Importe</th><th>Estado</th></tr></thead><tbody>'+rows.slice(0,40).map(v=>'<tr><td>'+WodIOApp.formatDate(v.date,{withYear:true})+'</td><td>'+v.type+'</td><td>'+WodIOApp.escapeHtml(v.user)+'</td><td>'+WodIOApp.escapeHtml(v.concept)+'</td><td>'+WodIOApp.euro(v.amount)+'</td><td><span class="app-badge '+(v.status==="paid"?"success":v.status==="pending"?"warning":"")+'">'+WodIOIOStatus(v.status)+'</span></td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay movimientos.</div>';
   }
   function WodIOIOStatus(s){return ({paid:"Pagado",pending:"Pendiente",failed:"Fallido",cancelled:"Cancelado",refunded:"Devuelto"})[s]||s||"—";}
+  async function refreshStripeStatus(){
+    const btn=$("stripeConnectBtn"), manage=$("stripeManageBtn"), status=$("stripeStatus"), title=$("stripeTitle"), desc=$("stripeDescription");
+    if(!btn)return;
+    btn.disabled=true;
+    const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"status"}});
+    btn.disabled=false;
+    if(error){WodIOApp.message($("stripeMessage"),error.message||"No se pudo comprobar Stripe.");return;}
+    if(data?.connected){
+      status.textContent="Conectada";status.className="app-badge success";title.textContent="Stripe está conectado";desc.textContent="Tu cuenta está preparada para recibir pagos de tus atletas mediante WodIO.";btn.textContent="Revisar configuración";manage.hidden=false;
+    }else if(data?.status==="restricted"||data?.status==="pending"){
+      status.textContent=data.status==="restricted"?"Revisión pendiente":"Configuración pendiente";status.className="app-badge warning";title.textContent="Termina la configuración de Stripe";desc.textContent="Stripe todavía necesita completar o verificar algunos datos. Continúa la configuración para poder recibir pagos.";btn.textContent="Continuar con Stripe";manage.hidden=true;
+    }else{
+      status.textContent="No conectada";status.className="app-badge warning";title.textContent="Conecta Stripe";desc.textContent="Stripe te guiará durante la configuración de tu negocio, identidad y cuenta de cobro. No necesitas introducir claves API ni configurar aspectos técnicos en WodIO.";btn.textContent="Conectar con Stripe";manage.hidden=true;
+    }
+    btn.dataset.stripeAction="connect";
+  }
+  function renderStripeStatus(){refreshStripeStatus();}
+  async function openStripeOnboarding(){
+    const btn=$("stripeConnectBtn"),msg=$("stripeMessage");btn.disabled=true;WodIOApp.message(msg,"Abriendo configuración segura de Stripe...");
+    const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"connect",return_url:location.origin+"/box-admin.html#stripe",refresh_url:location.origin+"/box-admin.html#stripe"}});
+    btn.disabled=false;
+    if(error||!data?.onboarding_url){WodIOApp.message(msg,error?.message||data?.error||"No se pudo abrir Stripe.");return;}
+    location.href=data.onboarding_url;
+  }
+  $("stripeConnectBtn").addEventListener("click",openStripeOnboarding);
+  $("stripeManageBtn").addEventListener("click",openStripeOnboarding);
   $("adminScheduleMonth").addEventListener("change",renderAdminMonthlySchedule);
   $("saveBoxHours").addEventListener("click",async()=>{const rows=[...document.querySelectorAll("#boxHoursRows tr")];const payload=rows.map(tr=>{const open=tr.querySelector("[data-hour-open]").checked,day=+tr.querySelector("[data-hour-open]").dataset.hourOpen;return {box_id:boxId,weekday:day,closed:!open,open_time:open?(tr.querySelector("[data-hour-start]").value||null):null,close_time:open?(tr.querySelector("[data-hour-end]").value||null):null};});const bad=payload.find(x=>!x.closed&&(!x.open_time||!x.close_time||x.open_time>=x.close_time));if(bad)return WodIOApp.message($("boxHoursMessage"),"Revisa las horas de apertura y cierre.");const {error}=await supabaseClient.from("box_hours").upsert(payload,{onConflict:"box_id,weekday"});if(error)WodIOApp.message($("boxHoursMessage"),error.message);else WodIOApp.message($("boxHoursMessage"),"Horarios guardados correctamente.","success");});
   $("exportFinanceExcel").addEventListener("click",()=>{
