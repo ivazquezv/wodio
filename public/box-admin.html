@@ -273,23 +273,8 @@
 </section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Horario habitual del box</h3><p>Se utiliza para mostrar cuándo está abierto el box junto con la programación mensual.</p></div></div><div class="app-table-wrap"><table class="app-table"><thead><tr><th>Día</th><th>Abierto</th><th>Desde</th><th>Hasta</th></tr></thead><tbody id="boxHoursRows"></tbody></table></div><div class="admin-actions" style="margin-top:12px"><button class="app-btn primary" type="button" id="saveBoxHours">Guardar horarios</button></div><div id="boxHoursMessage" class="app-message" style="margin-top:10px"></div></section>
 <section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h3>Métodos de pago del box</h3><p>Activa los métodos que quieres ofrecer y configura el enlace o las instrucciones que verá el atleta en Pagos.</p></div></div>
-<div class="payment-help">
-<h4>Cómo configurar un método de pago</h4>
-<p><strong>Orden</strong> indica la posición en la que aparecerá el método en la pantalla de Pagos del atleta: 10 aparecerá antes que 20, 20 antes que 30, etc. No es un número de pago, ni una prioridad económica.</p>
-<p style="margin-top:7px"><strong>Stripe</strong> usa el Checkout dinámico de WodIO para las cuotas variables de cada cliente. El Payment Link de Stripe que aparece en esta pantalla es opcional y no sustituye la configuración del Checkout dinámico.</p><p style="margin-top:7px"><strong>Otros métodos</strong> pueden utilizar un enlace externo o instrucciones manuales según el proveedor.</p>
-<div class="payment-help-grid">
-<div class="payment-help-item"><strong>Stripe</strong><span>Crea un Payment Link desde el Dashboard de Stripe y copia la URL generada.</span><a href="https://dashboard.stripe.com/payment-links" target="_blank" rel="noopener noreferrer">Abrir Stripe Payment Links <i class="ph ph-arrow-square-out"></i></a></div>
-<div class="payment-help-item"><strong>PayPal</strong><span>Con una cuenta Business puedes crear un enlace de pago o botón y copiar el enlace generado.</span><a href="https://www.paypal.com/es/business/accept-payments/payment-links" target="_blank" rel="noopener noreferrer">Ver enlaces de PayPal <i class="ph ph-arrow-square-out"></i></a></div>
-<div class="payment-help-item"><strong>SumUp</strong><span>En SumUp Business entra en Enlaces de pago, crea uno con importe fijo o abierto y copia el enlace.</span><a href="https://help.sumup.com/es-ES/articles/2rTTr92lUebQ3nY9jAAy5m-usar-enlaces-de-pago" target="_blank" rel="noopener noreferrer">Guía de SumUp <i class="ph ph-arrow-square-out"></i></a></div>
-<div class="payment-help-item"><strong>Mollie</strong><span>En el Dashboard de Mollie puedes crear un enlace de pago, definir importe y compartir la URL o QR.</span><a href="https://help.mollie.com/hc/es/articles/4402042371730--C%C3%B3mo-creo-un-enlace-de-pago" target="_blank" rel="noopener noreferrer">Guía de Mollie <i class="ph ph-arrow-square-out"></i></a></div>
-<div class="payment-help-item"><strong>Bizum</strong><span>Si tu banco ofrece Bizum para comercios, consulta con tu entidad cómo habilitar Bizum para tu negocio y qué URL o checkout proporciona.</span><a href="https://bizum.es/" target="_blank" rel="noopener noreferrer">Web oficial de Bizum <i class="ph ph-arrow-square-out"></i></a></div>
-<div class="payment-help-item"><strong>Domiciliación</strong><span>Para cobros recurrentes puedes utilizar un proveedor como GoCardless y configurar sus instrucciones o enlace de alta.</span><a href="https://gocardless.com/es-es/" target="_blank" rel="noopener noreferrer">Ver GoCardless <i class="ph ph-arrow-square-out"></i></a></div>
-</div>
-</div>
-<div id="paymentMethodsAdmin" class="app-list"><div class="app-loading">Cargando métodos de pago…</div></div>
-<div class="admin-actions" style="margin-top:12px"><button class="app-btn primary" type="button" id="savePaymentMethods"><i class="ph ph-floppy-disk"></i> Guardar métodos de pago</button></div>
-<div id="paymentMethodsMessage" class="app-message" style="margin-top:10px"></div>
+<div class="app-card-head"><div><h3>Forma de pago</h3><p>Los atletas pagan sus cuotas exclusivamente con tarjeta mediante el Checkout de Stripe de WodIO.</p></div></div>
+<div class="app-item" style="margin-top:14px"><div class="app-item-main"><div style="display:flex;align-items:center;gap:10px"><i class="ph ph-credit-card" style="font-size:24px"></i><strong>Pago con tarjeta</strong></div><div class="app-item-meta"><span>Stripe</span><span>Checkout seguro de WodIO</span></div><p class="admin-mini" style="margin-top:8px">No se ofrecen Bizum, PayPal, transferencia, domiciliación ni efectivo como métodos de pago online.</p></div></div>
 </section><section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Programación mensual</h3><p>Clases disponibles y coach asignado.</p></div><input id="adminScheduleMonth" type="month" class="app-btn"></div><div id="adminMonthlySchedule" class="app-list"></div></section>
 </section>
 </section>
@@ -378,7 +363,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   $("classCoach").innerHTML='<option value="">Sin asignar</option>'+coaches.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
 $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
   $("paymentRequestUser").innerHTML='<option value="">Selecciona un cliente</option>'+clients.map(v=>'<option value="'+v.id+'">'+WodIOApp.escapeHtml(name(v))+'</option>').join("");
-  renderPaymentMethodsAdmin();
+  renderAdminPaymentMethod();
   $("clientsTable").innerHTML='<table class="app-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Móvil</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody>'+users.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td>'+WodIOApp.escapeHtml(v.email||"—")+'</td><td>'+WodIOApp.escapeHtml(v.phone||"—")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+ '</td><td><div class="admin-actions"><button class="app-btn" data-edit-user="'+v.id+'">Editar</button>'+(v.email?'<button class="app-btn" data-reset-user="'+v.id+'">Enviar recuperación</button>':'')+'</div></td></tr>').join("")+'</tbody></table>';
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
   $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
@@ -402,26 +387,8 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("verifactuStatus").innerHTML=vfConfig?.enabled?'<span class="app-badge success">Preparación activada</span>':'<span class="app-badge">Sin activar</span>';
   const allPayments=p.data||[], allExpenses=x.data||[];
   async function renderAdminMonthlySchedule(){const month=$("adminScheduleMonth").value;if(!month)return;const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);const {data,error}=await supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",boxId).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at");if(error)throw error;$("adminMonthlySchedule").innerHTML=(data||[]).length?(data||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(name(v.coach)||"Sin coach")+'</span><span>'+v.capacity+' plazas</span></div></div></article>').join(""):'<div class="app-empty">No hay clases programadas en este mes.</div>';}
-  function renderPaymentMethodsAdmin(){
-  const defaults=[["stripe","Stripe","ph-stripe-logo"],["paypal","PayPal","ph-credit-card"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
-  const byKey=new Map(paymentMethods.map(v=>[v.method_key,v]));
-  const defaultOrder={stripe:10,paypal:20,bizum:30,transfer:40,direct_debit:50,cash:60};
-  const orderedDefaults=defaults.slice().sort((a,b)=>Number(byKey.get(a[0])?.sort_order ?? defaultOrder[a[0]])-Number(byKey.get(b[0])?.sort_order ?? defaultOrder[b[0]]));
-  console.info("[WodIO Box Admin] payment method order", orderedDefaults.map(d=>({key:d[0],order:byKey.get(d[0])?.sort_order ?? defaultOrder[d[0]]})));
-  $("paymentMethodsAdmin").innerHTML=orderedDefaults.map(d=>{
-    const v=byKey.get(d[0])||{method_key:d[0],name:d[1],icon:d[2],enabled:false,sort_order:(d[0]==="stripe"?10:d[0]==="paypal"?20:d[0]==="bizum"?30:d[0]==="transfer"?40:d[0]==="direct_debit"?50:60),checkout_url:"",instructions:""};
-    const iconClass=d[0]==="paypal"?"ph-paypal-logo":(v.icon||d[2]);
-    const help={
-      stripe:"Opcional. Es un Payment Link externo; el Checkout dinámico de WodIO no utiliza este campo.",
-      paypal:"Copia aquí el enlace de pago generado desde PayPal Business.",
-      bizum:"Si tu banco te proporciona un checkout o enlace Bizum, pégalo aquí.",
-      transfer:"Normalmente no necesitas enlace: escribe IBAN, titular y concepto en las instrucciones.",
-      direct_debit:"Puedes indicar aquí el enlace de alta o las instrucciones de domiciliación.",
-      cash:"Normalmente no necesitas enlace: indica dónde y cuándo puede pagar en efectivo."
-    }[d[0]];
-    const orderHelp=d[0]==="stripe"?"Ej.: 10 = primero; 20 = después.": "Se muestra según el número indicado.";
-    return "<article class=\"app-item\"><div class=\"app-item-main\"><div style=\"display:flex;align-items:center;gap:10px\"><i class=\"ph "+WodIOApp.escapeHtml(iconClass)+"\" style=\"font-size:24px\"></i><strong>"+WodIOApp.escapeHtml(d[1])+"</strong></div><div class=\"app-form-grid\" style=\"margin-top:12px\"><div class=\"app-field\"><label>Nombre visible</label><input data-pm-name=\""+d[0]+"\" value=\""+WodIOApp.escapeHtml(v.name||d[1])+"\"></div><div class=\"app-field\"><label>Orden</label><input type=\"number\" min=\"0\" data-pm-order=\""+d[0]+"\" value=\""+(v.sort_order??0)+"\"><span class=\"admin-mini\">"+orderHelp+"</span></div><div class=\"app-field full\"><label>Enlace de pago / plataforma</label><input type=\"url\" data-pm-url=\""+d[0]+"\" value=\""+WodIOApp.escapeHtml(v.checkout_url||"")+" \" placeholder=\"https://...\"><span class=\"admin-mini\">"+help+"</span></div><div class=\"app-field full\"><label>Instrucciones para el atleta</label><input data-pm-instructions=\""+d[0]+"\" value=\""+WodIOApp.escapeHtml(v.instructions||"")+" \" placeholder=\"Ej.: Paga la cuota mensual y escribe tu nombre en el concepto.\"></div></div><label class=\"admin-checkbox\" style=\"margin-top:10px\"><input type=\"checkbox\" data-pm-enabled=\""+d[0]+"\" "+(v.enabled?"checked":"")+"><span>Mostrar este método en Pagos</span></label></div></article>";
-  }).join("");
+  function renderAdminPaymentMethod(){
+  $("paymentMethodsAdmin").innerHTML='<div class="app-item"><div class="app-item-main"><div style="display:flex;align-items:center;gap:10px"><i class="ph ph-credit-card" style="font-size:24px"></i><strong>Pago con tarjeta</strong></div><div class="app-item-meta"><span>Stripe</span><span>Checkout seguro de WodIO</span></div><p class="admin-mini" style="margin-top:8px">Único método de pago online disponible para los atletas.</p></div></div>';
 }
   function financeRange(){const mode=$("financePeriod").value,now=new Date(),start=new Date(0);if(mode==="month"){start.setTime(new Date(now.getFullYear(),now.getMonth(),1).getTime());}else if(mode==="3months"){start.setTime(new Date(now.getFullYear(),now.getMonth()-2,1).getTime());}else if(mode==="year"){start.setTime(new Date(now.getFullYear(),0,1).getTime());}return {start,now};}
   function renderFinanceStats(){const {start,now}=financeRange(),incomes=allPayments.filter(v=>{const d=new Date(v.paid_at||v.due_date||v.created_at);return v.status==="paid"&&d>=start&&d<=now;}),expenses=allExpenses.filter(v=>{const d=new Date(v.expense_date);return d>=start&&d<=now;});const incomeTotal=incomes.reduce((s,v)=>s+v.amount_cents,0),expenseTotal=expenses.reduce((s,v)=>s+v.amount_cents,0);$("financeIncome").textContent=WodIOApp.euro(incomeTotal);$("financeExpense").textContent=WodIOApp.euro(expenseTotal);$("financeBalance").textContent=WodIOApp.euro(incomeTotal-expenseTotal);$("financePending").textContent=WodIOApp.euro(allPayments.filter(v=>v.status==="pending").reduce((s,v)=>s+v.amount_cents,0));
@@ -435,22 +402,6 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   function WodIOIOStatus(s){return ({paid:"Pagado",pending:"Pendiente",failed:"Fallido",cancelled:"Cancelado",refunded:"Devuelto"})[s]||s||"—";}
   $("adminScheduleMonth").addEventListener("change",renderAdminMonthlySchedule);
   $("saveBoxHours").addEventListener("click",async()=>{const rows=[...document.querySelectorAll("#boxHoursRows tr")];const payload=rows.map(tr=>{const open=tr.querySelector("[data-hour-open]").checked,day=+tr.querySelector("[data-hour-open]").dataset.hourOpen;return {box_id:boxId,weekday:day,closed:!open,open_time:open?(tr.querySelector("[data-hour-start]").value||null):null,close_time:open?(tr.querySelector("[data-hour-end]").value||null):null};});const bad=payload.find(x=>!x.closed&&(!x.open_time||!x.close_time||x.open_time>=x.close_time));if(bad)return WodIOApp.message($("boxHoursMessage"),"Revisa las horas de apertura y cierre.");const {error}=await supabaseClient.from("box_hours").upsert(payload,{onConflict:"box_id,weekday"});if(error)WodIOApp.message($("boxHoursMessage"),error.message);else WodIOApp.message($("boxHoursMessage"),"Horarios guardados correctamente.","success");});
-  $("savePaymentMethods").addEventListener("click",async()=>{
-  const btn=$("savePaymentMethods");btn.disabled=true;
-  console.info("[WodIO Box Admin] saving payment methods");
-  try{
-    const defaults=[["stripe","Stripe","ph-stripe-logo"],["paypal","PayPal","ph-credit-card"],["bizum","Bizum","ph-device-mobile"],["transfer","Transferencia bancaria","ph-bank"],["direct_debit","Domiciliación","ph-arrows-clockwise"],["cash","Efectivo","ph-money"]];
-    const payload=defaults.map(d=>({box_id:boxId,method_key:d[0],name:document.querySelector('[data-pm-name="'+d[0]+'"]').value.trim()||d[1],icon:d[2],enabled:document.querySelector('[data-pm-enabled="'+d[0]+'"]').checked,sort_order:+document.querySelector('[data-pm-order="'+d[0]+'"]').value||0,checkout_url:document.querySelector('[data-pm-url="'+d[0]+'"]').value.trim()||null,instructions:document.querySelector('[data-pm-instructions="'+d[0]+'"]').value.trim()||null}));
-    const {error}=await supabaseClient.from("box_payment_methods").upsert(payload,{onConflict:"box_id,method_key"});
-    console.info("[WodIO Box Admin] payment methods payload", payload);
-    if(error)throw error;
-    console.info("[WodIO Box Admin] payment methods saved");
-    WodIOApp.message($("paymentMethodsMessage"),"Métodos de pago guardados.","success");
-    await load();
-  }catch(error){WodIOApp.message($("paymentMethodsMessage"),error?.message||"No se pudieron guardar los métodos.");}
-  finally{btn.disabled=false;}
-});
-  
   $("exportFinanceExcel").addEventListener("click",()=>{
     const {start,now}=financeRange();
     const rows=[
