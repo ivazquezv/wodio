@@ -45,6 +45,9 @@ Deno.serve(async (req: Request) => {
       if (payment.user_id !== user.id) throw new Error("payment_not_owned");
       if (payment.status !== "pending") throw new Error("payment_not_pending");
       if (!Number(payment.amount_cents) || Number(payment.amount_cents) <= 0) throw new Error("invalid_payment_amount");
+      const { data: box, error: boxError } = await adminClient.from("boxes").select("id,stripe_account_id,stripe_connect_status,stripe_connect_charges_enabled").eq("id", payment.box_id).single();
+      if (boxError || !box) throw new Error("box_not_found");
+      if (!box.stripe_account_id || box.stripe_connect_status !== "connected" || !box.stripe_connect_charges_enabled) throw new Error("box_stripe_not_ready");
 
       const origin = new URL(req.url).origin;
       const successUrl = body?.success_url || origin + "/payments.html?payment=success&session_id={CHECKOUT_SESSION_ID}";
@@ -67,7 +70,7 @@ Deno.serve(async (req: Request) => {
 
       const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${stripeSecret}`, "Content-Type": "application/x-www-form-urlencoded" },
+        headers: { Authorization: `Bearer ${stripeSecret}`, "Stripe-Account": box.stripe_account_id, "Content-Type": "application/x-www-form-urlencoded" },
         body: params,
       });
       const session = await response.json();
