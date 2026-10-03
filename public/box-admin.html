@@ -204,6 +204,11 @@
 <div class="admin-section-title"><div><h2>Contabilidad</h2><p>Registra ingresos y gastos con detalle y consulta estadísticas por cliente, categoría y proveedor.</p></div></div>
 
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Periodo</h3><p>Las estadísticas se actualizan con este periodo.</p></div><select id="financePeriod" class="app-btn"><option value="month">Este mes</option><option value="3months">Últimos 3 meses</option><option value="year">Este año</option><option value="all">Todo</option></select></div></section>
+<div class="finance-stat-grid">
+<div class="admin-stat"><strong id="financeIncome">—</strong><span>Ingresos del periodo</span></div>
+<div class="admin-stat"><strong id="financeExpense">—</strong><span>Gastos del periodo</span></div>
+<div class="admin-stat"><strong id="financeBalance">—</strong><span>Balance del periodo</span></div>
+<div class="admin-stat"><strong id="financePending">—</strong><span>Ingresos pendientes</span></div>
 <section class="app-card payment-request-card">
 <div class="app-card-head"><div><h3><i class="ph ph-bell-ringing"></i> Solicitar un pago a un cliente</h3><p>Crea una cuota pendiente. El cliente la verá en su área de Pagos y podrá realizarla con los métodos habilitados por el box.</p></div></div>
 <p class="payment-request-help">Usa esta opción para cuotas, matrículas, eventos u otros importes que el cliente todavía tiene que pagar. No lo marques como pagado hasta que el cobro se haya confirmado.</p>
@@ -251,11 +256,7 @@
 </div><button class="app-btn primary" type="submit"><i class="ph ph-minus-circle"></i> Registrar gasto</button></form>
 </section>
 </div>
-<div class="finance-stat-grid">
-<div class="admin-stat"><strong id="financeIncome">—</strong><span>Ingresos del periodo</span></div>
-<div class="admin-stat"><strong id="financeExpense">—</strong><span>Gastos del periodo</span></div>
-<div class="admin-stat"><strong id="financeBalance">—</strong><span>Balance del periodo</span></div>
-<div class="admin-stat"><strong id="financePending">—</strong><span>Ingresos pendientes</span></div>
+
 </div>
 
 <div class="finance-breakdown">
