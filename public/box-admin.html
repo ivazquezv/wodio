@@ -89,6 +89,7 @@
 <div class="admin-nav-group" data-nav-group="gestion"><button type="button" aria-expanded="true">Gestión <i class="ph ph-caret-down"></i></button></div>
 <a class="admin-nav-link" href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
 <div class="admin-nav-group" data-nav-group="configuracion"><button type="button" aria-expanded="true">Configuración <i class="ph ph-caret-down"></i></button></div>
+<a class="admin-nav-link" href="#stripe"><i class="ph ph-credit-card"></i> Stripe y pagos</a>
 <a class="admin-nav-link" href="#configuracion"><i class="ph ph-gear"></i> Configuración</a>
 <a class="admin-nav-link" href="#verifactu"><i class="ph ph-file-text"></i> VERI*FACTU</a>
 </nav>
@@ -247,6 +248,55 @@
 <section class="app-card"><div class="app-card-head"><div><h3>Gastos por proveedor</h3><p>Total gastado y número de movimientos.</p></div></div><div id="supplierStats" class="app-table-wrap"></div></section>
 </div>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="exportFinanceExcel"><i class="ph ph-file-xls"></i> Excel</button><button class="app-btn" type="button" id="exportFinancePdf"><i class="ph ph-file-pdf"></i> PDF</button></div></div><div id="financeTable" class="app-table-wrap"></div></section>
+</section>
+
+<section class="admin-section" id="stripe">
+<div class="admin-section-title"><div><h2>Stripe y pagos</h2><p>Configura la cuenta de Stripe del box y revisa los pasos necesarios para empezar a cobrar cuotas con tarjeta.</p></div></div>
+
+<section class="app-card">
+<div class="app-card-head"><div><h3>Conexión con Stripe</h3><p>WodIO utiliza Stripe Checkout para que los atletas paguen sus cuotas con tarjeta.</p></div><span class="app-badge warning">Configuración requerida</span></div>
+<div class="app-item" style="margin-top:14px">
+<div class="app-item-main">
+<div style="display:flex;align-items:center;gap:10px"><i class="ph ph-plug" style="font-size:24px"></i><strong>Cuenta de Stripe</strong></div>
+<div class="app-item-meta"><span>Pagos con tarjeta</span><span>Stripe Checkout</span></div>
+<p class="admin-mini" style="margin-top:8px">La clave secreta de Stripe no debe introducirse en esta pantalla ni guardarse en el navegador. La integración API de WodIO se ejecuta en el servidor y las credenciales sensibles deben mantenerse como secretos del backend.</p>
+<div class="admin-actions" style="margin-top:12px">
+<a class="app-btn primary" href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer"><i class="ph ph-arrow-square-out"></i> Abrir Stripe</a>
+<a class="app-btn" href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer"><i class="ph ph-key"></i> API de Stripe</a>
+<a class="app-btn" href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener noreferrer"><i class="ph ph-webhooks-logo"></i> Webhooks</a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Cómo configurar Stripe</h3><p>Hazlo en este orden antes de activar los cobros para los atletas.</p></div></div>
+<div class="app-list" style="margin-top:14px">
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">1. Crear o abrir la cuenta Stripe</div><div class="app-item-meta"><span>Cuenta del box</span><span>Modo real</span></div><p class="admin-mini">Crea la cuenta del box o entra en la que ya tengas. Completa los datos del negocio, representante y cuenta bancaria para poder recibir los fondos.</p><div class="admin-actions"><a class="app-btn" href="https://dashboard.stripe.com/register" target="_blank" rel="noopener noreferrer">Crear cuenta Stripe</a><a class="app-btn" href="https://dashboard.stripe.com/settings/business" target="_blank" rel="noopener noreferrer">Datos del negocio</a></div></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">2. Activar y verificar la cuenta</div><div class="app-item-meta"><span>Stripe</span><span>Identidad y pagos</span></div><p class="admin-mini">Completa la verificación solicitada por Stripe y configura los datos necesarios para aceptar pagos y recibir transferencias.</p><div class="admin-actions"><a class="app-btn" href="https://dashboard.stripe.com/settings" target="_blank" rel="noopener noreferrer">Abrir configuración</a></div></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">3. Configurar la API</div><div class="app-item-meta"><span>Backend WodIO</span><span>Clave privada</span></div><p class="admin-mini"><strong>No pegues aquí la clave secreta.</strong> Las claves <code>sk_…</code> y las claves restringidas son credenciales de servidor. Para una instalación por box, WodIO debe conectar la cuenta de Stripe mediante la integración de plataforma correspondiente y guardar las credenciales en el backend.</p><div class="admin-actions"><a class="app-btn" href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">Gestionar API keys</a></div></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">4. Configurar el webhook</div><div class="app-item-meta"><span>Confirmación automática</span><span>Pagos y suscripciones</span></div><p class="admin-mini">El webhook permite que WodIO reciba de Stripe la confirmación de los pagos y actualice el estado de las cuotas. La URL y el secreto de firma deben configurarse en el backend, no en el navegador.</p><div class="admin-actions"><a class="app-btn" href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener noreferrer">Configurar Webhooks</a></div></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">5. Comprobar el primer pago</div><div class="app-item-meta"><span>Tarjeta</span><span>Checkout WodIO</span></div><p class="admin-mini">Cuando la integración esté activa, el atleta verá únicamente el pago con tarjeta y será enviado al Checkout de Stripe. Tras el pago, el webhook actualizará la cuota.</p></div></div>
+</div>
+</section>
+
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Importante sobre las claves API</h3><p>Qué puede y qué no debe hacer el administrador del box.</p></div></div>
+<div class="app-grid app-grid-2" style="margin-top:14px">
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">Clave publicable</div><div class="app-item-meta"><span>pk_…</span><span>No es secreta</span></div><p class="admin-mini">Puede utilizarse en código del cliente cuando sea necesario. No permite realizar operaciones administrativas sensibles.</p></div></div>
+<div class="app-item"><div class="app-item-main"><div class="app-item-title">Clave secreta / restringida</div><div class="app-item-meta"><span>sk_… / rk_…</span><span>Solo servidor</span></div><p class="admin-mini">Nunca debe copiarse en <code>box-admin.html</code>, GitHub, mensajes, capturas de pantalla ni variables públicas del navegador.</p></div></div>
+</div>
+</section>
+
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Ayuda oficial de Stripe</h3><p>Accesos directos para completar la configuración.</p></div></div>
+<div class="admin-actions" style="margin-top:14px">
+<a class="app-btn" href="https://docs.stripe.com/keys" target="_blank" rel="noopener noreferrer">Documentación API keys</a>
+<a class="app-btn" href="https://docs.stripe.com/connect" target="_blank" rel="noopener noreferrer">Stripe Connect</a>
+<a class="app-btn" href="https://docs.stripe.com/webhooks" target="_blank" rel="noopener noreferrer">Webhooks</a>
+<a class="app-btn" href="https://docs.stripe.com/payments/checkout" target="_blank" rel="noopener noreferrer">Stripe Checkout</a>
+</div>
+</section>
 </section>
 
 <section class="admin-section" id="configuracion">
