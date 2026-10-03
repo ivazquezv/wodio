@@ -454,7 +454,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
     const btn=$("stripeConnectBtn"),msg=$("stripeMessage");btn.disabled=true;WodIOApp.message(msg,"Abriendo configuración segura de Stripe...");
     const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"connect",return_url:location.origin+"/box-admin.html#stripe",refresh_url:location.origin+"/box-admin.html#stripe"}});
     btn.disabled=false;
-    if(error||!data?.onboarding_url){WodIOApp.message(msg,error?.message||data?.error||"No se pudo abrir Stripe.");return;}
+    if(error||data?.ok===false||!data?.onboarding_url){const action=data?.action_required;const help=action==="stripe_connect_platform_profile"?"Antes de conectar un box, completa el perfil de plataforma de Stripe en tu cuenta WodIO.":action==="stripe_connect_branding"?"Completa la identidad y marca de Connect en Stripe.":action==="stripe_account_activation"?"Activa primero tu cuenta de Stripe.":null;WodIOApp.message(msg,help||error?.message||data?.error||"No se pudo abrir Stripe.");return;}
     location.href=data.onboarding_url;
   }
   $("stripeConnectBtn").addEventListener("click",openStripeOnboarding);
