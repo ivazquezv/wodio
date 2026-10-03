@@ -303,14 +303,7 @@
 </section>
 
 <section class="admin-section" id="configuracion">
-<section class="app-card" style="margin-top:18px">
-<div class="app-card-head"><div><h3>Política de reservas</h3><p>Define las reglas que se aplican a todos los atletas del box.</p></div></div>
-<form id="bookingPolicyForm" class="app-form"><div class="app-form-grid">
-<div class="app-field"><label>Días máximos para reservar</label><input id="bookingAdvanceDays" type="number" min="0" max="30" required><span class="admin-mini">Con cuántos días de antelación puede reservar un atleta.</span></div>
-<div class="app-field"><label>Horas mínimas para cancelar</label><input id="cancellationCutoffHours" type="number" min="0" max="72" required><span class="admin-mini">Después de este límite la cancelación queda cerrada.</span></div>
-<div class="app-field"><label>Cancelaciones máximas por semana</label><input id="weeklyCancellationLimit" type="number" min="0" max="20" required><span class="admin-mini">Límite semanal por atleta.</span></div>
-</div><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar política</button></form>
-</section>
+
 <div class="admin-section-title"><div><h2>Configuración del box</h2><p>Datos básicos y horario habitual del box.</p></div></div>
 <section class="app-card">
 <form id="boxForm" class="app-form"><div class="app-form-grid">
@@ -324,11 +317,19 @@
 <div class="app-field"><label>Código postal</label><input id="boxPostal"></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar configuración</button></form>
 </section>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Política de reservas</h3><p>Define las reglas que se aplican a todos los atletas del box.</p></div></div>
+<form id="bookingPolicyForm" class="app-form"><div class="app-form-grid">
+<div class="app-field"><label>Días máximos para reservar</label><input id="bookingAdvanceDays" type="number" min="0" max="30" required><span class="admin-mini">Con cuántos días de antelación puede reservar un atleta.</span></div>
+<div class="app-field"><label>Horas mínimas para cancelar</label><input id="cancellationCutoffHours" type="number" min="0" max="72" required><span class="admin-mini">Después de este límite la cancelación queda cerrada.</span></div>
+<div class="app-field"><label>Cancelaciones máximas por semana</label><input id="weeklyCancellationLimit" type="number" min="0" max="20" required><span class="admin-mini">Límite semanal por atleta.</span></div>
+</div><button class="app-btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar política</button></form>
+</section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h3>Horario habitual del box</h3><p>Se utiliza para mostrar cuándo está abierto el box junto con la programación mensual.</p></div></div><div class="app-table-wrap"><table class="app-table"><thead><tr><th>Día</th><th>Abierto</th><th>Desde</th><th>Hasta</th></tr></thead><tbody id="boxHoursRows"></tbody></table></div><div class="admin-actions" style="margin-top:12px"><button class="app-btn primary" type="button" id="saveBoxHours">Guardar horarios</button></div><div id="boxHoursMessage" class="app-message" style="margin-top:10px"></div></section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head"><div><h3>Forma de pago</h3><p>Los atletas pagan sus cuotas exclusivamente con tarjeta mediante el Checkout de Stripe de WodIO.</p></div></div>
 <div class="app-item" style="margin-top:14px"><div class="app-item-main"><div style="display:flex;align-items:center;gap:10px"><i class="ph ph-credit-card" style="font-size:24px"></i><strong>Pago con tarjeta</strong></div><div class="app-item-meta"><span>Stripe</span><span>Checkout seguro de WodIO</span></div><p class="admin-mini" style="margin-top:8px">No se ofrecen Bizum, PayPal, transferencia, domiciliación ni efectivo como métodos de pago online.</p></div></div>
-</section></section>
+</section>
 </section>
 <section class="admin-section" id="verifactu">
 <div class="admin-section-title"><div><h2>VERI*FACTU</h2><p>Configuración fiscal y base de datos preparada para registros de facturación encadenados.</p></div></div>
