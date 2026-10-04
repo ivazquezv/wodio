@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const registered = registrations?.some(r => r.event_id === ev.id && r.status === "registered");
       const count = countMap.get(ev.id) || 0;
       const open = ev.capacity == null ? null : Math.max(0, ev.capacity - count);
-      return '<article class="app-item event-item"><div class="app-item-main">'
+      return '<article class="app-item event-item"><div class="app-item-main">' +
         (ev.poster_url ? '<img class="event-poster" src="' + WodIOApp.escapeHtml(ev.poster_url) + '" alt="Cartel de ' + WodIOApp.escapeHtml(ev.title) + '">' : '') +
         '<div class="app-item-title">' + WodIOApp.escapeHtml(ev.title) + '</div>' +
         '<div class="app-item-meta"><span><i class="ph ph-calendar"></i> ' + WodIOApp.formatDateTime(ev.starts_at) + '</span>' +
