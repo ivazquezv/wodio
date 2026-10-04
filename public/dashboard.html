@@ -1177,9 +1177,9 @@
                 <section class="app-card profile-media-card" id="profileMediaCard">
                     <div class="profile-media-layout">
                         <div class="profile-box-identity">
-                            <img id="dashboardBoxLogo" class="profile-box-logo" alt="Logotipo del box" hidden>
+                            <img id="dashboardBoxLogo" class="profile-box-logo" alt="Logotipo del box" loading="eager" decoding="async" hidden>
                             <div class="profile-avatar-wrap">
-                                <img id="dashboardProfileAvatarImage" class="profile-avatar" alt="Foto de perfil" hidden>
+                                <img id="dashboardProfileAvatarImage" class="profile-avatar" alt="Foto de perfil" loading="eager" decoding="async" hidden>
                             </div>
                             <div id="dashboardBoxIdentity">
                                 <div class="stat-label">Box activo</div>
@@ -1675,15 +1675,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const {data:{user},error:sessionError} = await supabaseClient.auth.getUser();
         if (sessionError || !user) { window.location.href="login.html"; return; }
 
-        const [{data:profile}, {data:classes}, {data:bookings}, {data:payments}, {data:progress}] = await Promise.all([
-            supabaseClient.from("profiles").select("first_name,last_name,role,avatar_url,box_id").eq("id",user.id).maybeSingle(),
-            supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8),
-            supabaseClient.from("class_bookings").select("id,class_id,status,created_at").eq("user_id",user.id),
-            supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at,category,box_id").eq("user_id",user.id).order("created_at",{ascending:false}).limit(30),
-            supabaseClient.from("progress_entries").select("id,exercise,value,unit,reps,recorded_at,notes").eq("user_id",user.id).order("recorded_at",{ascending:false}).limit(100)
-        ]);
+        const {data:profile}=await supabaseClient.from("profiles").select("first_name,last_name,role,avatar_url,box_id").eq("id",user.id).maybeSingle();
 
-        const {data:box}=profile?.box_id?await supabaseClient.from("boxes").select("id,name,logo_url").eq("id",profile.box_id).maybeSingle():{data:null};
         const firstName = profile?.first_name || user.email?.split("@")[0] || "Usuario";
         const fullName = [profile?.first_name,profile?.last_name].filter(Boolean).join(" ") || firstName;
         document.getElementById("profileName").textContent=fullName;
@@ -1735,11 +1728,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         showProfileImage(profile?.avatar_url);
-        document.getElementById("dashboardBoxName").textContent=box?.name||"Box activo";
-        showBoxLogo(box?.logo_url);
         document.getElementById("profileRole").textContent=({
             athlete:"Atleta",coach:"Coach",box_admin:"Administrador",super_admin:"Super administrador"
         })[profile?.role] || "Usuario";
+
+        const [{data:box},{data:classes},{data:bookings},{data:payments},{data:progress}] = await Promise.all([
+            profile?.box_id
+                ? supabaseClient.from("boxes").select("id,name,logo_url").eq("id",profile.box_id).maybeSingle()
+                : Promise.resolve({data:null}),
+            supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8),
+            supabaseClient.from("class_bookings").select("id,class_id,status,created_at").eq("user_id",user.id),
+            supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at,category,box_id").eq("user_id",user.id).order("created_at",{ascending:false}).limit(30),
+            supabaseClient.from("progress_entries").select("id,exercise,value,unit,reps,recorded_at,notes").eq("user_id",user.id).order("recorded_at",{ascending:false}).limit(100)
+        ]);
+        document.getElementById("dashboardBoxName").textContent=box?.name||"Box activo";
+        showBoxLogo(box?.logo_url);
 
         if (adminLink && !["box_admin","super_admin"].includes(profile?.role)) adminLink.style.display="none";
 
@@ -1801,11 +1804,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             const base=startOfWeek(new Date());
             base.setDate(base.getDate()+weeklyOffset*7);
             const end=new Date(base);end.setDate(end.getDate()+7);
-            const [{data:hours,error:hoursError},{data:weekClasses,error:classesError},{data:weekBookings,error:bookingsError}]=await Promise.all([
+            const [{data:hours,error:hoursError},{data:weekClasses,error:classesError}]=await Promise.all([
                 supabaseClient.from("box_hours").select("weekday,open_time,close_time,closed").eq("box_id",profile.box_id),
-                supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at"),
-                supabaseClient.from("class_bookings").select("class_id,status").eq("user_id",user.id)
+                supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
             ]);
+            const weekBookings=bookings||[];
             if(hoursError||classesError||bookingsError){
                 weeklyGrid.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(hoursError?.message||classesError?.message||bookingsError?.message||"No se pudo cargar el horario.")+'</div>';
                 return;
@@ -1869,13 +1872,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         const monthEnd=new Date(monthStart); monthEnd.setMonth(monthEnd.getMonth()+1);
         const previousStart=new Date(monthStart); previousStart.setMonth(previousStart.getMonth()-1);
 
-        const {count:monthBookings}=await supabaseClient.from("class_bookings")
-            .select("*",{count:"exact",head:true}).eq("user_id",user.id).eq("status","booked")
-            .gte("created_at",monthStart.toISOString()).lt("created_at",monthEnd.toISOString());
-
-        const {count:previousBookings}=await supabaseClient.from("class_bookings")
-            .select("*",{count:"exact",head:true}).eq("user_id",user.id).eq("status","booked")
-            .gte("created_at",previousStart.toISOString()).lt("created_at",monthStart.toISOString());
+        const [{count:monthBookings},{count:previousBookings}]=await Promise.all([
+            supabaseClient.from("class_bookings")
+                .select("*",{count:"exact",head:true}).eq("user_id",user.id).eq("status","booked")
+                .gte("created_at",monthStart.toISOString()).lt("created_at",monthEnd.toISOString()),
+            supabaseClient.from("class_bookings")
+                .select("*",{count:"exact",head:true}).eq("user_id",user.id).eq("status","booked")
+                .gte("created_at",previousStart.toISOString()).lt("created_at",monthStart.toISOString())
+        ]);
 
         const last30=new Date(); last30.setDate(last30.getDate()-30);
         const attendanceRows=(bookings||[]).filter(b=>new Date(b.created_at)>=last30);
