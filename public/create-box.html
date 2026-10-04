@@ -54,6 +54,7 @@
 .create-box-step span:not(.create-box-step-number){display:none}.create-box-step-line{margin:0 5px}
 }
 
+.onboarding-brand{display:flex;flex-direction:column;gap:8px}.onboarding-logo{display:inline-flex;align-items:center;gap:11px;width:max-content;color:#fff;text-decoration:none}.onboarding-logo-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:#fff;color:#0b0b0f;font-size:21px;font-weight:900;letter-spacing:-.08em;box-shadow:0 8px 24px rgba(0,0,0,.2)}.onboarding-logo-text{font-size:27px;font-weight:800;letter-spacing:-.055em}.onboarding-brand-caption{font-size:8px;letter-spacing:.18em;color:#666;font-weight:700}.onboarding-form-footer{display:flex;align-items:center;gap:8px;margin-top:20px;padding-top:15px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:#777}.onboarding-form-footer i{font-size:15px;color:#aaa}
 /* SaaS onboarding layout */
 .create-box-card{display:grid;grid-template-columns:300px minmax(0,1fr);position:relative;overflow:hidden}
 .onboarding-aside{padding:34px 28px;display:flex;flex-direction:column;min-height:760px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border-right:1px solid rgba(255,255,255,.08)}
@@ -85,7 +86,7 @@
 <section class="create-box-shell" aria-labelledby="create-box-title">
 <div class="create-box-card">
 <aside class="onboarding-aside" aria-label="Resumen de WodIO">
-  <div class="onboarding-aside-badge"><i class="ph ph-sparkle"></i> WodIO</div>
+  <div class="onboarding-brand"><a href="../index.html" class="onboarding-logo" aria-label="WodIO"><span class="onboarding-logo-mark">W</span><span class="onboarding-logo-text">WodIO</span></a><span class="onboarding-brand-caption">BOX MANAGEMENT PLATFORM</span></div>
   <h2>Todo tu box,<br><span>en un solo lugar.</span></h2>
   <p>Configura tu cuenta y empieza a gestionar tu box con una plataforma pensada para el día a día.</p>
   <div class="onboarding-benefits">
@@ -190,7 +191,7 @@
 <span id="createBoxBtnText">Crear mi box</span>
 </button>
 
-</section><div class="create-box-trust"><div class="create-box-trust-item"><strong>Configuración rápida</strong><span>Empieza con lo esencial y completa el perfil de tu box cuando quieras.</span></div><div class="create-box-trust-item"><strong>Pago seguro</strong><span>Los planes de pago se procesan mediante Stripe.</span></div><div class="create-box-trust-item"><strong>Control de acceso</strong><span>Cada cuenta solo accede a las funciones y datos autorizados.</span></div></div></div></div><div class="create-box-security"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Tus datos se transmiten mediante conexiones seguras y el acceso a la plataforma se protege mediante autenticación y permisos por cuenta y box.</span></div><div class="login-register">
+</section><div class="create-box-trust"><div class="create-box-trust-item"><strong>Configuración rápida</strong><span>Empieza con lo esencial y completa el perfil de tu box cuando quieras.</span></div><div class="create-box-trust-item"><strong>Pago seguro</strong><span>Los planes de pago se procesan mediante Stripe.</span></div><div class="create-box-trust-item"><strong>Control de acceso</strong><span>Cada cuenta solo accede a las funciones y datos autorizados.</span></div></div></div></div> <div class="login-register">
 <span>¿Ya tienes una cuenta?</span>
 <a href="login.html">Iniciar sesión</a>
 </div>
