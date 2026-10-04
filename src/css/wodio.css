@@ -1963,7 +1963,7 @@ LOGIN — WODIO
 .cookie-banner-content{max-width:1200px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:28px}
 .cookie-banner p{margin-top:7px;color:var(--text-muted);font-size:.84rem;line-height:1.5}
 .cookie-banner-actions,.cookie-modal-actions{display:flex;flex-wrap:wrap;gap:8px;flex-shrink:0}
-.cookie-modal{position:fixed;inset:0;z-index:1300;place-items:center}
+.cookie-modal{position:fixed;inset:0;z-index:1300;display:grid;place-items:center}
 .cookie-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72)}
 .cookie-modal-card{position:relative;width:min(92%,520px);padding:28px;border:1px solid var(--border-primary);border-radius:var(--radius-xl);background:var(--bg-surface);box-shadow:var(--shadow-card)}
 .cookie-modal-close{position:absolute;right:14px;top:14px;border:0;background:transparent;color:var(--text-muted);font-size:1.3rem}
