@@ -590,6 +590,138 @@
             font-size: .74rem;
         }
 
+        .dashboard-page .profile-media-card {
+            margin-bottom: 18px;
+            padding: 22px;
+        }
+
+        .dashboard-page .profile-media-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 1.4fr);
+            gap: 24px;
+            align-items: center;
+        }
+
+        .dashboard-page .profile-box-identity {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .dashboard-page .profile-box-logo,
+        .dashboard-page .profile-avatar {
+            width: 58px;
+            height: 58px;
+            flex: 0 0 58px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border-soft);
+            background: var(--bg-main);
+        }
+
+        .dashboard-page .profile-avatar-wrap {
+            position: relative;
+            width: 92px;
+            height: 92px;
+            flex: 0 0 92px;
+        }
+
+        .dashboard-page .profile-avatar {
+            width: 92px;
+            height: 92px;
+            flex-basis: 92px;
+            border: 2px solid var(--border-soft);
+        }
+
+        .dashboard-page .profile-avatar-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-muted);
+            background: var(--bg-main);
+        }
+
+        .dashboard-page .profile-avatar-placeholder svg {
+            width: 52px;
+            height: 52px;
+        }
+
+        .dashboard-page .profile-photo-form {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 16px;
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            background: var(--bg-main);
+        }
+
+        .dashboard-page .profile-photo-fields {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .dashboard-page .profile-photo-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .dashboard-page .profile-photo-input {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .dashboard-page .profile-photo-input::file-selector-button {
+            margin-right: 10px;
+            padding: 7px 11px;
+            border: 0;
+            border-radius: 7px;
+            background: var(--primary);
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .dashboard-page .profile-photo-input:hover {
+            border-color: var(--primary);
+        }
+
+        .dashboard-page .profile-photo-help {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: .72rem;
+        }
+
+        .dashboard-page .profile-photo-save {
+            min-height: 42px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 800px) {
+            .dashboard-page .profile-media-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-page .profile-photo-form {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .dashboard-page .profile-photo-save {
+                width: 100%;
+            }
+        }
+
         .dashboard-page .booking-payment-warning {
             margin-top: 9px;
             padding: 10px 11px;
@@ -1025,15 +1157,30 @@
              STATS
         ================================================== -->
 
-                <section class="app-card" id="profileMediaCard" style="margin-bottom:18px;padding:18px">
-                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-                        <div id="dashboardBoxIdentity" style="display:flex;align-items:center;gap:10px;min-width:220px">
-                            <img id="dashboardBoxLogo" alt="Logotipo del box" style="width:52px;height:52px;object-fit:cover;border-radius:50%;background:var(--bg-main);border:1px solid var(--border-soft)" hidden>
-                            <div><div class="stat-label">Box activo</div><strong id="dashboardBoxName">—</strong></div>
+                <section class="app-card profile-media-card" id="profileMediaCard">
+                    <div class="profile-media-layout">
+                        <div class="profile-box-identity">
+                            <div class="profile-avatar-wrap">
+                                <div id="profileAvatarPlaceholder" class="profile-avatar profile-avatar-placeholder" aria-label="Perfil sin foto">
+                                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+                                        <path d="M5.5 20c.7-3.6 3.1-5.5 6.5-5.5s5.8 1.9 6.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <img id="profileAvatarImage" class="profile-avatar" alt="Foto de perfil" hidden>
+                            </div>
+                            <div id="dashboardBoxIdentity">
+                                <div class="stat-label">Box activo</div>
+                                <strong id="dashboardBoxName">—</strong>
+                            </div>
                         </div>
-                        <form id="profilePhotoForm" style="display:flex;align-items:end;gap:10px;flex-wrap:wrap;flex:1;min-width:260px">
-                            <div class="app-field" style="margin:0;min-width:220px;flex:1"><label for="profilePhotoInput">Foto de perfil</label><input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp"><span style="color:var(--text-muted);font-size:.72rem">JPG, PNG o WebP · máximo 5 MB.</span></div>
-                            <button class="app-btn primary" type="submit" id="profilePhotoSave">Guardar foto</button>
+                        <form id="profilePhotoForm" class="profile-photo-form">
+                            <div class="profile-photo-fields">
+                                <label class="profile-photo-label" for="profilePhotoInput">Foto de perfil</label>
+                                <input id="profilePhotoInput" class="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp">
+                                <span class="profile-photo-help">JPG, PNG o WebP · máximo 5 MB.</span>
+                            </div>
+                            <button class="app-btn primary profile-photo-save" type="submit" id="profilePhotoSave">Guardar foto</button>
                         </form>
                     </div>
                 </section>
@@ -1547,8 +1694,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("welcomeName").textContent=firstName;
         document.getElementById("profileAvatarInitials").textContent=initials(profile?.first_name,profile?.last_name);
         const avatarImg=document.getElementById("profileAvatarImage");
-        if(profile?.avatar_url){avatarImg.src=profile.avatar_url;avatarImg.style.display="block";document.getElementById("profileAvatarInitials").style.display="none";}
-        else{avatarImg.style.display="none";document.getElementById("profileAvatarInitials").style.display="inline";}
+        const avatarPlaceholder=document.getElementById("profileAvatarPlaceholder");
+        if(profile?.avatar_url){
+            avatarImg.src=profile.avatar_url;
+            avatarImg.hidden=false;
+            avatarPlaceholder.hidden=true;
+        }else{
+            avatarImg.hidden=true;
+            avatarPlaceholder.hidden=false;
+        }
         document.getElementById("dashboardBoxName").textContent=box?.name||"Box activo";
         if(box?.logo_url){document.getElementById("dashboardBoxLogo").src=box.logo_url;document.getElementById("dashboardBoxLogo").hidden=false;}
         document.getElementById("profileRole").textContent=({
@@ -1570,7 +1724,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             const {error:updateError}=await supabaseClient.from("profiles").update({avatar_url:avatarUrl}).eq("id",user.id);
             btn.disabled=false;btn.textContent="Guardar foto";
             if(updateError){WodIOApp.message(document.getElementById("pageMessage"),updateError.message);return;}
-            avatarImg.src=avatarUrl;avatarImg.style.display="block";document.getElementById("profileAvatarInitials").style.display="none";document.getElementById("profilePhotoInput").value="";WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
+            avatarImg.src=avatarUrl;
+            avatarImg.hidden=false;
+            avatarPlaceholder.hidden=true;
+            document.getElementById("profilePhotoInput").value="";
+            WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
         });
 
         const monthStartForBooking=new Date();
