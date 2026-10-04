@@ -1179,12 +1179,6 @@
                         <div class="profile-box-identity">
                             <img id="dashboardBoxLogo" class="profile-box-logo" alt="Logotipo del box" hidden>
                             <div class="profile-avatar-wrap">
-                                <div id="profileAvatarPlaceholder" class="profile-avatar profile-avatar-placeholder" aria-label="Perfil sin foto">
-                                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/>
-                                        <path d="M5.5 20c.7-3.6 3.1-5.5 6.5-5.5s5.8 1.9 6.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                    </svg>
-                                </div>
                                 <img id="dashboardProfileAvatarImage" class="profile-avatar" alt="Foto de perfil" hidden>
                             </div>
                             <div id="dashboardBoxIdentity">
@@ -1697,7 +1691,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("profileAvatarInitials").textContent=initials(profile?.first_name,profile?.last_name);
         const avatarImg=document.getElementById("profileAvatarImage");
         const dashboardAvatarImg=document.getElementById("dashboardProfileAvatarImage");
-        const avatarPlaceholder=document.getElementById("profileAvatarPlaceholder");
         const boxLogoImg=document.getElementById("dashboardBoxLogo");
         const initialsEl=document.getElementById("profileAvatarInitials");
 
@@ -1720,7 +1713,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             dashboardAvatarImg.onerror=()=>{
                 dashboardAvatarImg.removeAttribute("src");
                 dashboardAvatarImg.hidden=true;
-                avatarPlaceholder.hidden=false;
             };
             avatarImg.src=url;
             dashboardAvatarImg.src=url;
