@@ -67,6 +67,7 @@ Deno.serve(async (req: Request) => {
         paid_at: paid ? new Date().toISOString() : null,
         updated_at: new Date().toISOString(),
       }).eq("id", paymentId).eq("box_id", boxId || "");
+      if (paid) await adminClient.from("event_registrations").update({status:"registered",updated_at:new Date().toISOString()}).eq("payment_id",paymentId);
       return json({ received: true });
     }
     if (!boxId) return json({ received: true });
