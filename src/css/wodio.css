@@ -202,6 +202,111 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.legal-page {
+  max-width: 980px;
+  padding-bottom: 80px;
+}
+
+.legal-back {
+  display: inline-flex;
+  margin-bottom: 34px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.legal-back:hover { color: var(--text-main); }
+
+.legal-header {
+  margin-bottom: 42px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.legal-header h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+}
+
+.legal-header p,
+.legal-section p,
+.legal-section li {
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.legal-section {
+  margin: 0 0 34px;
+}
+
+.legal-section h2 {
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+}
+
+.legal-section ul {
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.legal-section a {
+  color: var(--primary-soft);
+}
+
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 14px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+.legal-table th {
+  color: var(--text-main);
+  background: rgba(255,255,255,.035);
+  font-weight: 700;
+}
+
+.legal-table tr:last-child td { border-bottom: 0; }
+
+.legal-update {
+  padding-top: 24px;
+  color: var(--text-muted);
+  font-size: .9rem;
+  border-top: 1px solid var(--border-primary);
+}
+
+.pricing-trial {
+  border-color: rgba(255, 255, 255, .22);
+}
+
+@media (max-width: 1100px) {
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .grid-4 { grid-template-columns: 1fr; }
+  .legal-page { padding-bottom: 48px; }
+  .legal-table { display: block; overflow-x: auto; }
+  .legal-table th, .legal-table td { min-width: 180px; }
+}
+
+
 section {
   scroll-margin-top: 100px;
 }
