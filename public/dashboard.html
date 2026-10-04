@@ -633,20 +633,6 @@
             border: 2px solid var(--border-soft);
         }
 
-        .dashboard-page .profile-avatar-placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            color: var(--text-muted);
-            background: var(--bg-main);
-        }
-
-        .dashboard-page .profile-avatar-placeholder svg {
-            width: 52px;
-            height: 52px;
-        }
-
         .dashboard-page .profile-photo-form {
             display: flex;
             align-items: center;
@@ -704,7 +690,33 @@
 
         .dashboard-page .profile-photo-save {
             min-height: 42px;
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            font-size: .84rem;
+            line-height: 1;
             white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,.12);
+            transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+        }
+
+        .dashboard-page .profile-photo-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0,0,0,.16);
+        }
+
+        .dashboard-page .profile-photo-save:active {
+            transform: translateY(0);
+        }
+
+        .dashboard-page .profile-photo-save:disabled {
+            opacity: .6;
+            cursor: wait;
+            transform: none;
+            box-shadow: none;
         }
 
         @media (max-width: 800px) {
@@ -1696,7 +1708,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 initialsEl.hidden=false;
                 dashboardAvatarImg.removeAttribute("src");
                 dashboardAvatarImg.hidden=true;
-                avatarPlaceholder.hidden=false;
                 return;
             }
             avatarImg.onload=()=>{avatarImg.style.display="block";};
