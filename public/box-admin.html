@@ -510,8 +510,24 @@ function renderStripeStatus(){refreshStripeStatus();}
     const btn=$("stripeConnectBtn"),msg=$("stripeMessage");btn.disabled=true;WodIOApp.message(msg,"Abriendo configuración segura de Stripe...");
     const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"connect",return_url:location.origin+"/box-admin.html#stripe",refresh_url:location.origin+"/box-admin.html#stripe"}});
     btn.disabled=false;
-    if(error||data?.ok===false||!data?.onboarding_url){const action=data?.action_required;const help=action==="stripe_connect_platform_profile"?"Antes de conectar un box, completa el perfil de plataforma de Stripe en tu cuenta WodIO.":action==="stripe_connect_branding"?"Completa la identidad y marca de Connect en Stripe.":action==="stripe_account_activation"?"Activa primero tu cuenta de Stripe.":null;WodIOApp.message(msg,help||error?.message||data?.error||"No se pudo abrir Stripe.");return;}
-    location.href=data.onboarding_url;
+    let responseData=data;
+    if(!responseData && error?.context?.clone){
+      try{responseData=await error.context.clone().json();}catch(_e){}
+    }
+    if(error||responseData?.ok===false||!responseData?.onboarding_url){
+      const action=responseData?.action_required;
+      const stripeError=responseData?.error||"";
+      const help=action==="stripe_connect_platform_profile"
+        ?"Stripe necesita que WodIO complete primero el perfil de plataforma de Connect. Abre Stripe y completa la configuración de la plataforma."
+        :action==="stripe_connect_branding"
+          ?"Stripe necesita completar la identidad y marca de Connect de WodIO antes de continuar."
+          :action==="stripe_account_activation"
+            ?"La cuenta de Stripe de WodIO debe estar activada antes de conectar un box."
+            :stripeError||error?.message||"No se pudo abrir la configuración de Stripe.";
+      WodIOApp.message(msg,help);
+      return;
+    }
+    location.href=responseData.onboarding_url;
   }
   $("stripeConnectBtn").addEventListener("click",openStripeOnboarding);
   $("stripeManageBtn").addEventListener("click",openStripeOnboarding);
