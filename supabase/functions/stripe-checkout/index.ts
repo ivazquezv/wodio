@@ -47,7 +47,32 @@ Deno.serve(async (req: Request) => {
       if (!Number(payment.amount_cents) || Number(payment.amount_cents) <= 0) throw new Error("invalid_payment_amount");
       const { data: box, error: boxError } = await adminClient.from("boxes").select("id,stripe_account_id,stripe_connect_status,stripe_connect_charges_enabled").eq("id", payment.box_id).single();
       if (boxError || !box) throw new Error("box_not_found");
-      if (!box.stripe_account_id || box.stripe_connect_status !== "connected" || !box.stripe_connect_charges_enabled) throw new Error("box_stripe_not_ready");
+      if (!box.stripe_account_id) {
+        const err = new Error("box_stripe_not_connected");
+        (err as any).code = "box_stripe_not_connected";
+        throw err;
+      }
+
+      const accountResponse = await fetch("https://api.stripe.com/v1/accounts/" + encodeURIComponent(box.stripe_account_id), {
+        headers: { Authorization: `Bearer ${stripeSecret}` },
+      });
+      const account = await accountResponse.json();
+      if (!accountResponse.ok) throw new Error(account?.error?.message || "stripe_account_lookup_failed");
+
+      const connected = !!account.charges_enabled && !!account.payouts_enabled;
+      await adminClient.from("boxes").update({
+        stripe_connect_status: connected ? "connected" : account.details_submitted ? "restricted" : "pending",
+        stripe_connect_charges_enabled: !!account.charges_enabled,
+        stripe_connect_payouts_enabled: !!account.payouts_enabled,
+        stripe_connect_details_submitted: !!account.details_submitted,
+        stripe_connect_updated_at: new Date().toISOString(),
+      }).eq("id", box.id);
+
+      if (!connected) {
+        const err = new Error("box_stripe_not_ready");
+        (err as any).code = "box_stripe_not_ready";
+        throw err;
+      }
 
       const origin = new URL(req.url).origin;
       const successUrl = body?.success_url || origin + "/payments.html?payment=success&session_id={CHECKOUT_SESSION_ID}";
@@ -129,6 +154,13 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ url: session.url, session_id: session.id }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "unexpected_error";
-    return new Response(JSON.stringify({ error: message }), { status: message === "STRIPE_SECRET_KEY_not_configured" ? 503 : 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const code = (error as any)?.code || message;
+    const friendly = code === "box_stripe_not_connected"
+      ? "El box todavía no tiene Stripe conectado. El administrador debe completar la conexión de Stripe antes de cobrar."
+      : code === "box_stripe_not_ready"
+        ? "La cuenta de Stripe del box todavía está en configuración o verificación. El administrador debe completar los datos pendientes en Stripe."
+        : message;
+    const status = message === "STRIPE_SECRET_KEY_not_configured" ? 503 : code === "box_stripe_not_connected" || code === "box_stripe_not_ready" ? 409 : 400;
+    return new Response(JSON.stringify({ ok: false, error: friendly, error_code: code }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
