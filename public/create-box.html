@@ -53,6 +53,18 @@
 @media(max-width:480px){
 .create-box-step span:not(.create-box-step-number){display:none}.create-box-step-line{margin:0 5px}
 }
+
+/* SaaS onboarding layout */
+.create-box-card{display:grid;grid-template-columns:300px minmax(0,1fr);position:relative;overflow:hidden}
+.onboarding-aside{padding:34px 28px;display:flex;flex-direction:column;min-height:760px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border-right:1px solid rgba(255,255,255,.08)}
+.onboarding-aside-badge{display:inline-flex;align-items:center;gap:7px;width:max-content;margin-bottom:auto;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.onboarding-aside h2{margin:70px 0 12px;font-size:29px;line-height:1.08;letter-spacing:-.035em;color:#fff}.onboarding-aside h2 span{color:#999}
+.onboarding-aside>p{margin:0;color:#999;font-size:13px;line-height:1.65}
+.onboarding-benefits{display:grid;gap:18px;margin-top:34px}.onboarding-benefits>div{display:flex;gap:11px;align-items:flex-start}.onboarding-benefits i{font-size:19px;color:#fff;margin-top:1px}.onboarding-benefits strong,.onboarding-benefits small{display:block}.onboarding-benefits strong{font-size:12px;color:#ddd;margin-bottom:3px}.onboarding-benefits small{font-size:11px;line-height:1.45;color:#777}
+.onboarding-aside-footer{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:22px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:#777}.onboarding-aside-footer i{font-size:15px;color:#aaa}
+.create-box-form-column{min-width:0}.create-box-form-column .create-box-top{border-bottom:1px solid rgba(255,255,255,.08)}
+@media(max-width:900px){.create-box-card{grid-template-columns:1fr}.onboarding-aside{min-height:0;padding:24px 26px;border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.onboarding-aside h2{margin:26px 0 10px;font-size:25px}.onboarding-benefits{grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}.onboarding-aside-footer{margin-top:22px}}
+@media(max-width:620px){.onboarding-benefits{grid-template-columns:1fr 1fr}.onboarding-benefits>div:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body class="auth-page create-box-page">
@@ -72,6 +84,18 @@
 <main>
 <section class="create-box-shell" aria-labelledby="create-box-title">
 <div class="create-box-card">
+<aside class="onboarding-aside" aria-label="Resumen de WodIO">
+  <div class="onboarding-aside-badge"><i class="ph ph-sparkle"></i> WodIO</div>
+  <h2>Todo tu box,<br><span>en un solo lugar.</span></h2>
+  <p>Configura tu cuenta y empieza a gestionar tu box con una plataforma pensada para el día a día.</p>
+  <div class="onboarding-benefits">
+    <div><i class="ph ph-check-circle"></i><span><strong>Gestión de atletas</strong><small>Perfiles, asistencia y progreso.</small></span></div>
+    <div><i class="ph ph-calendar-check"></i><span><strong>Clases y reservas</strong><small>Organiza horarios y plazas.</small></span></div>
+    <div><i class="ph ph-chart-line-up"></i><span><strong>Control del box</strong><small>Métricas y gestión desde un único panel.</small></span></div>
+  </div>
+  <div class="onboarding-aside-footer"><i class="ph ph-lock-key"></i><span>Configuración segura y acceso protegido.</span></div>
+</aside>
+<div class="create-box-form-column">
 <div class="create-box-top"><div><span class="section-eyebrow">WODIO PARA BOXES</span><h1 id="create-box-title">Crea tu box</h1><p class="box-intro" id="planIntro">Configura tu cuenta y los datos básicos de tu box. Te llevará menos de 2 minutos.</p></div><div class="create-box-plan"><i class="ph ph-check-circle"></i><span id="planBadge">Plan seleccionado</span></div><div class="create-box-progress" aria-label="Progreso de configuración"><div class="create-box-step active"><span class="create-box-step-number">1</span><span>Cuenta</span></div><div class="create-box-step-line"></div><div class="create-box-step active"><span class="create-box-step-number">2</span><span>Box</span></div><div class="create-box-step-line"></div><div class="create-box-step"><span class="create-box-step-number">3</span><span>Activación</span></div></div></div>
 <div class="create-box-main">
 
