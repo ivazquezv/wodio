@@ -1686,22 +1686,55 @@ document.addEventListener("DOMContentLoaded", async () => {
         const avatarImg=document.getElementById("profileAvatarImage");
         const dashboardAvatarImg=document.getElementById("dashboardProfileAvatarImage");
         const avatarPlaceholder=document.getElementById("profileAvatarPlaceholder");
-        if(profile?.avatar_url){
-            avatarImg.src=profile.avatar_url;
+        const boxLogoImg=document.getElementById("dashboardBoxLogo");
+        const initialsEl=document.getElementById("profileAvatarInitials");
+
+        function showProfileImage(url){
+            if(!url){
+                avatarImg.removeAttribute("src");
+                avatarImg.style.display="none";
+                initialsEl.hidden=false;
+                dashboardAvatarImg.removeAttribute("src");
+                dashboardAvatarImg.hidden=true;
+                avatarPlaceholder.hidden=false;
+                return;
+            }
+            avatarImg.onload=()=>{avatarImg.style.display="block";};
+            avatarImg.onerror=()=>{
+                avatarImg.removeAttribute("src");
+                avatarImg.style.display="none";
+                initialsEl.hidden=false;
+            };
+            dashboardAvatarImg.onload=()=>{dashboardAvatarImg.hidden=false;};
+            dashboardAvatarImg.onerror=()=>{
+                dashboardAvatarImg.removeAttribute("src");
+                dashboardAvatarImg.hidden=true;
+                avatarPlaceholder.hidden=false;
+            };
+            avatarImg.src=url;
+            dashboardAvatarImg.src=url;
             avatarImg.style.display="block";
-            document.getElementById("profileAvatarInitials").hidden=true;
-            dashboardAvatarImg.src=profile.avatar_url;
+            initialsEl.hidden=true;
             dashboardAvatarImg.hidden=false;
             avatarPlaceholder.hidden=true;
-        }else{
-            avatarImg.removeAttribute("src");
-            avatarImg.style.display="none";
-            document.getElementById("profileAvatarInitials").hidden=false;
-            dashboardAvatarImg.hidden=true;
-            avatarPlaceholder.hidden=false;
         }
+
+        function showBoxLogo(url){
+            if(!boxLogoImg)return;
+            if(!url){
+                boxLogoImg.removeAttribute("src");
+                boxLogoImg.hidden=true;
+                return;
+            }
+            boxLogoImg.onload=()=>{boxLogoImg.hidden=false;};
+            boxLogoImg.onerror=()=>{boxLogoImg.removeAttribute("src");boxLogoImg.hidden=true;};
+            boxLogoImg.src=url;
+            boxLogoImg.hidden=false;
+        }
+
+        showProfileImage(profile?.avatar_url);
         document.getElementById("dashboardBoxName").textContent=box?.name||"Box activo";
-        if(box?.logo_url){document.getElementById("dashboardBoxLogo").src=box.logo_url;document.getElementById("dashboardBoxLogo").hidden=false;}
+        showBoxLogo(box?.logo_url);
         document.getElementById("profileRole").textContent=({
             athlete:"Atleta",coach:"Coach",box_admin:"Administrador",super_admin:"Super administrador"
         })[profile?.role] || "Usuario";
@@ -1721,12 +1754,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const {error:updateError}=await supabaseClient.from("profiles").update({avatar_url:avatarUrl}).eq("id",user.id);
             btn.disabled=false;btn.textContent="Guardar foto";
             if(updateError){WodIOApp.message(document.getElementById("pageMessage"),updateError.message);return;}
-            avatarImg.src=avatarUrl;
-            avatarImg.style.display="block";
-            document.getElementById("profileAvatarInitials").hidden=true;
-            dashboardAvatarImg.src=avatarUrl;
-            dashboardAvatarImg.hidden=false;
-            avatarPlaceholder.hidden=true;
+            showProfileImage(avatarUrl);
             document.getElementById("profilePhotoInput").value="";
             WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
         });
