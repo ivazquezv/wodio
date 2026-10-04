@@ -14,13 +14,45 @@
 <link rel="stylesheet" href="css/wodio-app.css">
 <script src="https://unpkg.com/phosphor-icons" defer></script>
 <style>
-.box-signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.box-signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .box-signup-grid .full{grid-column:1/-1}
 .box-section-title{margin:22px 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted,#999)}
-.box-intro{margin:0 0 18px;color:var(--text-muted,#999);line-height:1.6}
-.box-owner-note{display:flex;gap:10px;align-items:flex-start;margin:0 0 18px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;font-size:13px;line-height:1.5;color:var(--text-muted,#aaa)}
-.box-owner-note i{font-size:18px;flex:none}
-@media(max-width:640px){.box-signup-grid{grid-template-columns:1fr}.box-signup-grid .full{grid-column:auto}}
+.box-intro{margin:6px 0 0;max-width:620px;color:var(--text-muted,#999);line-height:1.65;font-size:14px}
+.box-owner-note{display:flex;gap:12px;align-items:flex-start;margin:0 0 24px;padding:15px 16px;border:1px solid rgba(255,255,255,.09);border-radius:14px;font-size:13px;line-height:1.55;color:var(--text-muted,#aaa);background:rgba(255,255,255,.025)}
+.box-owner-note i{font-size:20px;flex:none;color:#fff}
+.create-box-top{position:relative}
+.create-box-top h1{margin:6px 0 0;font-size:clamp(30px,4vw,42px);letter-spacing:-.035em}
+.create-box-plan{white-space:nowrap}
+.create-box-progress{display:flex;align-items:center;gap:0;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.07)}
+.create-box-step{display:flex;align-items:center;gap:9px;color:#777;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.create-box-step.active{color:#fff}
+.create-box-step-number{display:grid;place-items:center;width:27px;height:27px;border:1px solid rgba(255,255,255,.14);border-radius:50%;font-size:11px}
+.create-box-step.active .create-box-step-number{background:#fff;color:#0b0b0f;border-color:#fff}
+.create-box-step-line{height:1px;flex:1;min-width:28px;margin:0 12px;background:rgba(255,255,255,.09)}
+.create-box-main{background:linear-gradient(180deg,rgba(255,255,255,.012),transparent)}
+.create-box-section{padding:30px 0}
+.create-box-section:first-of-type{padding-top:4px}
+.create-box-section-title{display:flex;align-items:center;gap:11px;margin:0 0 7px;font-size:17px;letter-spacing:-.01em;color:#fff}
+.create-box-section-title i{font-size:20px}
+.create-box-section-subtitle{margin:0 0 22px;color:var(--text-muted,#999);font-size:13px;line-height:1.55}
+.create-box-main .form-field label{font-size:12px;font-weight:600;color:#c8c8cc;margin-bottom:8px}
+.create-box-main .form-field input{min-height:48px;border-radius:11px;background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.09);transition:border-color .18s,background .18s,box-shadow .18s}
+.create-box-main .form-field input:focus{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.3);box-shadow:0 0 0 3px rgba(255,255,255,.05)}
+.create-box-security{margin:22px 0 0}
+.create-box-trust{margin-top:26px}
+.create-box-trust-item{transition:transform .18s,border-color .18s,background .18s}
+.create-box-trust-item:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.13);background:rgba(255,255,255,.04)}
+.create-box-main .register-btn{min-height:52px;border-radius:12px;font-size:14px;font-weight:700}
+.create-box-main .register-terms{margin:0 0 18px}
+@media(max-width:760px){
+.box-signup-grid{grid-template-columns:1fr}.box-signup-grid .full{grid-column:auto}
+.create-box-shell{width:min(100% - 20px,1080px)}
+.create-box-top{padding:24px 20px}.create-box-main{padding:22px 20px}
+.create-box-progress{margin-top:22px}.create-box-step{font-size:9px}.create-box-step-line{margin:0 6px}
+}
+@media(max-width:480px){
+.create-box-step span:not(.create-box-step-number){display:none}.create-box-step-line{margin:0 5px}
+}
 </style>
 </head>
 <body class="auth-page create-box-page">
@@ -40,7 +72,7 @@
 <main>
 <section class="create-box-shell" aria-labelledby="create-box-title">
 <div class="create-box-card">
-<div class="create-box-top"><div><span class="section-eyebrow">WODIO PARA BOXES</span><h1 id="create-box-title">Crea tu box</h1><p class="box-intro" id="planIntro">Configura tu cuenta y los datos básicos de tu box. Te llevará menos de 2 minutos.</p></div><div class="create-box-plan"><i class="ph ph-check-circle"></i><span>Configuración segura</span></div></div>
+<div class="create-box-top"><div><span class="section-eyebrow">WODIO PARA BOXES</span><h1 id="create-box-title">Crea tu box</h1><p class="box-intro" id="planIntro">Configura tu cuenta y los datos básicos de tu box. Te llevará menos de 2 minutos.</p></div><div class="create-box-plan"><i class="ph ph-check-circle"></i><span id="planBadge">Plan seleccionado</span></div><div class="create-box-progress" aria-label="Progreso de configuración"><div class="create-box-step active"><span class="create-box-step-number">1</span><span>Cuenta</span></div><div class="create-box-step-line"></div><div class="create-box-step active"><span class="create-box-step-number">2</span><span>Box</span></div><div class="create-box-step-line"></div><div class="create-box-step"><span class="create-box-step-number">3</span><span>Activación</span></div></div></div>
 <div class="create-box-main">
 
 <form class="login-card register-card" id="createBoxForm" novalidate>
@@ -189,6 +221,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const validPlans = ["demo", "starter", "pro", "elite"];
   const selectedPlan = validPlans.includes(plan) ? plan : "demo";
   const planIntro = document.getElementById("planIntro");
+  const planBadge = document.getElementById("planBadge");
   const planNote = document.getElementById("planNote");
   const planCopy = {
     demo: {
@@ -218,6 +251,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     showMessage("El pago se ha cancelado. Puedes volver a intentarlo cuando quieras.", "error");
   }
   planIntro.textContent = currentPlanCopy.intro;
+  planBadge.textContent = selectedPlan === "demo" ? "Prueba gratuita · 14 días" : `${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} · ${selectedPlan === "starter" ? "29" : selectedPlan === "pro" ? "49" : "69"} €/mes`;
   planNote.innerHTML = currentPlanCopy.note;
   buttonText.textContent = currentPlanCopy.button;
 
