@@ -1930,6 +1930,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("performanceChart").innerHTML=evo.length?evo.map(p=>'<div title="'+WodIOApp.escapeHtml(p.exercise+" · "+p.value+" "+p.unit)+'" class="performance-bar" style="--bar-height:'+Math.max(8,Number(p.value)/evoMax*100)+'%"></div>').join(""):'<div class="app-empty">Registra cargas en Mi progreso para ver tu evolución.</div>';
 
             logoutButton?.addEventListener("click",async()=>{await supabaseClient.auth.signOut();window.location.href="login.html";});
+        }
+
     formatCurrentDate();
     await loadDashboard();
 });
