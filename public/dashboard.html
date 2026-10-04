@@ -1165,6 +1165,7 @@
                 <section class="app-card profile-media-card" id="profileMediaCard">
                     <div class="profile-media-layout">
                         <div class="profile-box-identity">
+                            <img id="dashboardBoxLogo" class="profile-box-logo" alt="Logotipo del box" hidden>
                             <div class="profile-avatar-wrap">
                                 <div id="profileAvatarPlaceholder" class="profile-avatar profile-avatar-placeholder" aria-label="Perfil sin foto">
                                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1900,45 +1901,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const evoMax=Math.max(...evo.map(p=>Number(p.value)),1);
         document.getElementById("performanceChart").innerHTML=evo.length?evo.map(p=>'<div title="'+WodIOApp.escapeHtml(p.exercise+" · "+p.value+" "+p.unit)+'" class="performance-bar" style="--bar-height:'+Math.max(8,Number(p.value)/evoMax*100)+'%"></div>').join(""):'<div class="app-empty">Registra cargas en Mi progreso para ver tu evolución.</div>';
 
-        const timerState={type:"clock",running:false,remaining:0,elapsed:0,interval:null,phase:"Listo",round:1};
-        const timerConfig=document.getElementById("timerConfig"),timerDisplay=document.getElementById("timerDisplay"),timerPhase=document.getElementById("timerPhase");
-        const defaults={clock:{duration:3600},tabata:{rounds:8,work:20,rest:10},fortime:{duration:1200},amrap:{duration:600},emom:{duration:1200,interval:60}};
-        function field(label,id,value){return '<label>'+label+'<input id="'+id+'" type="number" min="1" value="'+value+'"></label>';}
-        function renderTimerConfig(){const t=timerState.type;timerConfig.innerHTML=t==="tabata"?field("Rondas","timerRounds",defaults.tabata.rounds)+field("Trabajo (seg)","timerWork",defaults.tabata.work)+field("Descanso (seg)","timerRest",defaults.tabata.rest):t==="emom"?field("Duración (min)","timerDuration",20)+field("Cada (min)","timerInterval",1):field("Duración (min)","timerDuration",t==="clock"?60:t==="fortime"?20:10);}
-        function fmt(sec){sec=Math.max(0,Math.ceil(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
-        function renderTimer(){timerDisplay.textContent=fmt(timerState.remaining);timerPhase.textContent=timerState.phase;}
-        function configureTimer(){clearInterval(timerState.interval);timerState.running=false;timerState.elapsed=0;timerState.round=1;cated_at");
-                    return {c,booked:booked||[],error};
-                }));
-                if(rows.some(r=>r.error)){attendanceList.innerHTML='<div class="app-empty">No se pudo consultar la asistencia.</div>';return;}
-                attendanceList.innerHTML=rows.map(({c,booked})=>{
-                    const attended=booked.filter(b=>b.status==="attended").length;
-                    const names=booked.map(b=>{
-                        const n=[b.profiles?.first_name,b.profiles?.last_name].filter(Boolean).join(" ")||"Usuario";
-                        return '<div class="app-item" style="margin-top:10px"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(n)+'</div><div class="app-item-meta"><span>'+ (b.status==="attended"?"Presente":b.status==="absent"?"Ausente":"Pendiente") +'</span></div></div><div class="app-item-actions"><button class="app-btn '+(b.status==="attended"?"primary":"")+'" data-attendance="'+b.id+'" data-status="attended">Presente</button><button class="app-btn '+(b.status==="absent"?"danger":"")+'" data-attendance="'+b.id+'" data-status="absent">Ausente</button></div></div>';
-                    }).join("");
-                    return '<div class="dashboard-section" style="padding:14px;border:1px solid var(--border-soft);border-radius:14px;margin-top:10px"><div class="section-header"><div><h4 style="margin:0">'+WodIOApp.escapeHtml(c.title)+'</h4><span class="stat-description">'+WodIOApp.formatDateTime(c.starts_at)+' · '+booked.length+' apuntados · '+attended+' presentes</span></div></div>'+ (booked.length?names:'<div class="app-empty">No hay usuarios apuntados.</div>') +'</div>';
-                }).join("");
-            }
-            attendanceList.addEventListener("click",async e=>{
-                const btn=e.target.closest("[data-attendance]");if(!btn)return;
-                btn.disabled=true;
-                const id=btn.dataset.attendance,status=btn.dataset.status;
-                const {error}=await supabaseClient.from("class_bookings").update({status}).eq("id",id);
-                if(error) WodIOApp.message(document.getElementById("pageMessage"),error.message);
-                await loadCoachAttendance();
-            });
-            await loadCoachAttendance();
-        }
-
-        const activity=[];
-        (progress||[]).slice(0,2).forEach(p=>activity.push({icon:"↗",title:"Nuevo registro de progreso",text:p.exercise+" · "+p.value+" "+p.unit+" · "+p.recorded_at}));
-        (payments||[]).filter(p=>p.status==="paid").slice(0,1).forEach(p=>activity.push({icon:"€",title:"Pago realizado",text:p.concept+" · "+WodIOApp.euro(p.amount_cents)}));
-        (bookings||[]).filter(b=>b.status==="booked").slice(0,2).forEach(b=>activity.push({icon:"✓",title:"Reserva de clase",text:"Has reservado una próxima sesión."}));
-        document.getElementById("dashboardActivity").innerHTML=activity.length?activity.slice(0,4).map(a=>'<div class="announcement"><div class="announcement-icon">'+a.icon+'</div><div><strong>'+WodIOApp.escapeHtml(a.title)+'</strong><p>'+WodIOApp.escapeHtml(a.text)+'</p></div></div>').join(""):'<div class="announcement"><div class="announcement-icon">—</div><div><strong>Sin actividad reciente</strong><p>Tu actividad aparecerá aquí cuando registres entrenamientos, reservas o pagos.</p></div></div>';
-    }
-
-    logoutButton?.addEventListener("click",async()=>{await supabaseClient.auth.signOut();window.location.href="login.html";});
+            logoutButton?.addEventListener("click",async()=>{await supabaseClient.auth.signOut();window.location.href="login.html";});
     formatCurrentDate();
     await loadDashboard();
 });
