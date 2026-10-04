@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         throw new Error(serverMessage||checkoutError.message||"No se pudo iniciar el pago.");
       }
       if(!checkout?.url)throw new Error(checkout?.error||"Stripe no devolvió una URL de pago.");
-      window.location.href=checkout.url;turn;}closeRegistration();WodIOApp.message(message,"Te has inscrito correctamente.","success");await load();}catch(error){WodIOApp.message(message,error?.message||"No se pudo completar la inscripción.");}finally{btn.disabled=false;btn.textContent="Continuar";}});
+      window.location.href=checkout.url;}closeRegistration();WodIOApp.message(message,"Te has inscrito correctamente.","success");await load();}catch(error){WodIOApp.message(message,error?.message||"No se pudo completar la inscripción.");}finally{btn.disabled=false;btn.textContent="Continuar";}});
   await confirmStripeReturn();await load();
 });
 </script>
