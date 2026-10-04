@@ -209,7 +209,7 @@
 <div class="app-field full"><label for="eventPosterFile">Cartel del evento</label><input id="eventPosterFile" type="file" accept="image/jpeg,image/png,image/webp"><span class="admin-mini">JPG, PNG o WebP. Máximo 5 MB.</span><img id="eventPosterPreview" class="poster-preview" alt="Vista previa del cartel" hidden></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-plus"></i> Crear evento</button></form>
 </section>
-<section class="app-card"><div class="app-card-head"><div><h3>Próximos eventos</h3><p>Eventos publicados.</p></div></div><div id="eventsList" class="app-list"></div></section>
+<section class="app-card"><div class="app-card-head"><div><h3>Próximos eventos</h3><p>Eventos publicados.</p></div></div><div id="eventsList" class="app-list"></div><div id="eventRegistrationsPanel" class="app-list" style="margin-top:18px"></div></section>
 </div>
 </section>
 
@@ -402,7 +402,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const boxId=ctx.profile?.box_id, msg=document.getElementById("pageMessage");
  if(!boxId){WodIOApp.message(msg,"La cuenta de administración no tiene un box asignado.");return;}
  const $=id=>document.getElementById(id), name=u=>[u?.first_name,u?.last_name].filter(Boolean).join(" ")||u?.email||u?.phone||"Usuario";
- let box=null, users=[], coaches=[], classes=[], events=[], paymentMethods=[];
+ let box=null, users=[], coaches=[], classes=[], events=[], eventRegistrations=[], paymentMethods=[];
  async function load(){
   const refreshBtn=$("refreshBtn");
   if(refreshBtn) refreshBtn.disabled=true;
@@ -440,7 +440,7 @@ $("paymentUser").innerHTML='<option value="">Selecciona</option>'+clients.map(v=
   $("clientsTable").innerHTML='<table class="app-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Móvil</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody>'+users.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td>'+WodIOApp.escapeHtml(v.email||"—")+'</td><td>'+WodIOApp.escapeHtml(v.phone||"—")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+ '</td><td><div class="admin-actions"><button class="app-btn" data-edit-user="'+v.id+'">Editar</button>'+(v.email?'<button class="app-btn" data-reset-user="'+v.id+'">Enviar recuperación</button>':'')+'</div></td></tr>').join("")+'</tbody></table>';
   $("coachesTable").innerHTML='<table class="app-table"><thead><tr><th>Nombre</th><th>Rol</th></tr></thead><tbody>'+coaches.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td></tr>').join("")+'</tbody></table>';
   $("classesList").innerHTML=(c.data||[]).length?(c.data||[]).map(v=>'<article class="app-item"><div class="app-item-main">'+(v.poster_url?'<img class="poster-preview" src="'+WodIOApp.escapeHtml(v.poster_url)+'" alt="Cartel de '+WodIOApp.escapeHtml(v.title)+'">':'')+'<div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-class="'+v.id+'">Editar</button><button class="app-btn danger" data-del-class="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay clases futuras.</div>';
-  $("eventsList").innerHTML=(e.data||[]).length?(e.data||[]).map(v=>'<article class="app-item"><div class="app-item-main">'+(v.poster_url?'<img class="poster-preview event-poster" src="'+WodIOApp.escapeHtml(v.poster_url)+'" alt="Cartel de '+WodIOApp.escapeHtml(v.title)+'">':'')+'<div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+(v.price_cents?WodIOApp.euro(v.price_cents):"Gratis")+'</span></div></div><div class="admin-actions"><button class="app-btn" data-edit-event="'+v.id+'">Editar</button><button class="app-btn danger" data-del-event="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
+  $("eventsList").innerHTML=(e.data||[]).length?(e.data||[]).map(v=>'<article class="app-item"><div class="app-item-main">'+(v.poster_url?'<img class="poster-preview event-poster" src="'+WodIOApp.escapeHtml(v.poster_url)+'" alt="Cartel de '+WodIOApp.escapeHtml(v.title)+'">':'')+'<div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+(v.price_cents?WodIOApp.euro(v.price_cents):"Gratis")+'</span></div></div><div class="admin-actions"><button class="app-btn" data-view-event-registrations="'+v.id+'">Ver inscritos</button><button class="app-btn" data-edit-event="'+v.id+'">Editar</button><button class="app-btn danger" data-del-event="'+v.id+'"><i class="ph ph-trash"></i></button></div></article>').join(""):'<div class="app-empty">No hay eventos futuros.</div>';
   const vf=await supabaseClient.from("verifactu_config").select("*").eq("box_id",boxId).maybeSingle();
   if(vf.error)throw vf.error;
   const vfConfig=vf.data;
