@@ -508,7 +508,7 @@ function renderUsersChart(){
 function renderStripeStatus(){refreshStripeStatus();}
   async function openStripeOnboarding(){
     const btn=$("stripeConnectBtn"),msg=$("stripeMessage");btn.disabled=true;WodIOApp.message(msg,"Abriendo configuración segura de Stripe...");
-    const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"connect",return_url:location.origin+"/box-admin.html#stripe",refresh_url:location.origin+"/box-admin.html#stripe"}});
+    const stripeOrigin=location.protocol==="http:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"?location.origin.replace(/^http:/,"https:"):location.origin;\n    const {data,error}=await supabaseClient.functions.invoke("stripe-connect",{body:{action:"connect",return_url:stripeOrigin+"/box-admin.html#stripe",refresh_url:stripeOrigin+"/box-admin.html#stripe"}});
     btn.disabled=false;
     let responseData=data;
     if(!responseData && error?.context?.clone){
