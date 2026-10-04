@@ -130,7 +130,8 @@
             <div class="nav-links">
                 <a href="#about">Plataforma</a>
                 <a href="#features">Funciones</a>
-                <a href="#management">Gestores</a>
+                <a href="#payments">Pagos</a>
+                <a href="#management">Gestión</a>
                 <a href="#athletes">Atletas</a>
                 <a href="#community">Comunidad</a>
                 <a href="#pricing">Precios</a>
@@ -166,7 +167,8 @@
             <a href="#hero">Inicio</a>
             <a href="#about">Plataforma</a>
             <a href="#features">Funciones</a>
-            <a href="#management">Gestores</a>
+            <a href="#payments">Pagos</a>
+            <a href="#management">Gestión</a>
             <a href="#athletes">Atletas</a>
             <a href="#community">Comunidad</a>
             <a href="#pricing">Precios</a>
@@ -210,13 +212,11 @@
 
                     <h1 class="hero-title">
                         Gestiona tu box.
-                        <span>Haz crecer tu comunidad.</span>
+                        <span>Cobra, organiza y haz crecer tu comunidad.</span>
                     </h1>
 
                     <p class="hero-subtitle">
-                        El software de gestión para boxes de CrossTraining, gimnasios
-                        y entrenamiento funcional. Centraliza clases, reservas, atletas,
-                        coaches, eventos, pagos, facturación y progreso en una sola plataforma.
+                        WodIO centraliza en una sola plataforma la operación de tu box: clases, reservas, atletas, coaches, programación, eventos, pagos, facturación y evolución. Menos tareas manuales, más control y una mejor experiencia para toda tu comunidad.
                     </p>
 
                     <div class="hero-actions">
@@ -242,7 +242,12 @@
 
                         <div>
                             <i class="ph ph-check-circle"></i>
-                            Para boxes y atletas
+                            Stripe integrado para cobrar online
+                        </div>
+
+                        <div>
+                            <i class="ph ph-check-circle"></i>
+                            Para boxes, coaches y atletas
                         </div>
 
                         <div>
@@ -353,8 +358,7 @@
                     </h3>
 
                     <p class="card-meta">
-                        Gestiona clases, horarios, atletas, membresías,
-                        pagos, eventos y programación desde un único panel.
+                        Gestiona clases, horarios, atletas, coaches, membresías, pagos, eventos, programación y configuración desde un único panel.
                     </p>
 
                     <a href="#features" class="card-link">
@@ -376,8 +380,7 @@
                     </h3>
 
                     <p class="card-meta">
-                        Consulta tus clases, reserva entrenamientos,
-                        registra resultados y sigue tu evolución.
+                        Consulta tus clases, reserva entrenamientos, paga tus cuotas, registra resultados y sigue tu evolución desde tu cuenta.
                     </p>
 
                     <a href="login-user.html" class="card-link">
@@ -519,6 +522,49 @@
         </section>
 
 
+        <!-- =====================================================
+         PAGOS Y COBROS
+    ====================================================== -->
+
+        <section class="container mt-64" id="payments">
+            <div class="section-heading">
+                <span class="section-eyebrow">PAGOS Y COBROS</span>
+                <h2>Cobra como quieras. <span>Gestiona todo desde WodIO.</span></h2>
+                <p class="text-muted">WodIO integra Stripe para facilitar los cobros online y permite combinar diferentes formas de pago según la configuración de cada box. El atleta ve únicamente los métodos habilitados por su box y el estado de cada cuota.</p>
+            </div>
+            <div class="grid grid-3 mt-32">
+                <article class="card feature-card"><div class="card-icon"><i class="ph ph-stripe-logo"></i></div><h3>Stripe integrado</h3><p class="card-meta">Conecta el box mediante Stripe Connect y permite cobrar online con una infraestructura de pagos preparada para operar de forma segura.</p></article>
+                <article class="card feature-card"><div class="card-icon"><i class="ph ph-credit-card"></i></div><h3>Tarjeta, Bizum y SEPA</h3><p class="card-meta">Según la configuración del box, los atletas pueden pagar online con tarjeta, Bizum o adeudo directo SEPA a través de la pasarela disponible.</p></article>
+                <article class="card feature-card"><div class="card-icon"><i class="ph ph-wallet"></i></div><h3>Transferencia y efectivo</h3><p class="card-meta">También puedes registrar métodos manuales como transferencia bancaria o efectivo. El box conserva el control y confirma el cobro cuando corresponde.</p></article>
+            </div>
+            <div class="cta-section mt-32">
+                <div><span class="section-eyebrow">COBRO MÁS SIMPLE</span><h3>De la cuota pendiente al pago confirmado.</h3><p>El atleta consulta sus cuotas y vencimientos, elige un método disponible y realiza el pago. WodIO actualiza el estado del movimiento y permite consultar el historial y generar la factura cuando está disponible.</p></div>
+                <div class="cta-actions"><a href="#pricing" class="btn-primary">Ver planes</a><a href="create-box.html?plan=demo" class="btn-secondary">Probar WodIO</a></div>
+            </div>
+        </section>
+
+
+        <hr class="section-divider-gradient">
+
+
+        <!-- =====================================================
+         CÓMO FUNCIONA
+    ====================================================== -->
+
+        <section class="container mt-64" id="how-it-works">
+            <div class="section-heading">
+                <span class="section-eyebrow">CÓMO FUNCIONA</span>
+                <h2>Una misma plataforma. <span>Tres experiencias conectadas.</span></h2>
+                <p class="text-muted">Cada perfil tiene las herramientas que necesita, mientras el box mantiene una visión única de la operación.</p>
+            </div>
+            <div class="grid grid-3 mt-32">
+                <article class="card feature-card"><div class="card-icon"><i class="ph ph-buildings"></i></div><h3>Para el box</h3><p class="card-meta">Configura tu box, crea horarios y clases, asigna coaches, gestiona atletas, organiza eventos, controla reservas y asistencia y consulta la actividad económica.</p></article>
+                <article class="card feature-card"><div class="card-icon"><i class="ph ph-user-gear"></i></div><h3>Para el coach</h3><p class="card-meta">Consulta tus clases, conoce a tus atletas y trabaja con la programación y los WODs desde un área específica para el coach, sin acceder a la administración financiera del box.</p></article>
+                <article class="card feature-card"><div class="card-icon"><i class="ph ph-person-simple-run"></i></div><h3>Para el atleta</h3><p class="card-meta">Consulta horarios, reserva clases, cancela reservas cuando corresponda, revisa pagos, registra resultados y sigue su evolución desde cualquier dispositivo.</p></article>
+            </div>
+        </section>
+
+
         <hr class="section-divider-gradient">
 
 
@@ -619,8 +665,7 @@
                     <div>
                         <h3>Control operativo</h3>
                         <p class="card-meta">
-                            Consulta la actividad del box, organiza clases y coaches,
-                            gestiona reservas y controla la asistencia.
+                            Consulta la actividad del box, crea y organiza clases, asigna coaches, gestiona reservas, controla asistencia y visualiza la evolución del negocio.
                         </p>
                     </div>
                 </article>
@@ -630,8 +675,7 @@
                     <div>
                         <h3>Finanzas y pagos</h3>
                         <p class="card-meta">
-                            Centraliza ingresos, gastos, pagos de atletas, métodos de pago,
-                            exportaciones y facturación.
+                            Centraliza ingresos, gastos, pagos de atletas, métodos de pago, exportaciones, facturación y seguimiento financiero en un único panel.
                         </p>
                     </div>
                 </article>
@@ -641,8 +685,7 @@
                     <div>
                         <h3>Control y trazabilidad</h3>
                         <p class="card-meta">
-                            Roles, permisos, gestión por box y registros de actividad
-                            ayudan a mantener la información organizada y controlada.
+                            Roles y permisos separan las áreas de administración, coach y atleta para que cada persona acceda a las funciones que necesita.
                         </p>
                     </div>
                 </article>
@@ -652,8 +695,7 @@
                     <div>
                         <h3>Planificación</h3>
                         <p class="card-meta">
-                            Horarios habituales, programación mensual, clases, eventos
-                            y disponibilidad de coaches desde un mismo entorno.
+                            Horarios habituales, programación mensual, clases, eventos y disponibilidad de coaches, con una visión operativa centralizada.
                         </p>
                     </div>
                 </article>
@@ -690,7 +732,7 @@
                     </div>
                     <h3>Reserva tus clases</h3>
                     <p class="card-meta">
-                        Consulta el horario del box y reserva tus sesiones desde tu cuenta.
+                        Consulta el horario del box, comprueba plazas y reserva tus sesiones desde tu cuenta.
                     </p>
                 </article>
 
@@ -700,7 +742,7 @@
                     </div>
                     <h3>Sigue tu progreso</h3>
                     <p class="card-meta">
-                        Guarda resultados y observa tu evolución con tus principales métricas.
+                        Guarda resultados, PRs y métricas para observar tu evolución a lo largo del tiempo.
                     </p>
                 </article>
 
@@ -710,7 +752,7 @@
                     </div>
                     <h3>Gestiona tus pagos</h3>
                     <p class="card-meta">
-                        Consulta pagos y descarga tus facturas cuando estén disponibles.
+                        Consulta cuotas pendientes, elige entre los métodos habilitados por el box y revisa tu historial de pagos y facturas.
                     </p>
                 </article>
 
