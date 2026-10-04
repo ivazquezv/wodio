@@ -23,7 +23,7 @@
 @media(max-width:640px){.box-signup-grid{grid-template-columns:1fr}.box-signup-grid .full{grid-column:auto}}
 </style>
 </head>
-<body class="auth-page">
+<body class="auth-page create-box-page">
 
 <header class="site-header">
 <nav class="navbar" aria-label="Navegación principal">
@@ -38,14 +38,19 @@
 </header>
 
 <main>
-<section class="login-wrapper register-wrapper" aria-labelledby="create-box-title">
+<section class="create-box-shell" aria-labelledby="create-box-title">
+<div class="create-box-card">
+<div class="create-box-top">
+<div><span class="section-eyebrow">WODIO PARA BOXES</span><h1 id="create-box-title">Crea tu box</h1><p class="box-intro">Configura tu cuenta y los datos básicos de tu box. Te llevará menos de 2 minutos.</p></div>
+<div class="create-box-plan"><i class="ph ph-check-circle"></i><span id="planBadge">Plan seleccionado</span></div>
+</div>
+<div class="create-box-main">
+<section class="create-box-section" aria-labelledby="responsable-title">
+<h2 class="create-box-section-title" id="responsable-title"><i class="ph ph-user-circle"></i>Cuenta del responsable</h2>
+<p class="create-box-section-subtitle">Será la cuenta administradora inicial del box. Podrás añadir coaches y atletas después.</p>
 <img src="assets/icons/Logo-WodIO_white.png" class="login-logo" alt="WodIO">
 
-<div class="login-heading">
-<span class="section-eyebrow">WODIO PARA BOXES</span>
-<h1 id="create-box-title">Crea tu box</h1>
 <p class="text-muted" id="planIntro">Registra tu box y configura el acceso del responsable.</p>
-</div>
 
 <form class="login-card register-card" id="createBoxForm" novalidate>
 <div id="createBoxMessage" class="login-message" role="alert" aria-live="assertive" hidden></div>
@@ -54,8 +59,6 @@
 <i class="ph ph-shield-check" aria-hidden="true"></i>
 <span id="planNote">La primera cuenta queda vinculada como <strong>administrador del box</strong>. Los coaches y atletas se añadirán después desde el panel de gestión.</span>
 </div>
-
-<div class="box-section-title">Responsable</div>
 <div class="box-signup-grid">
 <div class="form-field">
 <label for="firstName"><i class="ph ph-user" aria-hidden="true"></i> Nombre</label>
@@ -94,7 +97,10 @@
 </div>
 </div>
 
-<div class="box-section-title">Datos del box</div>
+</section>
+<section class="create-box-section" aria-labelledby="box-data-title">
+<h2 class="create-box-section-title" id="box-data-title"><i class="ph ph-buildings"></i>Datos del box</h2>
+<p class="create-box-section-subtitle">Estos datos identifican tu centro y podrán completarse o modificarse desde administración.</p>
 <div class="box-signup-grid">
 <div class="form-field full">
 <label for="boxName"><i class="ph ph-buildings" aria-hidden="true"></i> Nombre del box</label>
@@ -128,6 +134,8 @@
 </div>
 </div>
 
+</section>
+<section class="create-box-section" aria-label="Confirmación y contratación">
 <label class="remember-me register-terms">
 <input type="checkbox" id="terms" required>
 <span>Acepto los <a href="condiciones.html" target="_blank" rel="noopener">términos y condiciones</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</span>
@@ -138,6 +146,11 @@
 <span id="createBoxBtnText">Crear mi box</span>
 </button>
 
+</section>
+<div class="create-box-trust"><div class="create-box-trust-item"><strong>Configuración rápida</strong><span>Empieza con lo esencial y completa el perfil de tu box cuando quieras.</span></div><div class="create-box-trust-item"><strong>Pago seguro</strong><span>Los planes de pago se procesan mediante Stripe.</span></div><div class="create-box-trust-item"><strong>Control de acceso</strong><span>Cada cuenta solo accede a las funciones y datos autorizados.</span></div></div>
+</div>
+</div>
+<div class="create-box-security"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Tus datos se transmiten mediante conexiones seguras y el acceso a la plataforma se protege mediante autenticación y permisos por cuenta y box.</span></div>
 <div class="login-register">
 <span>¿Ya tienes una cuenta?</span>
 <a href="login.html">Iniciar sesión</a>
@@ -146,7 +159,7 @@
 
 <div class="login-security">
 <i class="ph ph-shield-check" aria-hidden="true"></i>
-<span>La cuenta y los datos del box se gestionan mediante Supabase con controles de acceso por box.</span>
+<span>Conexión segura, autenticación de cuenta y permisos de acceso aplicados según tu perfil dentro del box.</span>
 </div>
 
 <a href="../index.html" class="login-back"><i class="ph ph-arrow-left" aria-hidden="true"></i> Volver a WodIO</a>
@@ -196,9 +209,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const planNote = document.getElementById("planNote");
   const planCopy = {
     demo: {
-      intro: "Prueba WodIO gratis durante 7 días. No se realiza ningún cargo durante la demo.",
-      note: "Incluye 7 días de acceso completo. Al finalizar la demo podrás elegir un plan de pago.",
-      button: "Crear mi demo de 7 días"
+      intro: "Prueba WodIO gratis durante 14 días. No se realiza ningún cargo durante la demo.",
+      note: "Incluye 14 días de acceso completo. Al finalizar la demo podrás elegir un plan de pago.",
+      button: "Crear mi demo de 14 días"
     },
     starter: {
       intro: "Starter · 29 €/mes. El acceso al box se activa después de completar el pago seguro con Stripe.",
@@ -211,7 +224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       button: "Continuar con Stripe"
     },
     elite: {
-      intro: "Elite · 79 €/mes. El acceso al box se activa después de completar el pago seguro con Stripe.",
+      intro: "Elite · 69 €/mes. El acceso al box se activa después de completar el pago seguro con Stripe.",
       note: "Tu cuenta y box se preparan primero. Después te llevaremos a Stripe para completar la suscripción.",
       button: "Continuar con Stripe"
     }
@@ -375,7 +388,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    showMessage("Tu demo de 7 días se ha creado correctamente. Entrando en el panel de administración...", "success");
+    showMessage("Tu demo de 14 días se ha creado correctamente. Entrando en el panel de administración...", "success");
     window.setTimeout(() => {
       window.location.href = "box-admin.html";
     }, 500);
