@@ -11,6 +11,7 @@
 <style>
 .event-poster{display:block;width:100%;max-width:420px;max-height:360px;object-fit:cover;border-radius:12px;border:1px solid var(--border-soft);margin:0 0 14px;background:var(--bg-main)}
 @media(max-width:600px){.event-poster{max-height:300px}}
+.event-registration-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}.event-registration-modal[hidden]{display:none}.event-registration-card{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:16px;padding:22px}.event-registration-card h3{margin:0}.event-registration-help{color:var(--text-muted);font-size:.82rem;line-height:1.5;margin:7px 0 16px}.event-registration-card textarea{min-height:120px;resize:vertical}.event-registration-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 </style>
 <script src="https://unpkg.com/phosphor-icons" defer></script>
 </head>
@@ -29,6 +30,7 @@
 <div class="app-card-head"><div><h2>Próximos eventos</h2><p>Consulta los detalles y confirma tu asistencia.</p></div></div>
 <div id="eventList" class="app-list"><div class="app-loading">Cargando eventos…</div></div>
 </section>
+<div class="event-registration-modal" id="eventRegistrationModal" hidden><section class="event-registration-card"><div class="app-card-head"><div><h3 id="eventRegistrationTitle">Inscripción</h3><p id="eventRegistrationPrice"></p></div><button type="button" class="app-btn" id="eventRegistrationClose">Cerrar</button></div><p class="event-registration-help">Si la competición es por equipos, indica el nombre del equipo y escribe los nombres de todos sus integrantes, uno por línea. El box podrá consultar esta información.</p><form id="eventRegistrationForm" class="app-form"><input type="hidden" id="eventRegistrationId"><div class="app-field"><label for="eventTeamName">Nombre del equipo</label><input id="eventTeamName" maxlength="120" placeholder="Ej. WodIO Warriors"></div><div class="app-field"><label for="eventTeamMembers">Integrantes del equipo</label><textarea id="eventTeamMembers" maxlength="2000" placeholder="Ana García&#10;Carlos López&#10;María Pérez"></textarea><span class="admin-mini">Para una inscripción individual puedes dejar estos campos vacíos.</span></div><div class="event-registration-actions"><button type="button" class="app-btn" id="eventRegistrationCancel">Cancelar</button><button type="submit" class="app-btn primary" id="eventRegistrationSubmit">Continuar</button></div></form></section></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config/supabase-config.js"></script>
@@ -40,6 +42,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!ctx) return;
   const list = document.getElementById("eventList");
   const message = document.getElementById("pageMessage");
+  const registrationModal = document.getElementById("eventRegistrationModal");
+  const registrationForm = document.getElementById("eventRegistrationForm");
+  let selectedEvent = null;
+
+  async function confirmStripeReturn(){const params=new URLSearchParams(location.search);const sessionId=params.get("session_id");if(!sessionId)return;if(params.get("payment")==="event_success"){const {data,error}=await supabaseClient.functions.invoke("stripe-payment-status",{body:{session_id:sessionId}});if(error)WodIOApp.message(message,error.message);else WodIOApp.message(message,data?.paid?"Pago confirmado. Tu inscripción al evento está confirmada.":"El pago todavía no aparece como confirmado.","success");history.replaceState({},document.title,location.pathname);}}
+
+  function openRegistration(ev){selectedEvent=ev;document.getElementById("eventRegistrationId").value=ev.id;document.getElementById("eventRegistrationTitle").textContent="Inscribirme · "+ev.title;document.getElementById("eventRegistrationPrice").textContent=ev.price_cents?("Importe: "+WodIOApp.euro(ev.price_cents)+" · Tras continuar se abrirá la pasarela de pago."):"Evento gratuito · la inscripción quedará confirmada al enviar el formulario.";document.getElementById("eventTeamName").value="";document.getElementById("eventTeamMembers").value="";registrationModal.hidden=false;document.getElementById("eventTeamName").focus();}
+  function closeRegistration(){registrationModal.hidden=true;selectedEvent=null;}
 
   async function load() {
     list.innerHTML = '<div class="app-loading">Cargando eventos…</div>';
@@ -83,22 +93,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }).join("");
   }
 
-  list.addEventListener("click", async e => {
-    const register = e.target.closest("[data-register]")?.dataset.register;
-    const cancel = e.target.closest("[data-cancel]")?.dataset.cancel;
-    if (!register && !cancel) return;
-    const id = register || cancel;
-    const btn = e.target.closest("button");
-    if (btn) btn.disabled = true;
-    const result = cancel
-      ? await supabaseClient.from("event_registrations").update({status:"cancelled"}).eq("event_id",id).eq("user_id",ctx.user.id)
-      : await supabaseClient.from("event_registrations").upsert({event_id:id,user_id:ctx.user.id,status:"registered"},{onConflict:"event_id,user_id"});
-    if (result.error) WodIOApp.message(message,result.error.message);
-    else WodIOApp.message(message,cancel ? "Inscripción cancelada." : "Te has inscrito correctamente.","success");
-    await load();
-  });
-
-  await load();
+  list.addEventListener("click", async e => {const register=e.target.closest("[data-register]")?.dataset.register;const cancel=e.target.closest("[data-cancel]")?.dataset.cancel;if(!register&&!cancel)return;if(register){const ev=events?.find(x=>x.id===register);if(ev)openRegistration(ev);return;}const btn=e.target.closest("button");if(btn)btn.disabled=true;const result=await supabaseClient.from("event_registrations").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("event_id",cancel).eq("user_id",ctx.user.id);if(result.error)WodIOApp.message(message,result.error.message);else WodIOApp.message(message,"Inscripción cancelada.","success");await load();});
+  document.getElementById("eventRegistrationClose").addEventListener("click",closeRegistration);document.getElementById("eventRegistrationCancel").addEventListener("click",closeRegistration);registrationModal.addEventListener("click",e=>{if(e.target===registrationModal)closeRegistration();});
+  registrationForm.addEventListener("submit",async e=>{e.preventDefault();if(!selectedEvent)return;const btn=document.getElementById("eventRegistrationSubmit");btn.disabled=true;btn.textContent=selectedEvent.price_cents?"Creando inscripción…":"Inscribiendo…";try{const teamMembers=document.getElementById("eventTeamMembers").value.split("\n").map(v=>v.trim()).filter(Boolean);const {data,error}=await supabaseClient.rpc("create_event_registration",{p_event_id:selectedEvent.id,p_team_name:document.getElementById("eventTeamName").value.trim()||null,p_team_members:teamMembers});if(error)throw error;const result=Array.isArray(data)?data[0]:data;if(result?.payment_id){const {data:checkout,error:checkoutError}=await supabaseClient.functions.invoke("stripe-checkout",{body:{payment_id:result.payment_id,success_url:new URL("events.html?payment=event_success&session_id={CHECKOUT_SESSION_ID}",location.href).href,cancel_url:new URL("events.html?payment=event_cancelled",location.href).href}});if(checkoutError)throw checkoutError;if(!checkout?.url)throw new Error("Stripe no devolvió una URL de pago.");window.location.href=checkout.url;return;}closeRegistration();WodIOApp.message(message,"Te has inscrito correctamente.","success");await load();}catch(error){WodIOApp.message(message,error?.message||"No se pudo completar la inscripción.");}finally{btn.disabled=false;btn.textContent="Continuar";}});
+  await confirmStripeReturn();await load();
 });
 </script>
 </body>
