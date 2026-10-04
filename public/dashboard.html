@@ -1652,6 +1652,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const logoutButton = document.getElementById("logoutButton");
     const adminLink = document.querySelector('a[href="box-admin.html"]');
 
+    WodIOApp.bindLogout();
+
     menuButton?.addEventListener("click", () => sidebar.classList.add("open"));
     overlay?.addEventListener("click", () => sidebar.classList.remove("open"));
     document.querySelectorAll(".sidebar-link").forEach(link => link.addEventListener("click", () => {
@@ -1809,8 +1811,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
             ]);
             const weekBookings=bookings||[];
-            if(hoursError||classesError||bookingsError){
-                weeklyGrid.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(hoursError?.message||classesError?.message||bookingsError?.message||"No se pudo cargar el horario.")+'</div>';
+            if(hoursError||classesError){
+                weeklyGrid.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(hoursError?.message||classesError?.message||"No se pudo cargar el horario.")+'</div>';
                 return;
             }
             const hourMap=new Map((hours||[]).map(h=>[Number(h.weekday),h]));
@@ -1935,7 +1937,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const evoMax=Math.max(...evo.map(p=>Number(p.value)),1);
         document.getElementById("performanceChart").innerHTML=evo.length?evo.map(p=>'<div title="'+WodIOApp.escapeHtml(p.exercise+" · "+p.value+" "+p.unit)+'" class="performance-bar" style="--bar-height:'+Math.max(8,Number(p.value)/evoMax*100)+'%"></div>').join(""):'<div class="app-empty">Registra cargas en Mi progreso para ver tu evolución.</div>';
 
-            logoutButton?.addEventListener("click",async()=>{await supabaseClient.auth.signOut();window.location.href="login.html";});
         }
 
     formatCurrentDate();
