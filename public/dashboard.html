@@ -1167,7 +1167,7 @@
                                         <path d="M5.5 20c.7-3.6 3.1-5.5 6.5-5.5s5.8 1.9 6.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                                     </svg>
                                 </div>
-                                <img id="profileAvatarImage" class="profile-avatar" alt="Foto de perfil" hidden>
+                                <img id="dashboardProfileAvatarImage" class="profile-avatar" alt="Foto de perfil" hidden>
                             </div>
                             <div id="dashboardBoxIdentity">
                                 <div class="stat-label">Box activo</div>
@@ -1694,13 +1694,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("welcomeName").textContent=firstName;
         document.getElementById("profileAvatarInitials").textContent=initials(profile?.first_name,profile?.last_name);
         const avatarImg=document.getElementById("profileAvatarImage");
+        const dashboardAvatarImg=document.getElementById("dashboardProfileAvatarImage");
         const avatarPlaceholder=document.getElementById("profileAvatarPlaceholder");
         if(profile?.avatar_url){
             avatarImg.src=profile.avatar_url;
-            avatarImg.hidden=false;
+            avatarImg.style.display="block";
+            document.getElementById("profileAvatarInitials").hidden=true;
+            dashboardAvatarImg.src=profile.avatar_url;
+            dashboardAvatarImg.hidden=false;
             avatarPlaceholder.hidden=true;
         }else{
-            avatarImg.hidden=true;
+            avatarImg.removeAttribute("src");
+            avatarImg.style.display="none";
+            document.getElementById("profileAvatarInitials").hidden=false;
+            dashboardAvatarImg.hidden=true;
             avatarPlaceholder.hidden=false;
         }
         document.getElementById("dashboardBoxName").textContent=box?.name||"Box activo";
@@ -1725,7 +1732,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             btn.disabled=false;btn.textContent="Guardar foto";
             if(updateError){WodIOApp.message(document.getElementById("pageMessage"),updateError.message);return;}
             avatarImg.src=avatarUrl;
-            avatarImg.hidden=false;
+            avatarImg.style.display="block";
+            document.getElementById("profileAvatarInitials").hidden=true;
+            dashboardAvatarImg.src=avatarUrl;
+            dashboardAvatarImg.hidden=false;
             avatarPlaceholder.hidden=true;
             document.getElementById("profilePhotoInput").value="";
             WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
