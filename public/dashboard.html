@@ -590,6 +590,36 @@
             font-size: .74rem;
         }
 
+        .dashboard-page .booking-payment-warning {
+            margin-top: 9px;
+            padding: 10px 11px;
+            border: 1px solid rgba(245, 158, 11, .38);
+            border-radius: 9px;
+            background: rgba(245, 158, 11, .08);
+            color: #fbbf24;
+            font-size: .74rem;
+            line-height: 1.45;
+            font-weight: 700;
+        }
+
+        .dashboard-page .booking-payment-warning a {
+            display: inline-block;
+            margin-top: 5px;
+            color: var(--text-main);
+            text-decoration: underline;
+            font-weight: 800;
+        }
+
+        .dashboard-page .quick-action.booking-blocked {
+            border-color: rgba(245, 158, 11, .45);
+        }
+
+        .dashboard-page .weekly-class-action.booking-blocked {
+            border-color: rgba(245, 158, 11, .45);
+            color: #fbbf24;
+            opacity: 1;
+        }
+
         .dashboard-page .progress-content {
             display: grid;
             gap: 18px;
@@ -1223,7 +1253,7 @@
                             <div class="quick-actions">
 
 
-                                <a href="classes.html" class="quick-action">
+                                <a href="classes.html" class="quick-action" id="reserveClassQuickAction">
 
                                     <span class="quick-action-icon">
                                         +
@@ -1237,6 +1267,11 @@
 
                                         <span>
                                             Ver horarios disponibles
+                                        </span>
+
+                                        <span id="bookingPaymentWarning" class="booking-payment-warning" hidden>
+                                            No puedes reservar clases porque no consta el pago del mes en curso.
+                                            <a href="payments.html">Ir a Pagos para regularizarlo</a>
                                         </span>
 
                                     </span>
@@ -1501,7 +1536,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             supabaseClient.from("profiles").select("first_name,last_name,role,avatar_url,box_id").eq("id",user.id).maybeSingle(),
             supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8),
             supabaseClient.from("class_bookings").select("id,class_id,status,created_at").eq("user_id",user.id),
-            supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at").eq("user_id",user.id).order("created_at",{ascending:false}).limit(10),
+            supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at,category,box_id").eq("user_id",user.id).order("created_at",{ascending:false}).limit(30),
             supabaseClient.from("progress_entries").select("id,exercise,value,unit,reps,recorded_at,notes").eq("user_id",user.id).order("recorded_at",{ascending:false}).limit(100)
         ]);
 
@@ -1537,6 +1572,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(updateError){WodIOApp.message(document.getElementById("pageMessage"),updateError.message);return;}
             avatarImg.src=avatarUrl;avatarImg.style.display="block";document.getElementById("profileAvatarInitials").style.display="none";document.getElementById("profilePhotoInput").value="";WodIOApp.message(document.getElementById("pageMessage"),"Foto de perfil actualizada.","success");
         });
+
+        const monthStartForBooking=new Date();
+        monthStartForBooking.setDate(1);
+        monthStartForBooking.setHours(0,0,0,0);
+        const nextMonthForBooking=new Date(monthStartForBooking);
+        nextMonthForBooking.setMonth(nextMonthForBooking.getMonth()+1);
+        const hasCurrentMonthSubscriptionPayment=(payments||[]).some(p=>
+            p.status==="paid" &&
+            p.box_id===profile?.box_id &&
+            p.paid_at &&
+            new Date(p.paid_at)>=monthStartForBooking &&
+            new Date(p.paid_at)<nextMonthForBooking &&
+            ((p.category||"").toLowerCase().includes("cuota") || (p.concept||"").toLowerCase().includes("cuota"))
+        );
+        const bookingPaymentWarning=document.getElementById("bookingPaymentWarning");
+        const reserveClassQuickAction=document.getElementById("reserveClassQuickAction");
+        if(bookingPaymentWarning) bookingPaymentWarning.hidden=hasCurrentMonthSubscriptionPayment;
+        if(reserveClassQuickAction) reserveClassQuickAction.classList.toggle("booking-blocked",!hasCurrentMonthSubscriptionPayment);
 
         const weeklyGrid=document.getElementById("weeklyScheduleGrid");
         const weeklyTitle=document.getElementById("weeklyScheduleTitle");
@@ -1589,7 +1642,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const isPast=classDate<=new Date();
                     const action=isBooked
                         ? '<button type="button" class="weekly-class-action" data-weekly-cancel="'+c.id+'">✓ Reservada · Cancelar</button>'
-                        : '<button type="button" class="weekly-class-action" data-weekly-book="'+c.id+'" '+(isPast?"disabled":"")+'>'+ (isPast?"Clase pasada":"Reservar clase") +'</button>';
+                        : '<button type="button" class="weekly-class-action '+(!hasCurrentMonthSubscriptionPayment?"booking-blocked":"")+'" data-weekly-book="'+c.id+'" '+(isPast||!hasCurrentMonthSubscriptionPayment?"disabled":"")+'>'+ (isPast?"Clase pasada":hasCurrentMonthSubscriptionPayment?"Reservar clase":"Pago mensual pendiente") +'</button>';
                     return '<article class="weekly-class '+(isBooked?"booked":"")+'"><div class="weekly-class-time">'+classDate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div>'+action+'</article>';
                 }).join(""):'<div class="weekly-empty">Sin clases publicadas</div>';
                 return '<article class="weekly-day '+(localKey(date)===todayKey?"today":"")+'"><div class="weekly-day-head"><div class="weekly-day-name">'+dayNames[i]+'</div><div class="weekly-day-date">'+date.getDate()+' '+date.toLocaleDateString("es-ES",{month:"short"})+'</div><div class="weekly-hours">'+hoursText+'</div></div><div class="weekly-classes">'+classHtml+'</div></article>';
@@ -1602,6 +1655,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             const isCancel=Boolean(button.dataset.weeklyCancel);
             button.disabled=true;
             WodIOApp.clearMessage(document.getElementById("pageMessage"));
+            if(!isCancel && !hasCurrentMonthSubscriptionPayment){
+                WodIOApp.message(document.getElementById("pageMessage"),"No puedes reservar clases porque no consta el pago del mes en curso. Ve a Pagos para regularizarlo.");
+                button.disabled=false;
+                return;
+            }
             const result=isCancel
                 ? await supabaseClient.from("class_bookings").update({status:"cancelled"}).eq("class_id",classId).eq("user_id",user.id)
                 : await supabaseClient.from("class_bookings").upsert({class_id:classId,user_id:user.id,status:"booked"},{onConflict:"class_id,user_id"});
