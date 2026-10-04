@@ -959,6 +959,11 @@
                         <span class="sidebar-icon">▦</span>
                         Clases
                     </a>
+                    
+                    <a href="entrenamiento.html" class="sidebar-link">
+                        <span class="sidebar-icon">◷</span>
+                        Entrenamiento
+                    </a>
 
                     <a href="events.html" class="sidebar-link">
                         <span class="sidebar-icon" aria-hidden="true">
@@ -1301,23 +1306,7 @@
                     <div class="section-header"><div><h3>Evolución</h3><span class="stat-description">Últimos registros de rendimiento</span></div><a href="progress.html" class="section-link">Ver detalle</a></div>
                     <div id="performanceChart" class="performance-chart"><div class="announcement"><div class="announcement-icon">…</div><div><strong>Cargando evolución</strong><p>Consultando tus registros.</p></div></div></div>
                 </div>
-                <section class="dashboard-section" style="margin-bottom:24px" id="timer">
-                    <div class="section-header"><div><h3>Timer de entrenamiento</h3><span class="stat-description">Configura tu reloj para Open, WOD o entrenamiento libre.</span></div></div>
-                    <div class="timer-grid">
-                        <button class="timer-type active" data-timer="clock">Reloj</button>
-                        <button class="timer-type" data-timer="tabata">Tabata</button>
-                        <button class="timer-type" data-timer="fortime">For Time</button>
-                        <button class="timer-type" data-timer="amrap">AMRAP</button>
-                        <button class="timer-type" data-timer="emom">EMOM</button>
-                    </div>
-                    <div class="timer-config" id="timerConfig"></div>
-                    <div class="timer-display"><strong id="timerDisplay">00:00</strong><div id="timerPhase" class="timer-phase">Listo</div></div>
-                    <div class="admin-actions" style="margin-top:12px">
-                        <button class="app-btn primary" type="button" id="timerStart">Iniciar</button>
-                        <button class="app-btn" type="button" id="timerPause">Pausar</button>
-                        <button class="app-btn" type="button" id="timerReset">Reiniciar</button>
-                    </div>
-                </section>
+                
                 <div class="dashboard-grid">
 
 
@@ -1918,55 +1907,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         function renderTimerConfig(){const t=timerState.type;timerConfig.innerHTML=t==="tabata"?field("Rondas","timerRounds",defaults.tabata.rounds)+field("Trabajo (seg)","timerWork",defaults.tabata.work)+field("Descanso (seg)","timerRest",defaults.tabata.rest):t==="emom"?field("Duración (min)","timerDuration",20)+field("Cada (min)","timerInterval",1):field("Duración (min)","timerDuration",t==="clock"?60:t==="fortime"?20:10);}
         function fmt(sec){sec=Math.max(0,Math.ceil(sec));return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
         function renderTimer(){timerDisplay.textContent=fmt(timerState.remaining);timerPhase.textContent=timerState.phase;}
-        function configureTimer(){clearInterval(timerState.interval);timerState.running=false;timerState.elapsed=0;timerState.round=1;const t=timerState.type;if(t==="tabata"){timerState.remaining=Number(document.getElementById("timerWork").value);timerState.phase="Trabajo · Ronda 1";}else{timerState.remaining=Number(document.getElementById("timerDuration").value)*60;timerState.phase="Listo";}renderTimer();}
-        function tickTimer(){
-            timerState.elapsed++;
-            if(timerState.type==="tabata"){
-                timerState.remaining--;
-                if(timerState.remaining<=0){
-                    const rounds=Number(document.getElementById("timerRounds").value),work=Number(document.getElementById("timerWork").value),rest=Number(document.getElementById("timerRest").value);
-                    if(timerState.phase.startsWith("Trabajo")){
-                        timerState.phase="Descanso";timerState.remaining=rest;
-                    }else{
-                        if(timerState.round>=rounds){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="Tabata terminado";}
-                        else{timerState.round++;timerState.remaining=work;timerState.phase="Trabajo · Ronda "+timerState.round;}
-                    }
-                }
-            }else if(timerState.type==="emom"){
-                timerState.remaining--;
-                if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.phase="EMOM terminado";}
-                else{const interval=Number(document.getElementById("timerInterval").value)*60;const left=timerState.remaining%interval;timerState.phase="EMOM · siguiente minuto en "+fmt(left||interval);}
-            }else if(timerState.type==="fortime"){
-                timerState.remaining--;if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="For Time terminado";}
-            }else{
-                timerState.remaining--;if(timerState.remaining<=0){clearInterval(timerState.interval);timerState.running=false;timerState.remaining=0;timerState.phase="Tiempo terminado";}
-            }
-            renderTimer();
-        }
-        document.querySelectorAll(".timer-type").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".timer-type").forEach(x=>x.classList.remove("active"));b.classList.add("active");timerState.type=b.dataset.timer;renderTimerConfig();configureTimer();}));
-        timerConfig.addEventListener("change",configureTimer);
-        document.getElementById("timerStart").addEventListener("click",()=>{if(timerState.running)return;timerState.running=true;timerState.interval=setInterval(tickTimer,1000);renderTimer();});
-        document.getElementById("timerPause").addEventListener("click",()=>{clearInterval(timerState.interval);timerState.running=false;timerState.phase="Pausado";renderTimer();});
-        document.getElementById("timerReset").addEventListener("click",()=>configureTimer());
-        renderTimerConfig();configureTimer();
-
-        if (profile?.role === "coach") {
-            const coachSection=document.getElementById("coachAttendanceSection");
-            coachSection.hidden=false;
-            const attendanceList=document.getElementById("coachAttendanceList");
-            async function loadCoachAttendance(){
-                const start=new Date(); start.setHours(0,0,0,0);
-                const end=new Date(start); end.setDate(end.getDate()+7);
-                const {data:coachClasses,error:coachError}=await supabaseClient.from("classes")
-                    .select("id,title,starts_at,duration_minutes,capacity")
-                    .eq("coach_id",user.id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString())
-                    .order("starts_at");
-                if(coachError){attendanceList.innerHTML='<div class="app-empty">'+WodIOApp.escapeHtml(coachError.message)+'</div>';return;}
-                if(!coachClasses?.length){attendanceList.innerHTML='<div class="app-empty">No tienes clases asignadas en los próximos 7 días.</div>';return;}
-                const rows=await Promise.all(coachClasses.map(async c=>{
-                    const {data:booked,error}=await supabaseClient.from("class_bookings")
-                        .select("id,user_id,status,profiles:user_id(first_name,last_name)")
-                        .eq("class_id",c.id).in("status",["booked","attended","absent"]).order("created_at");
+        function configureTimer(){clearInterval(timerState.interval);timerState.running=false;timerState.elapsed=0;timerState.round=1;cated_at");
                     return {c,booked:booked||[],error};
                 }));
                 if(rows.some(r=>r.error)){attendanceList.innerHTML='<div class="app-empty">No se pudo consultar la asistencia.</div>';return;}
