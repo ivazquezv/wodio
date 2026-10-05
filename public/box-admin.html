@@ -541,7 +541,7 @@ function renderHomeCharts(){
  renderBarChart("homeUsersChart",months.map(m=>({label:m.label,value:usersBy[m.key]||0})));
  renderBarChart("homeRevenueChart",months.map(m=>({label:m.label,value:Math.round(revenueBy[m.key]||0)})));
 }
-let usersChartYear=new Date().getFullYear();
+var usersChartYear=new Date().getFullYear();
 function getUserSignupYears(){
  const years=new Set([new Date().getFullYear()]);
  users.filter(u=>u.role==="athlete"&&u.created_at).forEach(u=>years.add(new Date(u.created_at).getFullYear()));
