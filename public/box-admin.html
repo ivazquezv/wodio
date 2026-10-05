@@ -77,7 +77,8 @@
 .admin-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
 .admin-chart{padding:18px;border:1px solid var(--border-soft);border-radius:14px;background:var(--bg-surface)}
 .admin-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-chart-head h3{margin:0;font-size:.95rem}.admin-chart-head p{margin:4px 0 0;color:var(--text-muted);font-size:.72rem}
-.bar-chart{display:grid;grid-template-columns:repeat(6,1fr);align-items:end;gap:10px;height:150px;padding-top:10px}.bar-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}.bar-fill{width:100%;max-width:42px;min-height:3px;border-radius:7px 7px 2px 2px;background:var(--primary);opacity:.82}.bar-value{font-size:.68rem;color:var(--text-main)}.bar-label{font-size:.62rem;color:var(--text-muted)}
+.bar-chart{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:end;gap:8px;height:190px;padding:10px 4px 0}.bar-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:0}.bar-fill{width:100%;max-width:42px;min-height:3px;border-radius:7px 7px 2px 2px;background:var(--primary);opacity:.82;transition:height .2s ease,opacity .2s ease}.bar-col:hover .bar-fill{opacity:1}.bar-value{font-size:.68rem;color:var(--text-main);font-weight:700}.bar-label{font-size:.62rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.users-chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 14px}.users-chart-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.users-chart-controls .app-btn{min-height:34px;padding:7px 10px}.users-chart-controls select{min-height:34px;padding:6px 30px 6px 9px;border:1px solid var(--border-soft);border-radius:9px;background:var(--bg-elevated);color:var(--text-main);font:inherit;font-size:.78rem}.users-chart-range{font-size:.72rem;color:var(--text-muted)}
+@media(max-width:760px){.bar-chart{grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;height:175px}.bar-value{font-size:.62rem}.bar-label{font-size:.58rem}.users-chart-toolbar{align-items:flex-start}.users-chart-controls{width:100%}.users-chart-controls select{flex:1;min-width:110px}}
 .poster-preview{display:block;width:100%;max-width:360px;max-height:210px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);margin-top:8px}
 @media(max-width:760px){.admin-chart-grid{grid-template-columns:1fr}}
 #usuarios,#finanzas,#stripe,#configuracion,#verifactu{width:100%;min-width:0;box-sizing:border-box}
@@ -173,7 +174,7 @@
 <div class="app-field"><label for="userCreatePassword">Contraseña inicial</label><input id="userCreatePassword" type="password" minlength="8" required autocomplete="new-password"><span class="admin-mini">Mínimo 8 caracteres. El cliente podrá cambiarla después.</span></div>
 </div><button class="app-btn primary" type="submit"><i class="ph ph-user-plus"></i> Crear usuario</button></form>
 </section>
-<section class="app-card"><div class="app-card-head"><div><h3>Evolución de usuarios</h3><p>Altas por mes y usuarios activos actuales. Las bajas históricas se mostrarán cuando exista un registro de baja.</p></div></div><div id="usersChart" class="bar-chart"></div></section>
+<section class="app-card"><div class="app-card-head"><div><h3>Evolución de usuarios</h3><p>Consulta las altas históricas por mes o compara la evolución anual del box.</p></div></div><div class="users-chart-toolbar"><span id="usersChartRange" class="users-chart-range">—</span><div class="users-chart-controls"><button class="app-btn" type="button" id="usersChartPrev" aria-label="Periodo anterior"><i class="ph ph-caret-left"></i></button><select id="usersChartYear" aria-label="Año de evolución"></select><button class="app-btn" type="button" id="usersChartNext" aria-label="Periodo siguiente"><i class="ph ph-caret-right"></i></button><select id="usersChartMode" aria-label="Vista de evolución"><option value="monthly">Mensual</option><option value="annual">Anual</option></select></div></div><div id="usersChart" class="bar-chart"></div></section>
 </div>
 <section class="app-card users-list-card"><div class="app-card-head"><div><h3>Listado de usuarios</h3><p>Clientes y usuarios vinculados al box.</p></div></div><div id="clientsTable" class="app-table-wrap"><div class="app-loading">Cargando clientes…</div></div></section>
 </section>
@@ -540,11 +541,41 @@ function renderHomeCharts(){
  renderBarChart("homeUsersChart",months.map(m=>({label:m.label,value:usersBy[m.key]||0})));
  renderBarChart("homeRevenueChart",months.map(m=>({label:m.label,value:Math.round(revenueBy[m.key]||0)})));
 }
-function renderUsersChart(){
- const months=lastMonths(6), by=Object.fromEntries(months.map(m=>[m.key,0]));
- users.filter(u=>u.role==="athlete").forEach(u=>{const d=new Date(u.created_at),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");if(k in by)by[k]++;});
- renderBarChart("usersChart",months.map(m=>({label:m.label,value:by[m.key]||0})));
+let usersChartYear=new Date().getFullYear();
+function getUserSignupYears(){
+ const years=new Set([new Date().getFullYear()]);
+ users.filter(u=>u.role==="athlete"&&u.created_at).forEach(u=>years.add(new Date(u.created_at).getFullYear()));
+ return [...years].sort((a,b)=>a-b);
 }
+function renderUsersChart(){
+ const athletes=users.filter(u=>u.role==="athlete"&&u.created_at);
+ const years=getUserSignupYears();
+ const yearSelect=$("usersChartYear"),mode=$("usersChartMode"),range=$("usersChartRange");
+ if(!yearSelect||!mode)return;
+ if(!years.includes(usersChartYear))usersChartYear=years[years.length-1]||new Date().getFullYear();
+ yearSelect.innerHTML=years.slice().reverse().map(y=>'<option value="'+y+'">'+y+'</option>').join("");
+ yearSelect.value=String(usersChartYear);
+ const selectedMode=mode.value||"monthly";
+ if(selectedMode==="annual"){
+   const byYear=Object.fromEntries(years.map(y=>[y,0]));
+   athletes.forEach(u=>{const y=new Date(u.created_at).getFullYear();if(y in byYear)byYear[y]++;});
+   renderBarChart("usersChart",years.map(y=>({label:String(y),value:byYear[y]||0})));
+   range.textContent=years.length?years[0]+"–"+years[years.length-1]:"Sin datos";
+ }else{
+   const months=Array.from({length:12},(_,i)=>{const d=new Date(usersChartYear,i,1);return {key:usersChartYear+"-"+String(i+1).padStart(2,"0"),label:d.toLocaleDateString("es-ES",{month:"short"}).replace(".","")};});
+   const by=Object.fromEntries(months.map(m=>[m.key,0]));
+   athletes.forEach(u=>{const d=new Date(u.created_at),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");if(k in by)by[k]++;});
+   renderBarChart("usersChart",months.map(m=>({label:m.label,value:by[m.key]||0})));
+   range.textContent="Altas de "+usersChartYear;
+ }
+ const prev=$("usersChartPrev"),next=$("usersChartNext");
+ if(prev)prev.disabled=selectedMode==="annual"||!years.some(y=>y<usersChartYear);
+ if(next)next.disabled=selectedMode==="annual"||!years.some(y=>y>usersChartYear);
+}
+$("usersChartYear")?.addEventListener("change",ev=>{usersChartYear=Number(ev.target.value)||new Date().getFullYear();renderUsersChart();});
+$("usersChartMode")?.addEventListener("change",renderUsersChart);
+$("usersChartPrev")?.addEventListener("click",()=>{const years=getUserSignupYears().filter(y=>y<usersChartYear);if(years.length){usersChartYear=years[years.length-1];renderUsersChart();}});
+$("usersChartNext")?.addEventListener("click",()=>{const years=getUserSignupYears().filter(y=>y>usersChartYear);if(years.length){usersChartYear=years[0];renderUsersChart();}});
 function renderStripeStatus(){refreshStripeStatus();}
   async function openStripeOnboarding(){
     const btn=$("stripeConnectBtn"),msg=$("stripeMessage");btn.disabled=true;WodIOApp.message(msg,"Abriendo configuración segura de Stripe...");
