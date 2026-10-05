@@ -54,7 +54,15 @@
 .create-box-step span:not(.create-box-step-number){display:none}.create-box-step-line{margin:0 5px}
 }
 
-.onboarding-logo .logo{display:block;width:auto;height:42px;max-width:180px;object-fit:contain}.onboarding-logo{min-height:42px}.onboarding-brand{display:flex;flex-direction:column;gap:8px}.onboarding-logo{display:inline-flex;align-items:center;gap:11px;width:max-content;color:#fff;text-decoration:none}.onboarding-logo-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:#fff;color:#0b0b0f;font-size:21px;font-weight:900;letter-spacing:-.08em;box-shadow:0 8px 24px rgba(0,0,0,.2)}.onboarding-logo-text{font-size:27px;font-weight:800;letter-spacing:-.055em}.onboarding-brand-caption{font-size:8px;letter-spacing:.18em;color:#666;font-weight:700}.onboarding-form-footer{display:flex;align-items:center;gap:8px;margin-top:20px;padding-top:15px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:#777}.onboarding-form-footer i{font-size:15px;color:#aaa}
+.onboarding-logo .logo{display:block;width:auto;height:42px;max-width:180px;object-fit:contain}.onboarding-logo{min-height:42px}.onboarding-brand{display:flex;flex-direction:column;gap:8px}.onboarding-logo{display:inline-flex;align-items:center;gap:11px;width:max-content;color:#fff;text-decoration:none}.onboarding-logo-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:#fff;color:#0b0b0f;font-size:21px;font-weight:900;letter-spacing:-.08em;box-shadow:0 8px 24px rgba(0,0,0,.2)}.onboarding-logo-text{font-size:27px;font-weight:800;letter-spacing:-.055em}.onboarding-brand-caption{font-size:8px;letter-spacing:.18em;color:#666;font-weight:700}.onboarding-form-footer{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 0 0;padding:14px 0 0;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:#777;text-align:center}.onboarding-form-footer i{font-size:15px;color:#aaa;flex:none}
+.create-box-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.07)}
+.create-box-trust-item{display:flex;flex-direction:column;gap:6px;min-height:82px;padding:14px 15px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.018)}
+.create-box-trust-item strong{font-size:12px;font-weight:700;color:#ddd;line-height:1.3}
+.create-box-trust-item span{font-size:11px;line-height:1.5;color:#777}
+.create-box-trust-item i{font-size:17px;color:#aaa;margin-bottom:1px}
+.create-box-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px}
+.create-box-bottom .login-back{margin:0}
+@media(max-width:760px){.create-box-trust{grid-template-columns:1fr}.create-box-trust-item{min-height:auto}.create-box-bottom{justify-content:center}}
 /* SaaS onboarding layout */
 .create-box-card{display:grid;grid-template-columns:300px minmax(0,1fr);position:relative;overflow:hidden}
 .onboarding-aside{padding:34px 28px;display:flex;flex-direction:column;min-height:760px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border-right:1px solid rgba(255,255,255,.08)}
@@ -191,15 +199,31 @@
 <span id="createBoxBtnText">Crear mi box</span>
 </button>
 
-</section><div class="create-box-trust"><div class="create-box-trust-item"><strong>Configuración rápida</strong><span>Empieza con lo esencial y completa el perfil de tu box cuando quieras.</span></div><div class="create-box-trust-item"><strong>Pago seguro</strong><span>Los planes de pago se procesan mediante Stripe.</span></div><div class="create-box-trust-item"><strong>Control de acceso</strong><span>Cada cuenta solo accede a las funciones y datos autorizados.</span></div></div></div></div> <div class="login-register">
-<span>¿Ya tienes una cuenta?</span>
-<a href="login.html">Iniciar sesión</a>
+</section>
+<div class="create-box-trust" aria-label="Información de seguridad y activación">
+  <div class="create-box-trust-item">
+    <i class="ph ph-lightning" aria-hidden="true"></i>
+    <strong>Configuración rápida</strong>
+    <span>Completa los datos básicos y empieza a usar WodIO en pocos pasos.</span>
+  </div>
+  <div class="create-box-trust-item">
+    <i class="ph ph-credit-card" aria-hidden="true"></i>
+    <strong>Pago seguro</strong>
+    <span>Si eliges un plan de pago, continuarás a Stripe para completar la suscripción.</span>
+  </div>
+  <div class="create-box-trust-item">
+    <i class="ph ph-shield-check" aria-hidden="true"></i>
+    <strong>Acceso protegido</strong>
+    <span>Cada cuenta solo puede acceder a los datos y funciones autorizados.</span>
+  </div>
 </div>
+</div></div>
 </form>
 
-<div class="onboarding-form-footer"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Conexión segura y acceso protegido por cuenta y box.</span></div>
-
-<a href="../index.html" class="login-back"><i class="ph ph-arrow-left" aria-hidden="true"></i> Volver a WodIO</a>
+<div class="create-box-bottom">
+  <div class="onboarding-form-footer"><i class="ph ph-lock-key" aria-hidden="true"></i><span>Conexión segura y acceso protegido por cuenta y box.</span></div>
+  <a href="../index.html" class="login-back"><i class="ph ph-arrow-left" aria-hidden="true"></i> Volver a WodIO</a>
+</div>
 </section>
 </main>
 
