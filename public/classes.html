@@ -49,7 +49,19 @@
 </div>
 <p class="app-help" style="margin-top:12px">Si intentas reservar fuera de este plazo o cancelar demasiado tarde, la aplicación no permitirá la operación.</p>
 </section>
-<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Horario y programación del mes</h2><p>Consulta cuándo abre el box y las clases programadas.</p></div><input id="scheduleMonth" type="month" class="app-btn"></div><div id="boxOpeningHours" class="app-help" style="margin-bottom:14px"></div><div id="monthlyClassSchedule" class="app-list"></div></section>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head">
+<div><h2>Horario y programación</h2><p>Consulta el mes completo como calendario y reserva directamente desde cada clase.</p></div>
+<div style="display:flex;align-items:center;gap:8px"><button class="app-btn" id="schedulePrev" type="button">‹</button><input id="scheduleMonth" type="month" class="app-btn"><button class="app-btn" id="scheduleNext" type="button">›</button></div>
+</div>
+<div id="boxOpeningHours" class="app-help" style="margin-bottom:14px"></div>
+<div class="monthly-calendar-wrap">
+  <div class="monthly-calendar-head">
+    <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+  </div>
+  <div id="monthlyClassSchedule" class="monthly-calendar-grid"></div>
+</div>
+</section>
 <section class="app-card" style="margin-top:18px">
 <div class="app-card-head">
 <div><h2>Próximas sesiones</h2><p>Las clases se muestran desde hoy en adelante.</p></div>
@@ -96,9 +108,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(error){WodIOApp.message(message,error.message);return;}
       const dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
       document.getElementById("boxOpeningHours").innerHTML="<strong>Horario del box:</strong> "+(hours||[]).sort((a,b)=>a.weekday-b.weekday).map(h=>h.closed?dayNames[h.weekday]+": cerrado":dayNames[h.weekday]+": "+String(h.open_time).slice(0,5)+"–"+String(h.close_time).slice(0,5)).join(" · ");
-      document.getElementById("monthlyClassSchedule").innerHTML=(monthClasses||[]).length?(monthClasses||[]).map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml([v.coach?.first_name,v.coach?.last_name].filter(Boolean).join(" ")||"Sin coach")+'</span><span>'+v.capacity+' plazas</span></div></div></article>').join(""):'<div class="app-empty">No hay clases programadas este mes.</div>';
+      const classesByDay=new Map();
+      (monthClasses||[]).forEach(v=>{
+        const d=new Date(v.starts_at);
+        const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+        if(!classesByDay.has(key)) classesByDay.set(key,[]);
+        classesByDay.get(key).push(v);
+      });
+      const firstDay=new Date(start); const offset=(firstDay.getDay()+6)%7;
+      const daysInMonth=new Date(end.getFullYear(),end.getMonth(),0).getDate();
+      const totalCells=Math.ceil((offset+daysInMonth)/7)*7;
+      const todayKey=new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0")+"-"+String(new Date().getDate()).padStart(2,"0");
+      document.getElementById("monthlyClassSchedule").innerHTML=Array.from({length:totalCells},(_,i)=>{
+        const dayNum=i-offset+1;
+        if(dayNum<1||dayNum>daysInMonth) return '<div class="monthly-calendar-cell is-empty"></div>';
+        const date=new Date(start); date.setDate(dayNum);
+        const key=date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+        const h=(hours||[]).find(x=>Number(x.weekday)===date.getDay());
+        const dayClasses=classesByDay.get(key)||[];
+        const hoursText=!h||h.closed?"Cerrado":[h.open_time&&h.close_time?String(h.open_time).slice(0,5)+"–"+String(h.close_time).slice(0,5):"",h.open_time_2&&h.close_time_2?String(h.open_time_2).slice(0,5)+"–"+String(h.close_time_2).slice(0,5):""].filter(Boolean).join(" / ");
+        return '<div class="monthly-calendar-cell '+(key===todayKey?"is-today":"")+'">'+
+          '<div class="monthly-calendar-day"><strong>'+dayNum+'</strong><span>'+WodIOApp.escapeHtml(hoursText)+'</span></div>'+
+          (dayClasses.length?'<div class="monthly-calendar-classes">'+dayClasses.map(v=>'<div class="monthly-calendar-class"><strong>'+WodIOApp.escapeHtml(String(v.starts_at).slice(11,16))+'</strong><span>'+WodIOApp.escapeHtml(v.title)+'</span></div>').join("")+'</div>':'<div class="monthly-calendar-empty">Sin clases</div>')+
+        '</div>';
+      }).join("");
     }
     monthInput.addEventListener("change",renderMonthlySchedule);
+    document.getElementById("schedulePrev").addEventListener("click",()=>{const d=new Date(monthInput.value+"-01T00:00:00");d.setMonth(d.getMonth()-1);monthInput.value=d.toISOString().slice(0,7);renderMonthlySchedule();});
+    document.getElementById("scheduleNext").addEventListener("click",()=>{const d=new Date(monthInput.value+"-01T00:00:00");d.setMonth(d.getMonth()+1);monthInput.value=d.toISOString().slice(0,7);renderMonthlySchedule();});
     renderMonthlySchedule();
     const from = new Date();
     from.setHours(0,0,0,0);
