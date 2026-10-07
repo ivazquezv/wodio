@@ -4,11 +4,66 @@
 <header class="app-topbar"><a class="app-brand" href="coach-dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO Coach</span></a><button class="app-btn" id="logoutButton"><i class="ph ph-sign-out"></i> Salir</button></header>
 <section class="app-hero"><div><div class="app-eyebrow">Área del coach</div><h1 id="title">Panel del coach</h1><p>Consulta tus clases, alumnos y programación.</p></div></section>
 <div id="msg" class="app-message"></div>
-<section class="app-grid app-grid-3"><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-calendar"></i></div><div><div id="classesCount" class="app-stat-value">—</div><div class="app-stat-label">Clases próximas</div></div></div><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div id="clientsCount" class="app-stat-value">—</div><div class="app-stat-label">Clientes del box</div></div></div><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-buildings"></i></div><div><div id="boxName" class="app-stat-value" style="font-size:1.15rem">—</div><div class="app-stat-label">Box</div></div></div></section>
+<section class="app-grid app-grid-3"><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-calendar"></i></div><div><div id="classesCount" class="app-stat-value">—</div><div class="app-stat-label">Clases próximas</div></div></div><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div id="clientsCount" class="app-stat-value">—</div><div class="app-stat-label">Clientes del box</div></div></div><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-buildings"></i></div><div><div id="boxName" class="app-stat-value" style="font-size:1.15rem">—</div><div class="app-stat-label">Box</div></div></div></section><section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Fichaje</h2><p>La entrada y la salida se registran con la hora actual del sistema.</p></div><div id="clockNow" class="app-muted">—</div></div><div class="app-grid app-grid-2"><div><div id="clockStatus" class="app-message" style="margin-bottom:10px"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="app-btn primary" id="clockInButton" type="button"><i class="ph ph-sign-in"></i> Fichar entrada</button><button class="app-btn" id="clockOutButton" type="button"><i class="ph ph-sign-out"></i> Fichar salida</button></div></div><div><h3 style="font-size:.9rem;margin-bottom:6px">Fichaje manual</h3><p class="app-muted" style="margin-bottom:10px">Si necesitas corregir un día, solicita la modificación. Un administrador del box debe aprobarla.</p><form id="manualTimeRequestForm" class="app-form"><div class="app-form-grid"><div class="app-field"><label for="manualTimeDate">Fecha</label><input id="manualTimeDate" type="date" required></div><div class="app-field"><label for="manualTimeIn">Entrada</label><input id="manualTimeIn" type="datetime-local" required></div><div class="app-field"><label for="manualTimeOut">Salida</label><input id="manualTimeOut" type="datetime-local" required></div><div class="app-field full"><label for="manualTimeReason">Motivo</label><input id="manualTimeReason" required placeholder="Ej. olvidé fichar la salida"></div></div><button class="app-btn" type="submit"><i class="ph ph-paper-plane-tilt"></i> Solicitar corrección</button></form><div id="manualTimeMessage" class="app-message" style="margin-top:10px"></div></div></div><div id="manualTimeRequests" style="margin-top:18px"></div></section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Mis próximas clases</h2><p>Sesiones asignadas a tu perfil.</p></div></div><div id="classes" class="app-list"></div></section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Clientes</h2><p>Atletas vinculados al box.</p></div></div><div id="clients" class="app-table-wrap"></div></section>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config/supabase-config.js"></script><script src="js/supabase.js"></script><script src="js/wodio-app.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded",async()=>{const ctx=await WodIOApp.requireUser({roles:["coach","box_admin","super_admin"]});if(!ctx)return;const boxId=ctx.profile?.box_id;if(!boxId){WodIOApp.message(document.getElementById("msg"),"No hay box asignado.");return;}const n=v=>[v?.first_name,v?.last_name].filter(Boolean).join(" ")||"Usuario";const [{data:b},{data:c},{data:u}]=await Promise.all([supabaseClient.from("boxes").select("name").eq("id",boxId).single(),supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.user.id).gte("starts_at",new Date().toISOString()).order("starts_at").limit(20),supabaseClient.from("profiles").select("first_name,last_name,role,created_at").eq("box_id",boxId).eq("role","athlete").order("first_name")]);document.getElementById("title").textContent="Hola, "+n(ctx.profile);document.getElementById("boxName").textContent=b?.name||"—";document.getElementById("classesCount").textContent=(c||[]).length;document.getElementById("clientsCount").textContent=(u||[]).length;document.getElementById("classes").innerHTML=(c||[]).length?c.map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span><span>'+WodIOApp.escapeHtml(v.workout||"Sin WOD")+'</span></div></div></article>').join(""):'<div class="app-empty">No tienes clases próximas.</div>';document.getElementById("clients").innerHTML=(u||[]).length?'<table class="app-table"><thead><tr><th>Cliente</th><th>Alta</th></tr></thead><tbody>'+u.map(v=>'<tr><td>'+WodIOApp.escapeHtml(n(v))+'</td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay clientes.</div>';WodIOApp.bindLogout();});
-</script></body></html>
+document.addEventListener("DOMContentLoaded",async()=>{
+ const ctx=await WodIOApp.requireUser({roles:["coach","box_admin","super_admin"]});if(!ctx)return;
+ const boxId=ctx.profile?.box_id;if(!boxId){WodIOApp.message(document.getElementById("msg"),"No hay box asignado.");return;}
+ const n=v=>[v?.first_name,v?.last_name].filter(Boolean).join(" ")||"Usuario";
+ const localDate=d=>{const x=d||new Date();return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+ const localDateTimeValue=d=>{const x=d||new Date();return localDate(x)+"T"+String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0")};
+ const today=localDate();
+ const [{data:b},{data:c},{data:u}]=await Promise.all([
+  supabaseClient.from("boxes").select("name").eq("id",boxId).single(),
+  supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.user.id).gte("starts_at",new Date().toISOString()).order("starts_at").limit(20),
+  supabaseClient.from("profiles").select("first_name,last_name,role,created_at").eq("box_id",boxId).eq("role","athlete").order("first_name")
+ ]);
+ document.getElementById("title").textContent="Hola, "+n(ctx.profile);document.getElementById("boxName").textContent=b?.name||"—";document.getElementById("classesCount").textContent=(c||[]).length;document.getElementById("clientsCount").textContent=(u||[]).length;
+ document.getElementById("classes").innerHTML=(c||[]).length?c.map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span><span>'+WodIOApp.escapeHtml(v.workout||"Sin WOD")+'</span></div></div></article>').join(""):'<div class="app-empty">No tienes clases próximas.</div>';
+ document.getElementById("clients").innerHTML=(u||[]).length?'<table class="app-table"><thead><tr><th>Cliente</th><th>Alta</th></tr></thead><tbody>'+u.map(v=>'<tr><td>'+WodIOApp.escapeHtml(n(v))+'</td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay clientes.</div>';
+ const loadClock=async()=>{
+   const [{data:entry,error:e},{data:requests,error:r}]=await Promise.all([
+     supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",today).maybeSingle(),
+     supabaseClient.from("coach_time_entry_requests").select("id,work_date,clock_in,clock_out,reason,status,rejection_reason,created_at").eq("box_id",boxId).eq("coach_id",ctx.user.id).order("created_at",{ascending:false}).limit(10)
+   ]);
+   if(e){WodIOApp.message(document.getElementById("clockStatus"),e.message);return;}
+   document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"short",timeStyle:"medium"}).format(new Date());
+   const inBtn=document.getElementById("clockInButton"),outBtn=document.getElementById("clockOutButton");
+   inBtn.disabled=!!entry?.clock_in;outBtn.disabled=!entry?.clock_in||!!entry?.clock_out;
+   document.getElementById("clockStatus").textContent=entry?.clock_out?"Jornada cerrada · entrada "+WodIOApp.formatDateTime(entry.clock_in)+" · salida "+WodIOApp.formatDateTime(entry.clock_out):entry?.clock_in?"Jornada abierta · entrada "+WodIOApp.formatDateTime(entry.clock_in):"No has fichado la entrada de hoy.";
+   const labels={pending:"Pendiente",approved:"Aprobada",rejected:"Rechazada"};
+   document.getElementById("manualTimeRequests").innerHTML=(requests||[]).length?'<div class="app-table-wrap"><table class="app-table"><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead><tbody>'+requests.map(v=>'<tr><td>'+WodIOApp.formatDate(v.work_date,{withYear:true})+'</td><td>'+WodIOApp.formatDateTime(v.clock_in)+'</td><td>'+WodIOApp.formatDateTime(v.clock_out)+'</td><td><span class="app-badge '+(v.status==="approved"?"success":v.status==="rejected"?"":"warning")+'">'+labels[v.status]+'</span>'+(v.rejection_reason?'<div class="app-muted">'+WodIOApp.escapeHtml(v.rejection_reason)+'</div>':"")+'</td></tr>').join("")+'</tbody></table></div>':'<div class="app-muted">No tienes solicitudes manuales.</div>';
+ };
+ document.getElementById("clockInButton").addEventListener("click",async ev=>{
+   const btn=ev.currentTarget;btn.disabled=true;
+   const now=new Date(),{error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:localDate(now),clock_in:now.toISOString(),source:"coach"});
+   if(error)WodIOApp.message(document.getElementById("clockStatus"),error.message);else await loadClock();
+   btn.disabled=false;
+ });
+ document.getElementById("clockOutButton").addEventListener("click",async ev=>{
+   const btn=ev.currentTarget;btn.disabled=true;
+   const now=new Date(),{data:entry,error:findError}=await supabaseClient.from("coach_time_entries").select("id").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",localDate(now)).eq("source","coach").is("clock_out",null).order("clock_in",{ascending:false}).limit(1).maybeSingle();
+   if(findError){WodIOApp.message(document.getElementById("clockStatus"),findError.message);btn.disabled=false;return;}
+   if(!entry){WodIOApp.message(document.getElementById("clockStatus"),"No hay un fichaje de entrada abierto para hoy.");btn.disabled=false;return;}
+   const {error}=await supabaseClient.from("coach_time_entries").update({clock_out:now.toISOString(),updated_at:now.toISOString()}).eq("id",entry.id).eq("box_id",boxId);
+   if(error)WodIOApp.message(document.getElementById("clockStatus"),error.message);else await loadClock();
+   btn.disabled=false;
+ });
+ document.getElementById("manualTimeDate").value=today;document.getElementById("manualTimeIn").value=localDateTimeValue(new Date(new Date().setHours(8,0,0,0)));document.getElementById("manualTimeOut").value=localDateTimeValue(new Date(new Date().setHours(17,0,0,0)));
+ document.getElementById("manualTimeRequestForm").addEventListener("submit",async ev=>{
+   ev.preventDefault();const btn=ev.submitter,reason=document.getElementById("manualTimeReason").value.trim(),date=document.getElementById("manualTimeDate").value,cin=document.getElementById("manualTimeIn").value,cout=document.getElementById("manualTimeOut").value;
+   if(!date||!cin||!cout||!reason)return;
+   const inAt=new Date(cin),outAt=new Date(cout);if(!(outAt>inAt)){WodIOApp.message(document.getElementById("manualTimeMessage"),"La salida debe ser posterior a la entrada.");return;}
+   btn.disabled=true;
+   const {error}=await supabaseClient.from("coach_time_entry_requests").insert({box_id:boxId,coach_id:ctx.user.id,work_date:date,clock_in:inAt.toISOString(),clock_out:outAt.toISOString(),reason,status:"pending"});
+   if(error)WodIOApp.message(document.getElementById("manualTimeMessage"),error.message);else{WodIOApp.message(document.getElementById("manualTimeMessage"),"Solicitud enviada. Queda pendiente de aprobación del administrador.","success");document.getElementById("manualTimeRequestForm").reset();document.getElementById("manualTimeDate").value=today;await loadClock();}
+   btn.disabled=false;
+ });
+ setInterval(()=>{document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"short",timeStyle:"medium"}).format(new Date())},1000);
+ await loadClock();WodIOApp.bindLogout();
+});
+</script>></body></html>
