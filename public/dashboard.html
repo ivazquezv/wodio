@@ -1734,10 +1734,25 @@ document.addEventListener("DOMContentLoaded", async () => {
             athlete:"Atleta",coach:"Coach",box_admin:"Administrador",super_admin:"Super administrador"
         })[profile?.role] || "Usuario";
 
-        const [{data:box},{data:classes},{data:bookings},{data:payments},{data:progress}] = await Promise.all([
+        function classFitsBoxHours(classItem,hourMap){
+            if(!hourMap || hourMap.size===0) return true;
+            const start=new Date(classItem.starts_at);
+            const duration=Math.max(0,Number(classItem.duration_minutes)||0);
+            const end=new Date(start.getTime()+duration*60000);
+            const h=hourMap.get(start.getDay());
+            if(!h || h.closed || !h.open_time || !h.close_time || end.getDate()!==start.getDate()) return false;
+            const toMinutes=value=>{const parts=String(value||"").slice(0,5).split(":").map(Number);return parts[0]*60+(parts[1]||0);};
+            const startMinutes=start.getHours()*60+start.getMinutes();
+            const endMinutes=end.getHours()*60+end.getMinutes();
+            const fits=(open,close)=>open&&close&&startMinutes>=toMinutes(open)&&endMinutes<=toMinutes(close);
+            return fits(h.open_time,h.close_time) || fits(h.open_time_2,h.close_time_2);
+        }
+
+        const [{data:box},{data:boxHours},{data:classes},{data:bookings},{data:payments},{data:progress}] = await Promise.all([
             profile?.box_id
                 ? supabaseClient.from("boxes").select("id,name,logo_url").eq("id",profile.box_id).maybeSingle()
                 : Promise.resolve({data:null}),
+            supabaseClient.from("box_hours").select("weekday,open_time,close_time,open_time_2,close_time_2,closed").eq("box_id",profile.box_id),
             supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8),
             supabaseClient.from("class_bookings").select("id,class_id,status,created_at").eq("user_id",user.id),
             supabaseClient.from("payments").select("id,concept,amount_cents,status,paid_at,created_at,category,box_id").eq("user_id",user.id).order("created_at",{ascending:false}).limit(30),
@@ -1787,6 +1802,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const weeklyGrid=document.getElementById("weeklyScheduleGrid");
         const weeklyTitle=document.getElementById("weeklyScheduleTitle");
         const weeklySubtitle=document.getElementById("weeklyScheduleSubtitle");
+        const dashboardHourMap=new Map((boxHours||[]).map(h=>[Number(h.weekday),h]));
+        const visibleClasses=(classes||[]).filter(c=>classFitsBoxHours(c,dashboardHourMap));
         const weeklyBoxName=document.getElementById("weeklyScheduleBoxName");
         let weeklyOffset=0;
 
@@ -1807,7 +1824,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             base.setDate(base.getDate()+weeklyOffset*7);
             const end=new Date(base);end.setDate(end.getDate()+7);
             const [{data:hours,error:hoursError},{data:weekClasses,error:classesError}]=await Promise.all([
-                supabaseClient.from("box_hours").select("weekday,open_time,close_time,closed").eq("box_id",profile.box_id),
+                supabaseClient.from("box_hours").select("weekday,open_time,close_time,open_time_2,close_time_2,closed").eq("box_id",profile.box_id),
                 supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",profile.box_id).gte("starts_at",base.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
             ]);
             const weekBookings=bookings||[];
@@ -1826,8 +1843,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             weeklyGrid.innerHTML=dayDates.map((date,i)=>{
                 const weekday=date.getDay();
                 const h=hourMap.get(weekday);
-                const dayClasses=(weekClasses||[]).filter(c=>localKey(new Date(c.starts_at))===localKey(date));
-                const hoursText=!h||h.closed?"Cerrado":formatHour(h.open_time)+" – "+formatHour(h.close_time);
+                const dayClasses=(weekClasses||[]).filter(c=>localKey(new Date(c.starts_at))===localKey(date) && classFitsBoxHours(c,hourMap));
+                const hoursText=!h
+                    ? ((hours||[]).length?"Cerrado":"Horario no configurado")
+                    : h.closed
+                        ? "Cerrado"
+                        : [h.open_time&&h.close_time?(formatHour(h.open_time)+" – "+formatHour(h.close_time)):"",h.open_time_2&&h.close_time_2?(formatHour(h.open_time_2)+" – "+formatHour(h.close_time_2)):""].filter(Boolean).join(" / ");
                 const classHtml=dayClasses.length?dayClasses.map(c=>{
                     const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
                     const isBooked=bookedMap.get(c.id)==="booked";
@@ -1868,7 +1889,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("weeklyNext")?.addEventListener("click",()=>{weeklyOffset++;renderWeeklySchedule();});
         await renderWeeklySchedule();
 
-        const futureClasses=classes||[];
+        const futureClasses=visibleClasses;
         const booked=new Set((bookings||[]).filter(b=>b.status==="booked").map(b=>b.class_id));
         const monthStart=new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
         const monthEnd=new Date(monthStart); monthEnd.setMonth(monthEnd.getMonth()+1);
