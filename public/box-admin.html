@@ -461,7 +461,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   if(refreshBtn) refreshBtn.disabled=true;
   try{
   const now=new Date().toISOString(), monthStart=new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
-  const [b,u,c,e,p,x,pm,cs,sh,te]=await Promise.all([
+  const [b,u,c,e,p,x,pm,cs,sh,te,ter]=await Promise.all([
    supabaseClient.from("boxes").select("*").eq("id",boxId).single(),
    supabaseClient.rpc("get_box_users",{p_box_id:boxId}),
    supabaseClient.from("classes").select("id,title,description,starts_at,duration_minutes,capacity,coach_id,workout,location").eq("box_id",boxId).gte("starts_at",now).order("starts_at").limit(15),
