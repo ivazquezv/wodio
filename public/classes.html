@@ -55,6 +55,14 @@
 <div style="display:flex;align-items:center;gap:8px"><button class="app-btn" id="schedulePrev" type="button">‹</button><input id="scheduleMonth" type="month" class="app-btn"><button class="app-btn" id="scheduleNext" type="button">›</button></div>
 </div>
 <div id="boxOpeningHours" class="app-help" style="margin-bottom:14px"></div>
+<style>
+.monthly-calendar-class{display:flex;flex-direction:column;gap:7px}
+.monthly-calendar-class-main{display:flex;align-items:center;gap:6px;min-width:0}
+.monthly-calendar-class-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.monthly-calendar-action{width:100%;border:1px solid var(--border-soft);background:var(--bg-main);color:var(--text-main);border-radius:8px;padding:5px 7px;font-size:12px;cursor:pointer}
+.monthly-calendar-action.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.monthly-calendar-action:disabled{opacity:.5;cursor:not-allowed}
+</style>
 <div class="monthly-calendar-wrap">
   <div class="monthly-calendar-head">
     <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
@@ -101,9 +109,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function renderMonthlySchedule(){
       const month=monthInput.value;if(!month)return;
       const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);
-      const [{data:hours},{data:monthClasses,error}]=await Promise.all([
+      const [{data:hours},{data:monthClasses,error},{data:monthBookings}]=await Promise.all([
         supabaseClient.from("box_hours").select("*").eq("box_id",ctx.profile.box_id).order("weekday"),
-        supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",ctx.profile.box_id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at")
+        supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",ctx.profile.box_id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at"),
+        supabaseClient.from("class_bookings").select("id,class_id,status").eq("user_id",ctx.user.id)
       ]);
       if(error){WodIOApp.message(message,error.message);return;}
       const dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
@@ -129,7 +138,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         const hoursText=!h||h.closed?"Cerrado":[h.open_time&&h.close_time?String(h.open_time).slice(0,5)+"–"+String(h.close_time).slice(0,5):"",h.open_time_2&&h.close_time_2?String(h.open_time_2).slice(0,5)+"–"+String(h.close_time_2).slice(0,5):""].filter(Boolean).join(" / ");
         return '<div class="monthly-calendar-cell '+(key===todayKey?"is-today":"")+'">'+
           '<div class="monthly-calendar-day"><strong>'+dayNum+'</strong><span>'+WodIOApp.escapeHtml(hoursText)+'</span></div>'+
-          (dayClasses.length?'<div class="monthly-calendar-classes">'+dayClasses.map(v=>'<div class="monthly-calendar-class"><strong>'+WodIOApp.escapeHtml(String(v.starts_at).slice(11,16))+'</strong><span>'+WodIOApp.escapeHtml(v.title)+'</span></div>').join("")+'</div>':'<div class="monthly-calendar-empty">Sin clases</div>')+
+          (dayClasses.length?'<div class="monthly-calendar-classes">'+dayClasses.map(v=>{
+          const booking=(monthBookings||[]).find(b=>b.class_id===v.id&&b.status==="booked");
+          const startsAt=new Date(v.starts_at);
+          const isPast=startsAt.getTime()<=Date.now();
+          const canCancel=booking&&!isPast&&(startsAt.getTime()-Date.now())>(Number(boxPolicy?.cancellation_cutoff_hours||1)*60*60*1000);
+          const canBook=!booking&&!isPast&&(startsAt.getTime()-Date.now())<=((Number(boxPolicy?.booking_advance_days||2)+0.01)*24*60*60*1000);
+          const action=booking
+            ? '<button type="button" class="monthly-calendar-action" data-calendar-cancel="'+v.id+'" '+(!canCancel?"disabled title=\"La cancelación está cerrada para esta clase.\"":"")+'>'+ (canCancel?"Cancelar":"Reservada") +'</button>'
+            : '<button type="button" class="monthly-calendar-action primary" data-calendar-book="'+v.id+'" '+(!canBook?"disabled title=\"Esta clase todavía no está disponible para reservar.\"":"")+'>'+ (isPast?"Finalizada":"Reservar") +'</button>';
+          return '<div class="monthly-calendar-class"><div class="monthly-calendar-class-main"><strong>'+WodIOApp.escapeHtml(String(v.starts_at).slice(11,16))+'</strong><span>'+WodIOApp.escapeHtml(v.title)+'</span></div>'+action+'</div>';
+        }).join("")+'</div>':'<div class="monthly-calendar-empty">Sin clases</div>')+
         '</div>';
       }).join("");
     }
@@ -137,6 +156,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("schedulePrev").addEventListener("click",()=>{const d=new Date(monthInput.value+"-01T00:00:00");d.setMonth(d.getMonth()-1);monthInput.value=d.toISOString().slice(0,7);renderMonthlySchedule();});
     document.getElementById("scheduleNext").addEventListener("click",()=>{const d=new Date(monthInput.value+"-01T00:00:00");d.setMonth(d.getMonth()+1);monthInput.value=d.toISOString().slice(0,7);renderMonthlySchedule();});
     renderMonthlySchedule();
+    document.getElementById("monthlyClassSchedule").addEventListener("click", async e => {
+      const bookId=e.target.closest("[data-calendar-book]")?.dataset.calendarBook;
+      const cancelId=e.target.closest("[data-calendar-cancel]")?.dataset.calendarCancel;
+      if(!bookId&&!cancelId) return;
+      const classId=bookId||cancelId;
+      const button=e.target.closest("button");
+      if(button) button.disabled=true;
+      WodIOApp.clearMessage(message);
+      if(cancelId){
+        const cutoff=Number(boxPolicy?.cancellation_cutoff_hours||1)*60*60*1000;
+        const {data:currentClass}=await supabaseClient.from("classes").select("starts_at").eq("id",classId).single();
+        if(!currentClass || new Date(currentClass.starts_at).getTime()-Date.now()<=cutoff){
+          WodIOApp.message(message,"La cancelación ya está cerrada para esta clase.");
+        }else{
+          const {error}=await supabaseClient.from("class_bookings").update({status:"cancelled"}).eq("class_id",classId).eq("user_id",ctx.user.id).eq("status","booked");
+          if(error) WodIOApp.message(message,error.message); else WodIOApp.message(message,"Clase cancelada correctamente.","success");
+        }
+      }else{
+        const {error}=await supabaseClient.from("class_bookings").upsert({class_id:classId,user_id:ctx.user.id,status:"booked"},{onConflict:"class_id,user_id"});
+        if(error) WodIOApp.message(message,error.message); else WodIOApp.message(message,"Clase reservada correctamente.","success");
+      }
+      await load();
+    });
     const from = new Date();
     from.setHours(0,0,0,0);
 
