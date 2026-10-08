@@ -245,8 +245,8 @@
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: .65;
-  filter: grayscale(1);
+  opacity: .45;
+  filter: brightness(0) grayscale(1);
   cursor: pointer;
 }
 input[type="date"]::-webkit-datetime-edit {
