@@ -450,6 +450,45 @@
             font-weight: 700;
         }
 
+        .dashboard-page .class-attendees {
+            grid-column: 2 / -1;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 2px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .dashboard-page .class-attendees-avatars {
+            display: flex;
+            align-items: center;
+            padding-left: 4px;
+        }
+
+        .dashboard-page .class-attendee-avatar {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            display: grid;
+            place-items: center;
+            margin-left: -4px;
+            overflow: hidden;
+            border: 2px solid var(--bg-elevated);
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            font-size: .62rem;
+            font-weight: 800;
+        }
+
+        .dashboard-page .class-attendee-avatar:first-child { margin-left: 0; }
+        .dashboard-page .class-attendee-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .dashboard-page .class-attendees-copy { min-width: 0; color: var(--text-muted); font-size: .72rem; line-height: 1.35; }
+        .dashboard-page .class-attendees-copy strong { color: var(--text-main); }
+        .dashboard-page .class-attendees-names { margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dashboard-page .class-attendees-empty { color: var(--text-muted); font-size: .7rem; }
+
         .dashboard-page .class-meta {
             display: flex;
             flex-wrap: wrap;
@@ -1941,11 +1980,59 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("statNextClassMeta").textContent=next?new Date(next.starts_at).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})+" · "+next.title:"Sin clases próximas";
 
         const classList=document.getElementById("dashboardClassList");
+        const attendeeClassIds=futureClasses.slice(0,4).map(c=>c.id);
+        let classAttendees=[];
+        if(attendeeClassIds.length){
+            const {data:attendeeBookings}=await supabaseClient
+                .from("class_bookings")
+                .select("class_id,user_id,status")
+                .in("class_id",attendeeClassIds)
+                .eq("status","booked");
+            const attendeeUserIds=[...new Set((attendeeBookings||[]).map(b=>b.user_id).filter(Boolean))];
+            let attendeeProfiles=[];
+            if(attendeeUserIds.length){
+                const {data:profilesData}=await supabaseClient
+                    .from("profiles")
+                    .select("id,first_name,last_name,avatar_url")
+                    .in("id",attendeeUserIds);
+                attendeeProfiles=profilesData||[];
+            }
+            const profileMap=new Map(attendeeProfiles.map(p=>[p.id,p]));
+            classAttendees=(attendeeBookings||[]).map(b=>({
+                class_id:b.class_id,
+                profile:profileMap.get(b.user_id)||null
+            })).filter(row=>row.profile);
+        }
+
+        const initialsForProfile=profile=>{
+            const first=(profile?.first_name||"").trim();
+            const last=(profile?.last_name||"").trim();
+            return ((first[0]||"")+(last[0]||"")||"?").toUpperCase();
+        };
+        const nameForProfile=profile=>[profile?.first_name,profile?.last_name].filter(Boolean).join(" ").trim()||"Usuario";
+        const attendeesForClass=classId=>classAttendees.filter(a=>a.class_id===classId).map(a=>a.profile);
+        const renderAttendees=classId=>{
+            const attendees=attendeesForClass(classId);
+            if(!attendees.length) return '<div class="class-attendees"><span class="class-attendees-empty">Nadie apuntado todavía</span></div>';
+            const visible=attendees.slice(0,5);
+            const extra=attendees.length-visible.length;
+            const avatars=visible.map(profile=>{
+                const name=WodIOApp.escapeHtml(nameForProfile(profile));
+                const initials=WodIOApp.escapeHtml(initialsForProfile(profile));
+                const image=profile.avatar_url
+                    ? '<img src="'+WodIOApp.escapeHtml(profile.avatar_url)+'" alt="'+name+'" loading="lazy" onerror="this.remove()">'
+                    : '';
+                return '<span class="class-attendee-avatar" title="'+name+'" aria-label="'+name+'">'+image+(image?'':initials)+'</span>';
+            }).join("");
+            const names=attendees.slice(0,3).map(p=>WodIOApp.escapeHtml(nameForProfile(p))).join(", ");
+            return '<div class="class-attendees"><div class="class-attendees-avatars">'+avatars+(extra?'<span class="class-attendee-avatar" title="'+extra+' personas más">+'+extra+'</span>':'')+'</div><div class="class-attendees-copy"><strong>'+attendees.length+' '+(attendees.length===1?"persona apuntada":"personas apuntadas")+'</strong><div class="class-attendees-names">'+names+(attendees.length>3?"…":"")+'</div></div></div>';
+        };
+
         classList.innerHTML=futureClasses.length?futureClasses.slice(0,4).map(c=>{
             const coach=[c.coach?.first_name,c.coach?.last_name].filter(Boolean).join(" ")||"Sin coach";
             const isBooked=booked.has(c.id);
             const open=Math.max(0,c.capacity);
-            return '<article class="class-item"><div class="class-time"><strong>'+new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</strong><span>'+new Date(c.starts_at).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})+'</span></div><div class="class-info"><div class="class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="class-meta"><span>'+c.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(coach)+'</span></div></div><span class="class-status '+(isBooked?"status-confirmed":"status-available")+'">'+(isBooked?"Reservada":open+" plazas")+'</span></article>';
+            return '<article class="class-item"><div class="class-time"><strong>'+new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</strong><span>'+new Date(c.starts_at).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})+'</span></div><div class="class-info"><div class="class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="class-meta"><span>'+c.duration_minutes+' min</span><span>'+WodIOApp.escapeHtml(coach)+'</span></div></div><span class="class-status '+(isBooked?"status-confirmed":"status-available")+'">'+(isBooked?"Reservada":open+" plazas")+'</span>'+renderAttendees(c.id)+'</article>';
         }).join(""):'<div class="announcement"><div class="announcement-icon">—</div><div><strong>No hay clases próximas</strong><p>Cuando el box programe nuevas sesiones aparecerán aquí.</p></div></div>';
 
         document.getElementById("goalClassesText").textContent=(monthBookings||0)+" / 16";
