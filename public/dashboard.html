@@ -482,6 +482,7 @@
         .dashboard-page .weekly-class-action:hover{border-color:var(--primary);color:var(--primary)}
         .dashboard-page .weekly-class.booked .weekly-class-action{background:var(--primary);border-color:var(--primary);color:#fff}
         .dashboard-page .weekly-class-action:disabled{opacity:.55;cursor:not-allowed}
+        .dashboard-page .weekly-class-feedback{margin-top:7px;color:#4ade80;font-size:.7rem;font-weight:800;line-height:1.35}
 
         .dashboard-page .weekly-empty{padding:12px 4px;color:var(--text-muted);font-size:.7rem}
         @media(max-width:1000px){.dashboard-page .weekly-grid{grid-template-columns:repeat(7,130px)}}
@@ -1857,7 +1858,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const action=isBooked
                         ? '<button type="button" class="weekly-class-action" data-weekly-cancel="'+c.id+'">✓ Reservada · Cancelar</button>'
                         : '<button type="button" class="weekly-class-action '+(!hasCurrentMonthSubscriptionPayment?"booking-blocked":"")+'" data-weekly-book="'+c.id+'" '+(isPast||!hasCurrentMonthSubscriptionPayment?"disabled":"")+'>'+ (isPast?"Clase pasada":hasCurrentMonthSubscriptionPayment?"Reservar clase":"Pago mensual pendiente") +'</button>';
-                    return '<article class="weekly-class '+(isBooked?"booked":"")+'"><div class="weekly-class-time">'+classDate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div>'+action+'</article>';
+                    return '<article class="weekly-class '+(isBooked?"booked":"")+'" data-weekly-class="'+c.id+'"><div class="weekly-class-time">'+classDate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div>'+action+'</article>';
                 }).join(""):'<div class="weekly-empty">Sin clases publicadas</div>';
                 return '<article class="weekly-day '+(localKey(date)===todayKey?"today":"")+'"><div class="weekly-day-head"><div class="weekly-day-name">'+dayNames[i]+'</div><div class="weekly-day-date">'+date.getDate()+' '+date.toLocaleDateString("es-ES",{month:"short"})+'</div><div class="weekly-hours">'+hoursText+'</div></div><div class="weekly-classes">'+classHtml+'</div></article>';
             }).join("");
@@ -1880,7 +1881,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(result.error){
                 WodIOApp.message(document.getElementById("pageMessage"),result.error.message);
             }else{
-                WodIOApp.message(document.getElementById("pageMessage"),isCancel?"Clase cancelada correctamente.":"Clase reservada correctamente.","success");
+                const feedbackText=isCancel?"Clase cancelada correctamente.":"Clase reservada correctamente.";
+                await renderWeeklySchedule();
+                const classCard=weeklyGrid.querySelector('[data-weekly-class="'+classId+'"]');
+                if(classCard){
+                    let feedback=classCard.querySelector(".weekly-class-feedback");
+                    if(!feedback){
+                        feedback=document.createElement("div");
+                        feedback.className="weekly-class-feedback";
+                        classCard.appendChild(feedback);
+                    }
+                    feedback.textContent=feedbackText;
+                }
+                return;
             }
             await renderWeeklySchedule();
         };
