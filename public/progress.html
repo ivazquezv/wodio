@@ -9,7 +9,18 @@
 <link rel="stylesheet" href="css/wodio.css">
 <link rel="stylesheet" href="css/wodio-app.css">
 <script src="https://unpkg.com/phosphor-icons" defer></script>
-</head>
+<style>
+.app-field-help{display:block;margin-top:5px;color:var(--text-muted);font-size:.72rem;line-height:1.35}
+.progress-chart-line{display:flex;gap:10px;height:300px;padding:10px 4px 28px}
+.progress-chart-y{width:38px;display:flex;flex-direction:column;justify-content:space-between;color:var(--text-muted);font-size:.68rem;text-align:right}
+.progress-chart-plot{position:relative;flex:1;border-left:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(33.33% - 1px),rgba(128,128,128,.12) 33.33%,rgba(128,128,128,.12) 33.33% + 1px)}
+.progress-chart-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.progress-chart-svg polyline{stroke:var(--primary);stroke-width:2;fill:none}
+.progress-point-wrap{position:absolute;transform:translate(-50%,50%);z-index:2}
+.progress-point{display:block;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid var(--bg-surface);box-shadow:0 0 0 1px var(--primary)}
+.progress-point-label{position:absolute;top:13px;left:50%;transform:translateX(-50%);white-space:nowrap;color:var(--text-muted);font-size:.62rem}
+.progress-chart-caption{margin-top:4px;color:var(--text-muted);font-size:.72rem}
+</style></head>
 <body class="app-page">
 <div class="app-shell">
 <header class="app-topbar">
@@ -33,9 +44,9 @@
 <form id="progressForm" class="app-form">
 <div class="app-form-grid">
 <div class="app-field"><label for="exercise">Ejercicio</label><input id="exercise" required placeholder="Back Squat"></div>
-<div class="app-field"><label for="value">Valor</label><input id="value" type="number" step="0.01" min="0" required placeholder="100"></div>
+<div class="app-field"><label for="value">Valor</label><input id="value" type="number" step="0.01" min="0" placeholder="100"><span class="app-field-help">Opcional. Para movimientos como BMU puedes dejarlo vacío y registrar solo las repeticiones.</span></div>
 <div class="app-field"><label for="unit">Unidad</label><select id="unit"><option value="kg">kg</option><option value="lb">lb</option><option value="reps">repeticiones</option><option value="seg">segundos</option><option value="min">minutos</option></select></div>
-<div class="app-field"><label for="reps">Repeticiones</label><input id="reps" type="number" min="1" placeholder="5"></div>
+<div class="app-field"><label for="reps">Repeticiones</label><input id="reps" type="number" min="1" placeholder="Ej. 10"></div>
 <div class="app-field"><label for="recordedAt">Fecha</label><input id="recordedAt" type="date" required></div>
 <div class="app-field full"><label for="notes">Notas</label><textarea id="notes" placeholder="Sensaciones, técnica, contexto…"></textarea></div>
 </div>
@@ -44,7 +55,8 @@
 </section>
 
 <section class="app-card">
-<div class="app-card-head"><div><h2>Evolución</h2><p>Últimos registros de tus ejercicios.</p></div></div>
+<div class="app-card-head"><div><h2>Evolución</h2><p>Selecciona un ejercicio para ver cómo evoluciona en el tiempo.</p></div></div>
+<div class="app-field" style="margin-bottom:14px"><label for="chartExercise">Ejercicio</label><select id="chartExercise"></select></div>
 <div id="chart" class="app-chart"></div>
 </section>
 </div>
@@ -72,25 +84,61 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(error){WodIOApp.message(msg,error.message);return;}
     const rows=data||[];
     document.getElementById("totalEntries").textContent=rows.length;
-    document.getElementById("exerciseCount").textContent=new Set(rows.map(r=>r.exercise.toLowerCase())).size;
+    document.getElementById("exerciseCount").textContent=new Set(rows.map(r=>r.exercise.trim().toLowerCase())).size;
     document.getElementById("latestDate").textContent=rows[0]?WodIOApp.formatDate(rows[0].recorded_at):"—";
+    const exerciseSelect=document.getElementById("chartExercise");
+    const exerciseMap=new Map();
+    rows.forEach(r=>{
+      const key=r.exercise.trim().toLowerCase();
+      if(!exerciseMap.has(key)) exerciseMap.set(key,r.exercise.trim());
+    });
+    const exerciseOptions=[...exerciseMap.entries()].sort((a,b)=>a[1].localeCompare(b[1],"es"));
+    exerciseSelect.innerHTML=exerciseOptions.map(([key,name])=>'<option value="'+WodIOApp.escapeHtml(key)+'">'+WodIOApp.escapeHtml(name)+'</option>').join("");
     if(!rows.length){
       list.innerHTML='<div class="app-empty">Todavía no has registrado ningún progreso.</div>';
       chart.innerHTML='<div class="app-empty">Registra tu primera marca para ver la evolución.</div>';
+      exerciseSelect.disabled=true;
       return;
     }
-    const chartRows=[...rows].slice(0,10).reverse();
-    const max=Math.max(...chartRows.map(r=>Number(r.value)),1);
-    chart.innerHTML=chartRows.map(r=>'<div class="app-chart-bar" style="--height:'+Math.max(8,(Number(r.value)/max)*100)+'%"><span>'+WodIOApp.escapeHtml(r.exercise.slice(0,10))+'</span></div>').join("");
+
+    const renderChart=()=>{
+      const selected=exerciseSelect.value;
+      const exerciseRows=rows.filter(r=>r.exercise.trim().toLowerCase()===selected).sort((a,b)=>new Date(a.recorded_at)-new Date(b.recorded_at));
+      if(!exerciseRows.length){chart.innerHTML='<div class="app-empty">No hay datos para este ejercicio.</div>';return;}
+      const numericRows=exerciseRows.filter(r=>Number.isFinite(Number(r.value)));
+      const repsRows=exerciseRows.filter(r=>Number.isFinite(Number(r.reps)));
+      const metricRows=numericRows.length?numericRows:repsRows;
+      const metricLabel=numericRows.length?(exerciseRows.find(r=>Number.isFinite(Number(r.value))&&r.unit)?.unit||"valor"):"repeticiones";
+      if(!metricRows.length){
+        chart.innerHTML='<div class="app-empty">Este ejercicio todavía no tiene valores numéricos para dibujar una evolución. Puedes registrar repeticiones para BMU y otros movimientos.</div>';
+        return;
+      }
+      const max=Math.max(...metricRows.map(r=>Number(numericRows.length?r.value:r.reps)),1);
+      const min=Math.min(...metricRows.map(r=>Number(numericRows.length?r.value:r.reps)));
+      const range=Math.max(max-min,1);
+      chart.innerHTML='<div class="progress-chart-line"><div class="progress-chart-y"><span>'+max+'</span><span>'+Math.round(min+(range*.5)*100)/100+'</span><span>'+min+'</span></div><div class="progress-chart-plot">'+metricRows.map((r,i)=>{
+        const value=Number(numericRows.length?r.value:r.reps);
+        const left=metricRows.length===1?50:(i/(metricRows.length-1))*100;
+        const bottom=8+((value-min)/range)*84;
+        const label=WodIOApp.formatDate(r.recorded_at,{withYear:false});
+        const display=value+(numericRows.length&&r.unit?" "+r.unit:" reps");
+        return '<div class="progress-point-wrap" style="left:'+left+'%;bottom:'+bottom+'%"><span class="progress-point" title="'+WodIOApp.escapeHtml(label+" · "+display)+'"></span><span class="progress-point-label">'+WodIOApp.escapeHtml(label)+'</span></div>';
+      }).join("")+(metricRows.length>1?'<svg class="progress-chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="'+metricRows.map((r,i)=>{const value=Number(numericRows.length?r.value:r.reps);const x=metricRows.length===1?50:(i/(metricRows.length-1))*100;const y=100-(8+((value-min)/range)*84);return x+","+y;}).join(" ")+'" fill="none" vector-effect="non-scaling-stroke"></polyline></svg>':"")+'</div></div><div class="progress-chart-caption">'+metricRows.length+' registros · unidad: '+WodIOApp.escapeHtml(metricLabel)+'</div>';
+    };
+    exerciseSelect.addEventListener("change",renderChart);
+    renderChart();
     list.innerHTML='<table class="app-table"><thead><tr><th>Fecha</th><th>Ejercicio</th><th>Marca</th><th>Reps</th><th>Notas</th><th></th></tr></thead><tbody>'+
-      rows.map(r=>'<tr><td>'+WodIOApp.formatDate(r.recorded_at,{withYear:true})+'</td><td>'+WodIOApp.escapeHtml(r.exercise)+'</td><td>'+r.value+' '+WodIOApp.escapeHtml(r.unit)+'</td><td>'+ (r.reps||"—")+'</td><td>'+WodIOApp.escapeHtml(r.notes||"—")+'</td><td><button class="app-btn danger" data-delete="'+r.id+'"><i class="ph ph-trash"></i></button></td></tr>').join("")+
+      rows.map(r=>'<tr><td>'+WodIOApp.formatDate(r.recorded_at,{withYear:true})+'</td><td>'+WodIOApp.escapeHtml(r.exercise)+'</td><td>'+(r.value!==null&&r.value!==undefined?r.value+" "+WodIOApp.escapeHtml(r.unit||""):(r.reps? r.reps+" reps":"—"))+'</td><td>'+ (r.reps||"—")+'</td><td>'+WodIOApp.escapeHtml(r.notes||"—")+'</td><td><button class="app-btn danger" data-delete="'+r.id+'"><i class="ph ph-trash"></i></button></td></tr>').join("")+
       '</tbody></table>';
   }
 
   form.addEventListener("submit",async e=>{
     e.preventDefault(); WodIOApp.clearMessage(msg);
-    const payload={user_id:ctx.user.id,exercise:document.getElementById("exercise").value.trim(),value:Number(document.getElementById("value").value),unit:document.getElementById("unit").value,reps:document.getElementById("reps").value?Number(document.getElementById("reps").value):null,recorded_at:dateInput.value,notes:document.getElementById("notes").value.trim()||null};
-    if(!payload.exercise||!Number.isFinite(payload.value)||payload.value<0){WodIOApp.message(msg,"Completa el ejercicio y un valor válido.");return;}
+    const valueInput=document.getElementById("value").value.trim();
+    const repsInput=document.getElementById("reps").value.trim();
+    const payload={user_id:ctx.user.id,exercise:document.getElementById("exercise").value.trim(),value:valueInput?Number(valueInput):null,unit:valueInput?document.getElementById("unit").value:(repsInput?"reps":null),reps:repsInput?Number(repsInput):null,recorded_at:dateInput.value,notes:document.getElementById("notes").value.trim()||null};
+    if(!payload.exercise||(!Number.isFinite(payload.value)&&!Number.isFinite(payload.reps))){WodIOApp.message(msg,"Indica un valor o, si es un movimiento como BMU, registra al menos las repeticiones.");return;}
+    if(payload.value!==null&&payload.value<0){WodIOApp.message(msg,"El valor no puede ser negativo.");return;}
     const {error}=await supabaseClient.from("progress_entries").insert(payload);
     if(error){WodIOApp.message(msg,error.message);return;}
     form.reset();dateInput.value=new Date().toISOString().slice(0,10);WodIOApp.message(msg,"Registro guardado correctamente.","success");await load();
