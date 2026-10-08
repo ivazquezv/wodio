@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="css/wodio-app.css">
 <script src="https://unpkg.com/phosphor-icons" defer></script>
 <style>
-.app-field-help{display:block;margin-top:5px;color:var(--text-muted);font-size:.72rem;line-height:1.35}
+.app-field-help{grid-column:1 / -1;display:block;margin-top:-6px;color:var(--text-muted);font-size:.72rem;line-height:1.35}
 .progress-chart-line{display:flex;gap:10px;height:300px;padding:10px 4px 28px}
 .progress-chart-y{width:38px;display:flex;flex-direction:column;justify-content:space-between;color:var(--text-muted);font-size:.68rem;text-align:right}
 .progress-chart-plot{position:relative;flex:1;border-left:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(33.33% - 1px),rgba(128,128,128,.12) 33.33%,rgba(128,128,128,.12) 33.33% + 1px)}
@@ -44,8 +44,9 @@
 <form id="progressForm" class="app-form">
 <div class="app-form-grid">
 <div class="app-field"><label for="exercise">Ejercicio</label><input id="exercise" required placeholder="Back Squat"></div>
-<div class="app-field"><label for="value">Valor</label><input id="value" type="number" step="0.01" min="0" placeholder="100"><span class="app-field-help">Opcional. Para movimientos como BMU puedes dejarlo vacío y registrar solo las repeticiones.</span></div>
+<div class="app-field"><label for="value">Valor</label><input id="value" type="number" step="0.01" min="0" placeholder="100"></div>
 <div class="app-field"><label for="unit">Unidad</label><select id="unit"><option value="kg">kg</option><option value="lb">lb</option><option value="reps">repeticiones</option><option value="seg">segundos</option><option value="min">minutos</option></select></div>
+<div class="app-field-help">Opcional. Para movimientos como BMU puedes dejarlo vacío y registrar solo las repeticiones.</div>
 <div class="app-field"><label for="reps">Repeticiones</label><input id="reps" type="number" min="1" placeholder="Ej. 10"></div>
 <div class="app-field"><label for="recordedAt">Fecha</label><input id="recordedAt" type="date" required></div>
 <div class="app-field full"><label for="notes">Notas</label><textarea id="notes" placeholder="Sensaciones, técnica, contexto…"></textarea></div>
