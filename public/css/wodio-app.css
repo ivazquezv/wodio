@@ -244,6 +244,15 @@
   box-shadow: 0 0 0 3px rgba(255,107,0,.1);
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: .65;
+  filter: grayscale(1);
+  cursor: pointer;
+}
+input[type="date"]::-webkit-datetime-edit {
+  color: var(--text-main);
+}
+
 .app-help {
   color: var(--text-muted);
   font-size: .75rem;
