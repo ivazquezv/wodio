@@ -74,27 +74,23 @@ Deno.serve(async (req: Request) => {
         if (tariffPayment?.tariff_id) {
           const { data: tariff } = await adminClient.from("box_tariffs")
             .select("id,name,tariff_type,price_cents,is_active").eq("id", tariffPayment.tariff_id).eq("box_id", tariffPayment.box_id).maybeSingle();
-          if (tariff?.is_active) {
+          if (tariff?.is_active && tariff.tariff_type === "monthly") {
             await adminClient.from("profiles").update({ tariff_id: tariff.id, updated_at: new Date().toISOString() }).eq("id", tariffPayment.user_id).eq("box_id", tariffPayment.box_id);
             const { data: schedules } = await adminClient.from("recurring_payment_schedules")
               .select("id").eq("box_id", tariffPayment.box_id).eq("user_id", tariffPayment.user_id).eq("category", "tariff").eq("active", true).order("created_at", { ascending: true });
             const nextMonth = new Date();
             nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1, 1);
             const nextRunDate = nextMonth.toISOString().slice(0, 10);
-            if (tariff.tariff_type === "monthly") {
-              const schedulePayload = {
-                box_id: tariffPayment.box_id, user_id: tariffPayment.user_id, tariff_id: tariff.id,
-                concept: "Tarifa · " + tariff.name, amount_cents: tariff.price_cents, currency: "EUR",
-                due_day: 1, category: "tariff", active: true, next_run_date: nextRunDate, updated_at: new Date().toISOString(),
-              };
-              if (schedules?.length) {
-                await adminClient.from("recurring_payment_schedules").update(schedulePayload).eq("id", schedules[0].id);
-                if (schedules.length > 1) await adminClient.from("recurring_payment_schedules").update({ active: false, updated_at: new Date().toISOString() }).in("id", schedules.slice(1).map((s: {id:string}) => s.id));
-              } else {
-                await adminClient.from("recurring_payment_schedules").insert(schedulePayload);
-              }
-            } else if (schedules?.length) {
-              await adminClient.from("recurring_payment_schedules").update({ active: false, updated_at: new Date().toISOString() }).in("id", schedules.map((s: {id:string}) => s.id));
+            const schedulePayload = {
+              box_id: tariffPayment.box_id, user_id: tariffPayment.user_id, tariff_id: tariff.id,
+              concept: "Tarifa · " + tariff.name, amount_cents: tariff.price_cents, currency: "EUR",
+              due_day: 1, category: "tariff", active: true, next_run_date: nextRunDate, updated_at: new Date().toISOString(),
+            };
+            if (schedules?.length) {
+              await adminClient.from("recurring_payment_schedules").update(schedulePayload).eq("id", schedules[0].id);
+              if (schedules.length > 1) await adminClient.from("recurring_payment_schedules").update({ active: false, updated_at: new Date().toISOString() }).in("id", schedules.slice(1).map((s: {id:string}) => s.id));
+            } else {
+              await adminClient.from("recurring_payment_schedules").insert(schedulePayload);
             }
           }
         }
