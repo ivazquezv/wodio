@@ -522,6 +522,9 @@
         .dashboard-page .weekly-class.booked .weekly-class-action{background:var(--primary);border-color:var(--primary);color:#fff}
         .dashboard-page .weekly-class-action:disabled{opacity:.55;cursor:not-allowed}
         .dashboard-page .weekly-class-feedback{margin-top:7px;color:#4ade80;font-size:.7rem;font-weight:800;line-height:1.35}
+        .dashboard-page .calendar-add-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+        .dashboard-page .calendar-add-actions a{display:inline-block;padding:6px 7px;border:1px solid var(--border-soft);border-radius:7px;color:var(--text-main);font-size:.64rem;font-weight:800;text-decoration:none}
+        .dashboard-page .calendar-add-actions a:hover{border-color:var(--primary);color:var(--primary)}
 
         .dashboard-page .weekly-empty{padding:12px 4px;color:var(--text-muted);font-size:.7rem}
         @media(max-width:1000px){.dashboard-page .weekly-grid{grid-template-columns:repeat(7,130px)}}
@@ -1857,7 +1860,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         function localKey(date){return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");}
         function formatHour(value){return value?String(value).slice(0,5):"";}
-        async function renderWeeklySchedule(){
+function calendarActionLinks(c){
+            const start=new Date(c.starts_at),end=new Date(start.getTime()+Number(c.duration_minutes||60)*60000);
+            const utc=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
+            const googleUrl="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(c.title||"Clase WodIO")+"&dates="+utc(start)+"/"+utc(end)+"&details="+encodeURIComponent("Clase reservada en WodIO")+"&ctz=Europe%2FMadrid";
+            const escIcs=value=>String(value||"").replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
+            const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//WodIO//Reservas de clases//ES","CALSCALE:GREGORIAN","BEGIN:VEVENT","UID:wodio-"+String(c.id)+"@wodio","DTSTAMP:"+utc(new Date()),"DTSTART:"+utc(start),"DTEND:"+utc(end),"SUMMARY:"+escIcs(c.title||"Clase WodIO"),"DESCRIPTION:"+escIcs("Clase reservada en WodIO"),"END:VEVENT","END:VCALENDAR"].join("\r\n");
+            const icsUrl="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
+            return '<div class="calendar-add-actions"><a href="'+googleUrl+'" target="_blank" rel="noopener noreferrer">Google Calendar</a><a href="'+icsUrl+'" download="wodio-clase.ics">Apple / Outlook (.ics)</a></div>';
+        }
+                async function renderWeeklySchedule(){
             if(!profile?.box_id){weeklyGrid.innerHTML='<div class="app-empty">No hay un box activo.</div>';return;}
             weeklyGrid.innerHTML='<div class="app-loading">Cargando horario…</div>';
             const base=startOfWeek(new Date());
@@ -1895,7 +1907,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const classDate=new Date(c.starts_at);
                     const isPast=classDate<=new Date();
                     const action=isBooked
-                        ? '<button type="button" class="weekly-class-action" data-weekly-cancel="'+c.id+'">✓ Reservada · Cancelar</button>'
+                        ? '<button type="button" class="weekly-class-action" data-weekly-cancel="'+c.id+'">✓ Reservada · Cancelar</button>'+calendarActionLinks(c)
                         : '<button type="button" class="weekly-class-action '+(!hasCurrentMonthSubscriptionPayment?"booking-blocked":"")+'" data-weekly-book="'+c.id+'" '+(isPast||!hasCurrentMonthSubscriptionPayment?"disabled":"")+'>'+ (isPast?"Clase pasada":hasCurrentMonthSubscriptionPayment?"Reservar clase":"Pago mensual pendiente") +'</button>';
                     return '<article class="weekly-class '+(isBooked?"booked":"")+'" data-weekly-class="'+c.id+'"><div class="weekly-class-time">'+classDate.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})+'</div><div class="weekly-class-name">'+WodIOApp.escapeHtml(c.title)+'</div><div class="weekly-class-meta">'+c.duration_minutes+' min · '+WodIOApp.escapeHtml(coach)+' · '+c.capacity+' plazas</div>'+action+'</article>';
                 }).join(""):'<div class="weekly-empty">Sin clases publicadas</div>';
@@ -1920,6 +1932,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(result.error){
                 WodIOApp.message(document.getElementById("pageMessage"),result.error.message);
             }else{
+                if(isCancel){
+                    bookings.forEach(b=>{if(b.class_id===classId)b.status="cancelled";});
+                }else if(!bookings.some(b=>b.class_id===classId&&b.status==="booked")){
+                    bookings.push({class_id:classId,status:"booked"});
+                }
                 const feedbackText=isCancel?"Clase cancelada correctamente.":"Clase reservada correctamente.";
                 await renderWeeklySchedule();
                 const classCard=weeklyGrid.querySelector('[data-weekly-class="'+classId+'"]');
