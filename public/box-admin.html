@@ -113,6 +113,7 @@
 <a class="admin-nav-link" href="#coaches"><i class="ph ph-user-gear"></i> Coaches</a>
 <a class="admin-nav-link" href="#eventos"><i class="ph ph-calendar"></i> Eventos</a>
 <div class="admin-nav-group" data-nav-group="gestion"><button type="button" aria-expanded="true">Gestión <i class="ph ph-caret-down"></i></button></div>
+<a class="admin-nav-link" href="#tarifas"><i class="ph ph-tags"></i> Tarifas y matrícula</a>
 <a class="admin-nav-link" href="#finanzas"><i class="ph ph-chart-line-up"></i> Contabilidad</a>
 <div class="admin-nav-group" data-nav-group="configuracion"><button type="button" aria-expanded="true">Configuración <i class="ph ph-caret-down"></i></button></div>
 <a class="admin-nav-link" href="#stripe"><i class="ph ph-credit-card"></i> Stripe y pagos</a>
@@ -291,6 +292,31 @@
 </div>
 <section class="app-card finance-recent-card"><div class="app-card-head"><div><h3>Movimientos recientes</h3><p>Ingresos, gastos y pagos pendientes.</p></div><div class="admin-actions"><button class="app-btn" type="button" id="exportFinanceExcel"><i class="ph ph-file-xls"></i> Excel</button><button class="app-btn" type="button" id="exportFinancePdf"><i class="ph ph-file-pdf"></i> PDF</button></div></div><div id="financeTable" class="app-table-wrap"></div></section>
 </div>
+</section>
+
+<section class="admin-section" id="tarifas">
+<div class="admin-section-title"><div><h2>Tarifas y matrícula</h2><p>Define las cuotas de tu box, el número de clases y Open Boxes incluidos, y cualquier pago único como la matrícula.</p></div></div>
+<section class="app-card">
+<div class="app-card-head"><div><h3 id="tariffFormTitle">Añadir tarifa</h3><p>Los importes se guardan para este box. Puedes crear tantas tarifas como necesites.</p></div></div>
+<form id="tariffForm" class="app-form">
+<input type="hidden" id="tariffId">
+<div class="app-form-grid">
+<div class="app-field"><label for="tariffName">Nombre de la tarifa</label><input id="tariffName" required maxlength="100" placeholder="Ej. 8+8, Infinity o Matrícula"></div>
+<div class="app-field"><label for="tariffType">Tipo</label><select id="tariffType"><option value="monthly">Cuota mensual</option><option value="one_time">Pago único (matrícula)</option></select></div>
+<div class="app-field"><label for="tariffPrice">Precio (€)</label><input id="tariffPrice" type="number" min="0" step=".01" required placeholder="60"></div>
+<div class="app-field tariff-monthly-field"><label for="tariffClasses">Clases al mes</label><input id="tariffClasses" type="number" min="0" step="1" placeholder="8"><span class="admin-mini">Déjalo vacío si no aplica o es ilimitado.</span></div>
+<div class="app-field tariff-monthly-field"><label for="tariffOpenBoxes">Open Boxes al mes</label><input id="tariffOpenBoxes" type="number" min="0" step="1" placeholder="8"></div>
+<div class="app-field full"><label for="tariffDescription">Descripción</label><textarea id="tariffDescription" rows="2" maxlength="500" placeholder="Explica qué incluye la tarifa."></textarea></div>
+<div class="app-field full"><label class="admin-checkbox"><input id="tariffActive" type="checkbox" checked><span>Tarifa activa y visible para los atletas</span></label></div>
+</div>
+<div class="admin-actions"><button class="app-btn primary" id="saveTariffBtn" type="submit"><i class="ph ph-floppy-disk"></i> Guardar tarifa</button><button class="app-btn" id="cancelTariffEdit" type="button" hidden>Cancelar edición</button></div>
+<div id="tariffFormMessage" class="app-message" style="margin-top:10px"></div>
+</form>
+</section>
+<section class="app-card" style="margin-top:18px">
+<div class="app-card-head"><div><h3>Tarifas configuradas</h3><p>El precio de matrícula se configura como un pago único. Puedes editarlo o desactivarlo cuando quieras.</p></div><button class="app-btn" type="button" id="refreshTariffs"><i class="ph ph-arrows-clockwise"></i> Actualizar</button></div>
+<div id="tariffsList" class="app-table-wrap"><div class="app-loading">Cargando tarifas…</div></div>
+</section>
 </section>
 
 <section class="admin-section" id="stripe">
@@ -743,6 +769,77 @@ function renderStripeStatus(){refreshStripeStatus();}
   });
   loadRecurringPayments();
  }
+ async function loadTariffs(){
+  const list=$("tariffsList");
+  if(!list)return;
+  list.innerHTML='<div class="app-loading">Cargando tarifas…</div>';
+  const {data,error}=await supabaseClient.from("box_tariffs").select("id,name,tariff_type,price_cents,monthly_classes,monthly_open_boxes,description,is_active,sort_order,created_at").eq("box_id",boxId).order("sort_order",{ascending:true}).order("created_at",{ascending:true});
+  if(error){list.innerHTML='<div class="app-empty">No se pudieron cargar las tarifas: '+WodIOApp.escapeHtml(error.message)+'</div>';return;}
+  const tariffs=data||[];
+  if(!tariffs.length){list.innerHTML='<div class="app-empty">Todavía no hay tarifas. Añade la primera desde el formulario.</div>';return;}
+  const rows=tariffs.map(t=>{
+   const type=t.tariff_type==="one_time"?"Pago único":"Mensual";
+   const inclusion=t.tariff_type==="one_time"?"—":((t.monthly_classes===null?"Ilimitadas":t.monthly_classes+" clases")+" · "+(t.monthly_open_boxes===null?"Open Boxes no definidos":t.monthly_open_boxes+" Open Boxes"));
+   return '<tr><td><strong>'+WodIOApp.escapeHtml(t.name)+'</strong>'+(t.description?'<div class="admin-mini">'+WodIOApp.escapeHtml(t.description)+'</div>':'')+'</td><td>'+type+'</td><td>'+((Number(t.price_cents)||0)/100).toLocaleString("es-ES",{style:"currency",currency:"EUR"})+(t.tariff_type==="monthly"?" / mes":"")+'</td><td>'+WodIOApp.escapeHtml(inclusion)+'</td><td><span class="app-badge '+(t.is_active?"success":"warning")+'">'+(t.is_active?"Activa":"Inactiva")+'</span></td><td><div class="admin-actions"><button class="app-btn" type="button" data-edit-tariff="'+t.id+'">Editar</button><button class="app-btn" type="button" data-toggle-tariff="'+t.id+'">'+(t.is_active?"Desactivar":"Activar")+'</button><button class="app-btn danger" type="button" data-delete-tariff="'+t.id+'">Eliminar</button></div></td></tr>';
+  }).join("");
+  list.innerHTML='<table class="app-table"><thead><tr><th>Tarifa</th><th>Tipo</th><th>Precio</th><th>Incluye</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>'+rows+'</tbody></table>';
+ }
+ function resetTariffForm(){
+  $("tariffForm").reset();$("tariffId").value="";$("tariffType").value="monthly";$("tariffActive").checked=true;
+  $("tariffFormTitle").textContent="Añadir tarifa";$("saveTariffBtn").innerHTML='<i class="ph ph-floppy-disk"></i> Guardar tarifa';$("cancelTariffEdit").hidden=true;
+  document.querySelectorAll(".tariff-monthly-field").forEach(el=>el.hidden=false);
+ }
+ function syncTariffType(){
+  const monthly=$("tariffType").value==="monthly";
+  document.querySelectorAll(".tariff-monthly-field").forEach(el=>el.hidden=!monthly);
+ }
+ $("tariffType").addEventListener("change",syncTariffType);
+ $("cancelTariffEdit").addEventListener("click",resetTariffForm);
+ $("refreshTariffs").addEventListener("click",loadTariffs);
+ $("tariffForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const btn=$("saveTariffBtn"),message=$("tariffFormMessage");
+  btn.disabled=true;
+  try{
+   const type=$("tariffType").value,price=Number($("tariffPrice").value);
+   if(!Number.isFinite(price)||price<0)throw new Error("Introduce un precio válido.");
+   const payload={box_id:boxId,name:$("tariffName").value.trim(),tariff_type:type,price_cents:Math.round(price*100),monthly_classes:type==="monthly"&&$("tariffClasses").value!==""?Number($("tariffClasses").value):null,monthly_open_boxes:type==="monthly"&&$("tariffOpenBoxes").value!==""?Number($("tariffOpenBoxes").value):null,description:$("tariffDescription").value.trim()||null,is_active:$("tariffActive").checked};
+   if(!payload.name)throw new Error("Escribe el nombre de la tarifa.");
+   const id=$("tariffId").value;
+   const result=id?await supabaseClient.from("box_tariffs").update(payload).eq("id",id).eq("box_id",boxId):await supabaseClient.from("box_tariffs").insert(payload);
+   if(result.error)throw result.error;
+   WodIOApp.message(message,id?"Tarifa actualizada.":"Tarifa creada.","success");
+   resetTariffForm();await loadTariffs();
+  }catch(error){WodIOApp.message(message,error?.message||"No se pudo guardar la tarifa.");}
+  finally{btn.disabled=false;}
+ });
+ $("tariffsList").addEventListener("click",async ev=>{
+  const edit=ev.target.closest("[data-edit-tariff]"),toggle=ev.target.closest("[data-toggle-tariff]"),del=ev.target.closest("[data-delete-tariff]");
+  if(!edit&&!toggle&&!del)return;
+  const id=(edit||toggle||del).dataset.editTariff||(edit||toggle||del).dataset.toggleTariff||(edit||toggle||del).dataset.deleteTariff;
+  if(del){
+   if(!confirm("¿Eliminar esta tarifa? Esta acción no se puede deshacer."))return;
+   const {error}=await supabaseClient.from("box_tariffs").delete().eq("id",id).eq("box_id",boxId);
+   if(error){WodIOApp.message($("pageMessage"),error.message);return;}
+   await loadTariffs();return;
+  }
+  if(toggle){
+   const current=tariffCache.find(t=>t.id===id);if(!current)return;
+   const {error}=await supabaseClient.from("box_tariffs").update({is_active:!current.is_active}).eq("id",id).eq("box_id",boxId);
+   if(error){WodIOApp.message($("pageMessage"),error.message);return;}
+   await loadTariffs();return;
+  }
+  const {data,error}=await supabaseClient.from("box_tariffs").select("*").eq("id",id).eq("box_id",boxId).single();
+  if(error||!data){WodIOApp.message($("pageMessage"),error?.message||"No se encontró la tarifa.");return;}
+  $("tariffId").value=data.id;$("tariffName").value=data.name;$("tariffType").value=data.tariff_type;$("tariffPrice").value=(data.price_cents/100).toFixed(2);
+  $("tariffClasses").value=data.monthly_classes??"";$("tariffOpenBoxes").value=data.monthly_open_boxes??"";$("tariffDescription").value=data.description||"";$("tariffActive").checked=data.is_active;
+  $("tariffFormTitle").textContent="Editar tarifa";$("saveTariffBtn").innerHTML='<i class="ph ph-floppy-disk"></i> Guardar cambios';$("cancelTariffEdit").hidden=false;syncTariffType();$("tarifas").scrollIntoView({behavior:"smooth",block:"start"});
+ });
+ let tariffCache=[];
+ const originalLoadTariffs=loadTariffs;
+ loadTariffs=async function(){await originalLoadTariffs();const {data}=await supabaseClient.from("box_tariffs").select("id,is_active").eq("box_id",boxId);tariffCache=data||[];};
+ syncTariffType();
+ loadTariffs();
  function setupAdminNavigation(){
   const links=[...document.querySelectorAll(".admin-nav a[href^='#']")];
   const sections=[...document.querySelectorAll(".admin-section")];
@@ -802,7 +899,7 @@ $("classImportFile").addEventListener("change",async ev=>{
   WodIOApp.message(m,ok+" clases importadas correctamente.","success");await load();
  }catch(error){WodIOApp.message(m,error?.message||"No se pudo importar la plantilla.");}
 });
-$("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();await loadRecurringPayments();
+$("refreshBtn").addEventListener("click",load);WodIOApp.bindLogout();await load();await loadRecurringPayments();await loadTariffs();
 });
 </script>
 </body>
