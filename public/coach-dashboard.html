@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   supabaseClient.from("boxes").select("name").eq("id",boxId).single(),
   supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.profile.id).order("starts_at")
  ]);
- if(boxError){WodIOApp.message(document.getElementById("msg"),"No se pudo cargar el box: "+boxError.message);return;}
+ if(boxError){WodIOApp.message(document.getElementById("msg"),"No se pudo cargar el nombre del box: "+boxError.message);}
  if(classesError)WodIOApp.message(document.getElementById("msg"),"No se pudieron cargar las clases: "+classesError.message);
  const classRows=c||[];
  document.getElementById("title").textContent="Hola, "+n(ctx.profile);document.getElementById("boxName").textContent=b?.name||"—";document.getElementById("classesCount").textContent=classRows.filter(v=>new Date(v.starts_at)>=new Date()).length;
