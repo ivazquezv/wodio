@@ -20,11 +20,12 @@
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-check-circle"></i></div><div><div class="app-stat-value" id="paidAmount">—</div><div class="app-stat-label">Pagado este año</div></div></div>
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-receipt"></i></div><div><div class="app-stat-value" id="paymentCount">—</div><div class="app-stat-label">Movimientos</div></div></div>
 </section>
+<section class="app-card" id="athleteTariffs" style="margin-top:18px"><div class="app-card-head"><div><h2>Tarifas del box</h2><p>Consulta las tarifas disponibles y selecciona la que mejor se adapte a ti.</p></div></div><div id="athleteTariffList" class="athlete-tariff-grid"><div class="app-loading">Cargando tarifas…</div></div><div id="tariffSelectionMessage" class="payment-method-note" role="status" aria-live="polite"></div></section>
 <section class="app-card" id="paymentOptions" style="margin-top:18px"><div class="app-card-head"><div><h2>Formas de pago</h2><p>Solo se muestran los métodos que el box ha activado en su configuración.</p></div></div><div id="paymentMethods" class="payment-method-grid"><div class="app-loading">Cargando formas de pago…</div></div></section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Historial</h2><p>Los pagos se gestionan desde la administración del box.</p></div></div><div id="paymentList" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div></section>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config/supabase-config.js"></script><script src="js/supabase.js"></script><script src="js/wodio-app.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-<style>.payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-logo{width:42px;height:42px;display:block;object-fit:contain}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}.payment-method-note{margin-top:7px;font-size:.72rem;color:var(--text-muted)}.payment-method-card .app-btn{width:auto;max-width:100%;padding:9px 14px;font-size:.82rem;white-space:nowrap}.payment-method-card>div:last-child{min-width:0}.payment-method-card .payment-method-note{max-width:280px}</style>
+<style>.athlete-tariff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.athlete-tariff-card{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--border-soft);border-radius:14px;background:var(--bg-elevated)}.athlete-tariff-card.is-selected{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}.athlete-tariff-card h3{margin:0;font-size:1rem}.athlete-tariff-price{font-size:1.55rem;font-weight:800;line-height:1.2}.athlete-tariff-price small{font-size:.76rem;font-weight:500;color:var(--text-muted)}.athlete-tariff-includes{color:var(--text-muted);font-size:.82rem;line-height:1.5}.athlete-tariff-description{font-size:.82rem;line-height:1.5;flex:1}.athlete-tariff-card .app-btn{width:100%;margin-top:auto}.athlete-tariff-selected{font-size:.75rem;color:var(--primary);font-weight:700}..payment-method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.payment-method-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-elevated)}.payment-method-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:rgba(255,107,0,.10);font-size:22px;flex:0 0 42px}.payment-method-logo{width:42px;height:42px;display:block;object-fit:contain}.payment-method-card h3{margin:0 0 4px;font-size:.95rem}.payment-method-card p{margin:0;color:var(--text-muted);font-size:.78rem;line-height:1.45}.payment-method-card .app-btn{margin-top:10px}.payment-method-note{margin-top:7px;font-size:.72rem;color:var(--text-muted)}.payment-method-card .app-btn{width:auto;max-width:100%;padding:9px 14px;font-size:.82rem;white-space:nowrap}.payment-method-card>div:last-child{min-width:0}.payment-method-card .payment-method-note{max-width:280px}</style>
 <script>
 console.info("[WodIO Payments] script loaded");
 document.addEventListener("DOMContentLoaded", async () => {
@@ -38,6 +39,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   const list=document.getElementById("paymentList"),methodsList=document.getElementById("paymentMethods"),message=document.getElementById("pageMessage");
   const paymentResult=new URLSearchParams(window.location.search).get("payment"), sessionId=new URLSearchParams(window.location.search).get("session_id");
   if(paymentResult==="success"&&sessionId){try{await supabaseClient.functions.invoke("stripe-payment-status",{body:{session_id:sessionId}});}catch(e){console.warn("[WodIO Payments] payment status check failed",e);}}
+  const tariffList=document.getElementById("athleteTariffList"), tariffMessage=document.getElementById("tariffSelectionMessage");
+  let selectedTariffId=null;
+  async function loadAthleteTariffs(){
+    if(!tariffList)return;
+    const boxId=ctx.profile?.box_id;
+    if(!boxId){tariffList.innerHTML='<div class="app-empty">No hay un box asociado a tu usuario.</div>';return;}
+    const {data:tariffs,error:tariffError}=await supabaseClient.from("box_tariffs").select("id,name,tariff_type,price_cents,monthly_classes,monthly_open_boxes,description").eq("box_id",boxId).eq("is_active",true).order("sort_order",{ascending:true}).order("created_at",{ascending:true});
+    if(tariffError){tariffList.innerHTML='<div class="app-empty">No se pudieron cargar las tarifas.</div>';console.error("[WodIO Payments] tariffs query failed",tariffError);return;}
+    if(!tariffs?.length){tariffList.innerHTML='<div class="app-empty">El box todavía no tiene tarifas activas.</div>';return;}
+    const euro=cents=>Number(cents||0).toLocaleString("es-ES",{style:"currency",currency:"EUR"});
+    const details=t=>t.tariff_type==="one_time"?"Pago único":((t.monthly_classes===null?"Clases ilimitadas":Number(t.monthly_classes)+" clases al mes")+" · "+(t.monthly_open_boxes===null?"Open Boxes no especificados":Number(t.monthly_open_boxes)+" Open Boxes al mes"));
+    tariffList.innerHTML=tariffs.map(t=>'<article class="athlete-tariff-card" data-athlete-tariff-card="'+WodIOApp.escapeHtml(t.id)+'"><div><h3>'+WodIOApp.escapeHtml(t.name)+'</h3></div><div class="athlete-tariff-price">'+euro(t.price_cents)+'<small>'+(t.tariff_type==="monthly"?" / mes":" · pago único")+'</small></div><div class="athlete-tariff-includes">'+WodIOApp.escapeHtml(details(t))+'</div>'+(t.description?'<p class="athlete-tariff-description">'+WodIOApp.escapeHtml(t.description)+'</p>':'<div class="athlete-tariff-description"></div>')+'<button type="button" class="app-btn" data-select-athlete-tariff="'+WodIOApp.escapeHtml(t.id)+'">Seleccionar tarifa</button></article>').join("");
+    tariffList.querySelectorAll("[data-select-athlete-tariff]").forEach(btn=>btn.addEventListener("click",()=>{
+      selectedTariffId=btn.dataset.selectAthleteTariff;
+      const selected=tariffs.find(t=>t.id===selectedTariffId);
+      tariffList.querySelectorAll("[data-athlete-tariff-card]").forEach(card=>{
+        const active=card.dataset.athleteTariffCard===selectedTariffId;
+        card.classList.toggle("is-selected",active);
+        const button=card.querySelector("[data-select-athlete-tariff]");
+        button.textContent=active?"Tarifa seleccionada":"Seleccionar tarifa";
+        button.classList.toggle("primary",active);
+        let status=card.querySelector(".athlete-tariff-selected");
+        if(active&&!status){status=document.createElement("div");status.className="athlete-tariff-selected";status.textContent="Seleccionada";card.insertBefore(status,button);}
+        if(!active)status?.remove();
+      });
+      tariffMessage.textContent="Has seleccionado «"+selected.name+"». La selección queda marcada en esta pantalla; la contratación y el cobro de tarifas aún no están conectados.";
+      WodIOApp.message(message,"Tarifa seleccionada: "+selected.name+". Para contratarla, el box debe tener habilitado el flujo de alta y cobro.","success");
+    }));
+  }
+  await loadAthleteTariffs();
   console.info("[WodIO Payments] loading payments");
   const {data:payments,error}=await supabaseClient.from("payments").select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at,payment_method,provider_reference").eq("user_id",ctx.user.id).order("created_at",{ascending:false});
   if(error){WodIOApp.message(message,error.message);list.innerHTML='<div class="app-empty">No se pudieron cargar los pagos.</div>';return;}
