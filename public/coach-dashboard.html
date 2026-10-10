@@ -6,7 +6,6 @@
 <div id="msg" class="app-message"></div>
 <section class="app-grid app-grid-3"><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-calendar"></i></div><div><div id="classesCount" class="app-stat-value">—</div><div class="app-stat-label">Clases próximas</div></div></div><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-users"></i></div><div><div id="clientsCount" class="app-stat-value">—</div><div class="app-stat-label">Clientes del box</div></div></div><div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-buildings"></i></div><div><div id="boxName" class="app-stat-value" style="font-size:1.15rem">—</div><div class="app-stat-label">Box</div></div></div></section><section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Fichaje</h2><p>La entrada y la salida se registran con la hora actual del sistema.</p></div><div id="clockNow" class="app-muted">—</div></div><div class="app-grid app-grid-2"><div><div id="clockStatus" class="app-message" style="margin-bottom:10px"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="app-btn primary" id="clockInButton" type="button"><i class="ph ph-sign-in"></i> Fichar entrada</button><button class="app-btn" id="clockOutButton" type="button"><i class="ph ph-sign-out"></i> Fichar salida</button></div></div><div><h3 style="font-size:.9rem;margin-bottom:6px">Fichaje manual</h3><p class="app-muted" style="margin-bottom:10px">Si necesitas corregir un día, solicita la modificación. Un administrador del box debe aprobarla.</p><form id="manualTimeRequestForm" class="app-form"><div class="app-form-grid"><div class="app-field"><label for="manualTimeDate">Fecha</label><input id="manualTimeDate" type="date" required></div><div class="app-field"><label for="manualTimeIn">Entrada</label><input id="manualTimeIn" type="datetime-local" required></div><div class="app-field"><label for="manualTimeOut">Salida</label><input id="manualTimeOut" type="datetime-local" required></div><div class="app-field full"><label for="manualTimeReason">Motivo</label><input id="manualTimeReason" required placeholder="Ej. olvidé fichar la salida"></div></div><button class="app-btn" type="submit"><i class="ph ph-paper-plane-tilt"></i> Solicitar corrección</button></form><div id="manualTimeMessage" class="app-message" style="margin-top:10px"></div></div></div><div id="manualTimeRequests" style="margin-top:18px"></div></section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Mis próximas clases</h2><p>Calendario mensual de las sesiones asignadas a tu perfil.</p></div></div><div class="coach-calendar-toolbar"><button class="app-btn" id="calendarPrev" type="button" aria-label="Mes anterior">‹</button><strong id="calendarMonth"></strong><button class="app-btn" id="calendarNext" type="button" aria-label="Mes siguiente">›</button><button class="app-btn" id="calendarToday" type="button">Hoy</button></div><div class="coach-calendar-weekdays"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div><div id="classes" class="coach-calendar-grid"></div><div id="calendarDayDetails" class="coach-calendar-details" aria-live="polite"></div></section>
-<section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Clientes</h2><p>Atletas vinculados al box.</p></div></div><div id="clients" class="app-table-wrap"></div></section>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config/supabase-config.js"></script><script src="js/supabase.js"></script><script src="js/wodio-app.js"></script>
 <script>
@@ -17,15 +16,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const localDate=d=>{const x=d||new Date();return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
  const localDateTimeValue=d=>{const x=d||new Date();return localDate(x)+"T"+String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0")};
  const today=localDate();
- const [{data:b,error:boxError},{data:c,error:classesError},{data:u,error:clientsError}]=await Promise.all([
+ const [{data:b,error:boxError},{data:c,error:classesError}]=await Promise.all([
   supabaseClient.from("boxes").select("name").eq("id",boxId).single(),
-  supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.profile.id).order("starts_at"),
-  supabaseClient.from("profiles").select("first_name,last_name,role,created_at").eq("box_id",boxId).eq("role","athlete").order("first_name")
+  supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.profile.id).order("starts_at")
  ]);
  if(boxError){WodIOApp.message(document.getElementById("msg"),"No se pudo cargar el box: "+boxError.message);return;}
- if(classesError||clientsError)WodIOApp.message(document.getElementById("msg"),"Aviso de carga: "+[classesError&&("clases: "+classesError.message),clientsError&&("clientes: "+clientsError.message)].filter(Boolean).join(" · "));
- const classRows=c||[],clientRows=u||[];
- document.getElementById("title").textContent="Hola, "+n(ctx.profile);document.getElementById("boxName").textContent=b?.name||"—";document.getElementById("classesCount").textContent=classRows.filter(v=>new Date(v.starts_at)>=new Date()).length;document.getElementById("clientsCount").textContent=clientRows.length;
+ if(classesError)WodIOApp.message(document.getElementById("msg"),"No se pudieron cargar las clases: "+classesError.message);
+ const classRows=c||[];
+ document.getElementById("title").textContent="Hola, "+n(ctx.profile);document.getElementById("boxName").textContent=b?.name||"—";document.getElementById("classesCount").textContent=classRows.filter(v=>new Date(v.starts_at)>=new Date()).length;
  let calendarMonth=new Date();calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),1);
  const renderMonthCalendar=()=>{
   const year=calendarMonth.getFullYear(),month=calendarMonth.getMonth();
@@ -53,7 +51,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
  document.getElementById("calendarNext").addEventListener("click",()=>{calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,1);renderMonthCalendar();});
  document.getElementById("calendarToday").addEventListener("click",()=>{calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);renderMonthCalendar();});
  renderMonthCalendar();
- document.getElementById("clients").innerHTML=clientRows.length?'<table class="app-table"><thead><tr><th>Cliente</th><th>Alta</th></tr></thead><tbody>'+clientRows.map(v=>'<tr><td>'+WodIOApp.escapeHtml(n(v))+'</td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay clientes.</div>';
  const loadClock=async()=>{
    const [{data:entry,error:e},{data:requests,error:r}]=await Promise.all([
      supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",today).maybeSingle(),
