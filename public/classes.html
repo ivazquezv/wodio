@@ -62,6 +62,12 @@
 .monthly-calendar-action{width:100%;border:1px solid var(--border-soft);background:var(--bg-main);color:var(--text-main);border-radius:8px;padding:5px 7px;font-size:12px;cursor:pointer}
 .monthly-calendar-action.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
 .monthly-calendar-action:disabled{opacity:.5;cursor:not-allowed}
+.class-coach-profile{display:inline-flex;align-items:center;gap:6px;min-width:0;margin-top:4px;font-size:11px;color:var(--text-muted)}
+.class-coach-avatar{width:24px;height:24px;flex:0 0 24px;border-radius:50%;object-fit:cover;border:1px solid var(--border-soft);background:var(--bg-elevated)}
+.class-coach-avatar-initials{display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text-main)}
+.class-coach-avatar-initials[hidden]{display:none!important}
+.class-coach-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.class-coach-profile img[hidden]{display:none!important}
 </style>
 <div class="monthly-calendar-wrap">
   <div class="monthly-calendar-head">
@@ -111,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const start=new Date(month+"-01T00:00:00"),end=new Date(start);end.setMonth(end.getMonth()+1);
       const [{data:hours},{data:monthClasses,error},{data:monthBookings}]=await Promise.all([
         supabaseClient.from("box_hours").select("*").eq("box_id",ctx.profile.box_id).order("weekday"),
-        supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name)").eq("box_id",ctx.profile.box_id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at"),
+        supabaseClient.from("classes").select("id,title,starts_at,duration_minutes,capacity,coach:profiles!classes_coach_id_fkey(first_name,last_name,avatar_url)").eq("box_id",ctx.profile.box_id).gte("starts_at",start.toISOString()).lt("starts_at",end.toISOString()).order("starts_at"),
         supabaseClient.from("class_bookings").select("id,class_id,status").eq("user_id",ctx.user.id)
       ]);
       if(error){WodIOApp.message(message,error.message);return;}
@@ -147,7 +153,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           const action=booking
             ? '<button type="button" class="monthly-calendar-action" data-calendar-cancel="'+v.id+'" '+(!canCancel?"disabled title=\"La cancelación está cerrada para esta clase.\"":"")+'>'+ (canCancel?"Cancelar":"Reservada") +'</button>'
             : '<button type="button" class="monthly-calendar-action primary" data-calendar-book="'+v.id+'" '+(!canBook?"disabled title=\"Esta clase todavía no está disponible para reservar.\"":"")+'>'+ (isPast?"Finalizada":"Reservar") +'</button>';
-          return '<div class="monthly-calendar-class"><div class="monthly-calendar-class-main"><strong>'+WodIOApp.escapeHtml(String(v.starts_at).slice(11,16))+'</strong><span>'+WodIOApp.escapeHtml(v.title)+'</span></div>'+action+'</div>';
+          const coachName=[v.coach?.first_name,v.coach?.last_name].filter(Boolean).join(" ")||"Sin coach asignado";
+          const coachInitials=coachName.split(/\s+/).slice(0,2).map(part=>part[0]||"").join("").toUpperCase();
+          const coachPhoto=v.coach?.avatar_url?'<img class="class-coach-avatar" src="'+WodIOApp.escapeHtml(v.coach.avatar_url)+'" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">':'';
+          const coachFallback='<span class="class-coach-avatar class-coach-avatar-initials" '+(v.coach?.avatar_url?'hidden ':'')+'>'+WodIOApp.escapeHtml(coachInitials)+'</span>';
+          return '<div class="monthly-calendar-class"><div class="monthly-calendar-class-main"><strong>'+WodIOApp.escapeHtml(new Date(v.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}))+'</strong><span>'+WodIOApp.escapeHtml(v.title)+'</span></div><div class="class-coach-profile">'+coachPhoto+coachFallback+'<span class="class-coach-name">'+WodIOApp.escapeHtml(coachName)+'</span></div>'+action+'</div>';
         }).join("")+'</div>':'<div class="monthly-calendar-empty">Sin clases</div>')+
         '</div>';
       }).join("");
@@ -185,7 +195,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const [{ data: classRows, error: classError }, { data: bookingRows, error: bookingError }] =
       await Promise.all([
         supabaseClient.from("classes")
-          .select("id,title,description,starts_at,duration_minutes,capacity,workout,equipment,location,box_id,box:boxes!classes_box_id_fkey(id,name),coach_id,coach:profiles!classes_coach_id_fkey(first_name,last_name)")
+          .select("id,title,description,starts_at,duration_minutes,capacity,workout,equipment,location,box_id,box:boxes!classes_box_id_fkey(id,name),coach_id,coach:profiles!classes_coach_id_fkey(first_name,last_name,avatar_url)")
           .gte("starts_at", from.toISOString())
           .order("starts_at")
           .limit(50),
@@ -241,13 +251,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const booking = bookings.find(b => b.class_id === c.id && b.status === "booked");
       const canCancel = booking && (new Date(c.starts_at).getTime() - Date.now()) > 60 * 60 * 1000;
       const coach = [c.coach?.first_name, c.coach?.last_name].filter(Boolean).join(" ") || "Sin coach asignado";
+      const coachInitials=coach.split(/\s+/).slice(0,2).map(part=>part[0]||"").join("").toUpperCase();
+      const coachPhoto=c.coach?.avatar_url?'<img class="class-coach-avatar" src="'+WodIOApp.escapeHtml(c.coach.avatar_url)+'" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">':'';
+      const coachFallback='<span class="class-coach-avatar class-coach-avatar-initials" '+(c.coach?.avatar_url?'hidden ':'')+'>'+WodIOApp.escapeHtml(coachInitials)+'</span>';
+      const coachDisplay='<span class="class-coach-profile">'+coachPhoto+coachFallback+'<span class="class-coach-name">'+WodIOApp.escapeHtml(coach)+'</span></span>';
       const boxName = c.box?.name || "Box sin nombre";
       const attendees = attendeesByClass.get(c.id) || [];
       return '<article class="app-item">' +
         '<div class="app-item-main">' +
         '<div class="app-item-title">' + WodIOApp.escapeHtml(c.title) + '</div>' +
         '<div class="app-item-meta"><span><i class="ph ph-calendar"></i> ' + WodIOApp.formatDateTime(c.starts_at) + '</span>' +
-        '<span><i class="ph ph-timer"></i> ' + c.duration_minutes + ' min</span><span><i class="ph ph-user"></i> ' + WodIOApp.escapeHtml(coach) + '</span>' +
+        '<span><i class="ph ph-timer"></i> ' + c.duration_minutes + ' min</span><span><i class="ph ph-user"></i> ' + coachDisplay + '</span>' +
         (c.location ? '<span><i class="ph ph-map-pin"></i> ' + WodIOApp.escapeHtml(c.location) + '</span>' : '') + '<span><i class="ph ph-buildings"></i> ' + WodIOApp.escapeHtml(boxName) + '</span></div>' +
         (c.description ? '<div class="app-help" style="margin-top:7px">' + WodIOApp.escapeHtml(c.description) + '</div>' : '') +
         '<div class="app-item-meta"><span>' + open + ' / ' + c.capacity + ' plazas</span>' +
