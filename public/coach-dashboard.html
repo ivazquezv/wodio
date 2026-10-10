@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    if(error)WodIOApp.message(document.getElementById("manualTimeMessage"),error.message);else{WodIOApp.message(document.getElementById("manualTimeMessage"),"Solicitud enviada. Queda pendiente de aprobación del administrador.","success");document.getElementById("manualTimeRequestForm").reset();document.getElementById("manualTimeDate").value=today;await loadClock();}
    btn.disabled=false;
  });
- setInterval(()=>{document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"short",timeStyle:"medium"}).format(new Date())},1000);
+ setInterval(()=>{document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"full",timeStyle:"medium"}).format(new Date())},1000);
  await loadClock();WodIOApp.bindLogout();
 });
 </script></body></html>
