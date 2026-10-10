@@ -166,10 +166,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
    if(r)console.error("[WodIO] No se pudieron cargar las solicitudes de fichaje:",r);
    document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"full",timeStyle:"medium"}).format(new Date());
    const actionBtn=document.getElementById("clockActionButton");
-   const rows=entryRows||[],entry=rows[0],openEntry=entry&&!entry.clock_out;
-   actionBtn.disabled=!!entry&&!openEntry;
+   const rows=entryRows||[],openEntry=rows.find(v=>!v.clock_out),entry=openEntry||rows[0];
+   actionBtn.disabled=false;
    actionBtn.innerHTML=openEntry?'<i class="ph ph-sign-out"></i> Fichar salida':'<i class="ph ph-sign-in"></i> Fichar entrada';
-   document.getElementById("clockStatus").textContent=openEntry?"Jornada abierta · entrada "+WodIOApp.formatDateTime(entry.clock_in):entry?"Jornada cerrada · entrada "+WodIOApp.formatDateTime(entry.clock_in)+" · salida "+WodIOApp.formatDateTime(entry.clock_out):"No has fichado la entrada de hoy.";
+   document.getElementById("clockStatus").textContent=openEntry?"Turno abierto · entrada "+WodIOApp.formatDateTime(openEntry.clock_in):entry?"Último turno cerrado · entrada "+WodIOApp.formatDateTime(entry.clock_in)+" · salida "+WodIOApp.formatDateTime(entry.clock_out)+". Puedes fichar una nueva entrada si vuelves a trabajar hoy.":"No has fichado la entrada de hoy.";
    const historyEl=document.getElementById("clockHistory");
    if(weekError){historyEl.innerHTML='<h3 style="font-size:.95rem;margin-bottom:8px">Historial de fichajes (últimos 7 días)</h3><p class="app-muted">No se pudo cargar el historial.</p>';console.error("[WodIO] Error al cargar el historial de fichajes:",weekError);}
    else{const history=weekRows||[];historyEl.innerHTML='<h3 style="font-size:.95rem;margin-bottom:8px">Historial de fichajes (últimos 7 días)</h3>'+(history.length?'<div class="app-table-wrap"><table class="app-table"><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead><tbody>'+history.map(v=>'<tr><td>'+WodIOApp.formatDate(v.work_date,{withYear:true})+'</td><td>'+WodIOApp.formatDateTime(v.clock_in)+'</td><td>'+(v.clock_out?WodIOApp.formatDateTime(v.clock_out):'—')+'</td><td><span class="app-badge '+(v.clock_out?'success':'warning')+'">'+(v.clock_out?'Completado':'Entrada registrada · salida pendiente')+'</span></td></tr>').join("")+'</tbody></table></div>':'<p class="app-muted">No hay fichajes registrados en los últimos 7 días.</p>');}
@@ -183,12 +183,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
    btn.disabled=true;
    try{
     const now=new Date(),date=localDate(now);
-    const {data:entry,error:findError}=await supabaseClient.from("coach_time_entries").select("id,clock_in,clock_out").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",date).maybeSingle();
+    const {data:todayEntries,error:findError}=await supabaseClient.from("coach_time_entries").select("id,clock_in,clock_out").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",date).order("clock_in",{ascending:false}).limit(50);
     if(findError)throw findError;
-    if(entry?.clock_out){
-     WodIOApp.message(status,"La jornada de hoy ya está cerrada. Solo se permite un fichaje de entrada y salida por día.");
-     await loadClock();return;
-    }
+    const entry=(todayEntries||[]).find(v=>!v.clock_out)||null;
     let successMessage="";
     if(entry){
      const {error}=await supabaseClient.from("coach_time_entries").update({clock_out:now.toISOString(),updated_at:now.toISOString()}).eq("id",entry.id).eq("box_id",boxId).is("clock_out",null);
