@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(entry){
      const {error}=await supabaseClient.from("coach_time_entries").update({clock_out:now.toISOString(),updated_at:now.toISOString()}).eq("id",entry.id).eq("box_id",boxId).is("clock_out",null);
      if(error)throw error;
-     successMessage="Fichaje de salida completado correctamente a las "+new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(now)+".";
+     successMessage="Fichaje de salida completado correctamente a las "+new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit"}).format(now)+".";
     }else{
      const {error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:date,clock_in:now.toISOString(),source:"coach"});
      if(error){
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
       }
       throw error;
      }
-     successMessage="Fichaje de entrada correcto. Entrada registrada a las "+new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(now)+".";
+     successMessage="Fichaje de entrada correcto. Entrada registrada a las "+new Intl.DateTimeFormat("es-ES",{hour:"2-digit",minute:"2-digit"}).format(now)+".";
     }
     await loadClock(successMessage);
    }catch(error){
