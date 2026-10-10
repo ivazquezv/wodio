@@ -182,7 +182,9 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "unexpected_error";
     const code = (error as any)?.code || message;
-    const friendly = code === "box_stripe_not_connected"
+    const friendly = code === "athlete_profile_required"
+      ? "Esta cuenta no tiene un perfil de atleta asociado a un box. Accede con una cuenta de atleta o pide al administrador que revise el perfil."
+      : code === "box_stripe_not_connected"
       ? "El box todavía no tiene Stripe conectado. El administrador debe completar la conexión de Stripe antes de cobrar."
       : code === "box_stripe_not_ready"
         ? "La cuenta de Stripe del box todavía está en configuración o verificación. El administrador debe completar los datos pendientes en Stripe."
