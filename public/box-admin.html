@@ -514,6 +514,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const isMonthly=tariff.tariff_type==="monthly";
    const today=new Date(),todayIso=today.toISOString().slice(0,10),monthStart=new Date(today.getFullYear(),today.getMonth(),1),nextMonth=new Date(today.getFullYear(),today.getMonth()+1,1),nextMonthIso=nextMonth.toISOString().slice(0,10);
    const concept="Tarifa · "+tariff.name;
+   if(mode==="next"&&!isMonthly){
+    const {error:paymentError}=await supabaseClient.from("payments").insert({box_id:boxId,user_id:userId,concept,amount_cents:tariff.price_cents,currency:"EUR",status:"pending",due_date:nextMonthIso,category:"tariff",notes:"Pago único programado al asignar tarifa desde administración."});
+    if(paymentError)throw paymentError;
+   }
    if(mode==="now"){
     const {error:cancelError}=await supabaseClient.from("payments").update({status:"cancelled",updated_at:new Date().toISOString(),notes:"Sustituido por una nueva asignación de tarifa."}).eq("box_id",boxId).eq("user_id",userId).eq("category","tariff").eq("status","pending");
     if(cancelError)throw cancelError;
@@ -534,7 +538,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(error)throw error;
    }
    user.tariff_id=tariff.id;renderUsersTable();await loadRecurringPayments();
-   WodIOApp.message(msg,mode==="now"?"Tarifa asignada. Se ha creado una cuota pendiente y "+(isMonthly?"se programó la recurrencia para el próximo mes.":"la tarifa de pago único no generará recurrencias."):"Tarifa asignada para el próximo mes. "+(isMonthly?"La recurrencia está programada para el día 1.":"El pago único se generará el próximo mes mediante la programación recurrente actual; revisa el pago manualmente si no aparece."),"success");
+   WodIOApp.message(msg,mode==="now"?"Tarifa asignada. Se ha creado una cuota pendiente y "+(isMonthly?"se programó la recurrencia para el próximo mes.":"la tarifa de pago único no generará recurrencias."):"Tarifa asignada para el próximo mes. "+(isMonthly?"La recurrencia está programada para el día 1.":"Se ha creado un pago único con vencimiento el día 1 del próximo mes."),"success");
   }catch(error){WodIOApp.message(msg,error?.message||"No se pudo asignar la tarifa.");}
   finally{button.disabled=false;button.textContent="Guardar";}
  }
