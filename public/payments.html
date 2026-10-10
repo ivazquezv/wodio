@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     button.disabled=true;
     button.textContent="Preparando el pago…";
     try {
-      const {data,error}=await supabaseClient.functions.invoke("stripe-checkout",{body:{tariff_id:selectedTariffId}});
+      const {data,error}=await supabaseClient.functions.invoke("stripe-checkout",{body:{tariff_id:selectedTariffId,success_url:window.location.origin+"/payments.html?payment=success&session_id={CHECKOUT_SESSION_ID}",cancel_url:window.location.origin+"/payments.html?payment=cancelled"}});
       if(error) {
         let serverMessage="";
         try { const response=error.context; if(response?.clone){const body=await response.clone().json();serverMessage=body?.error||"";} } catch(_e) {}
