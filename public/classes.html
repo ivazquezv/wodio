@@ -289,6 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         (booking
           ? '<button class="app-btn" data-cancel="' + c.id + '" ' + (!canCancel ? "disabled title=\"La cancelación se cierra 1 hora antes de la clase.\"" : "") + '><i class="ph ph-x"></i> ' + (canCancel ? "Cancelar" : "Cancelación cerrada") + '</button>'
           : '<button class="app-btn primary" data-book="' + c.id + '" ' + (open === 0 ? "disabled" : "") + '><i class="ph ph-check"></i> Reservar</button>') +
+        (booking ? calendarActionLinks(c) : '') +
         '</div></article>';
     }).join("");
   }
@@ -331,7 +332,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("classList").scrollIntoView({behavior:"smooth", block:"start"});
   });
 
-  await load();
+  try {
+    await load();
+  } catch (err) {
+    console.error("Error cargando clases:", err);
+    list.innerHTML = '<div class="app-empty">No se pudieron cargar las clases. Recarga la página o inténtalo de nuevo.</div>';
+    WodIOApp.message(message, err?.message || "Se produjo un error al cargar las clases.");
+  }
 });
 </script>
 </body>
