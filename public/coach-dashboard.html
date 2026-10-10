@@ -17,11 +17,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const localDate=d=>{const x=d||new Date();return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
  const localDateTimeValue=d=>{const x=d||new Date();return localDate(x)+"T"+String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0")};
  const today=localDate();
- const [{data:b},{data:c},{data:u}]=await Promise.all([
+ const [{data:b,error:boxError},{data:c,error:classesError},{data:u,error:clientsError}]=await Promise.all([
   supabaseClient.from("boxes").select("name").eq("id",boxId).single(),
-  supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.user.id).gte("starts_at",new Date().toISOString()).order("starts_at").limit(20),
+  supabaseClient.from("classes").select("id,title,starts_at,capacity,coach_id,workout").eq("box_id",boxId).eq("coach_id",ctx.profile.id).gte("starts_at",new Date().toISOString()).order("starts_at").limit(20),
   supabaseClient.from("profiles").select("first_name,last_name,role,created_at").eq("box_id",boxId).eq("role","athlete").order("first_name")
  ]);
+ if(boxError||classesError||clientsError){WodIOApp.message(document.getElementById("msg"),"No se pudo cargar el panel: "+[boxError,classesError,clientsError].filter(Boolean).map(e=>e.message).join(" · "));return;}
  document.getElementById("title").textContent="Hola, "+n(ctx.profile);document.getElementById("boxName").textContent=b?.name||"—";document.getElementById("classesCount").textContent=(c||[]).length;document.getElementById("clientsCount").textContent=(u||[]).length;
  document.getElementById("classes").innerHTML=(c||[]).length?c.map(v=>'<article class="app-item"><div class="app-item-main"><div class="app-item-title">'+WodIOApp.escapeHtml(v.title)+'</div><div class="app-item-meta"><span>'+WodIOApp.formatDateTime(v.starts_at)+'</span><span>'+v.capacity+' plazas</span><span>'+WodIOApp.escapeHtml(v.workout||"Sin WOD")+'</span></div></div></article>').join(""):'<div class="app-empty">No tienes clases próximas.</div>';
  document.getElementById("clients").innerHTML=(u||[]).length?'<table class="app-table"><thead><tr><th>Cliente</th><th>Alta</th></tr></thead><tbody>'+u.map(v=>'<tr><td>'+WodIOApp.escapeHtml(n(v))+'</td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+'</td></tr>').join("")+'</tbody></table>':'<div class="app-empty">No hay clientes.</div>';
