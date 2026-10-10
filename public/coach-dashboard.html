@@ -21,6 +21,10 @@
 .coach-calendar-class-button>span{color:var(--text-muted, #cbd5e1)}
 .coach-calendar-class-button .coach-calendar-click-hint{color:var(--primary)}
 .coach-calendar-class-button:hover{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+#clockNow{font-size:1.1rem;font-weight:750;color:var(--text-primary,#f8fafc);line-height:1.4;padding:8px 12px;border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-elevated);white-space:nowrap}
+.coach-calendar-class-button .monthly-calendar-class-main strong{font-size:.82rem}
+.coach-calendar-class-button .monthly-calendar-class-main span{font-size:.82rem;font-weight:700}
+.coach-calendar-class-button>span{font-size:.72rem;line-height:1.35}
 </style></head>
 <body class="app-page"><div class="app-shell">
 <header class="app-topbar"><a class="app-brand" href="coach-dashboard.html"><img src="assets/icons/Logo-WodIO_white.png" alt="WodIO"><span>WodIO Coach</span></a><button class="app-btn" id="logoutButton"><i class="ph ph-sign-out"></i> Salir</button></header>
@@ -107,15 +111,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
  monthInput.addEventListener("change",renderMonthCalendar);
  renderMonthCalendar();
  const loadClock=async()=>{
-   const [{data:entry,error:e},{data:requests,error:r}]=await Promise.all([
-     supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",today).maybeSingle(),
+   const [{data:entryRows,error:e},{data:requests,error:r}]=await Promise.all([
+     supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out,source").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",today).order("clock_in",{ascending:false}).limit(20),
      supabaseClient.from("coach_time_entry_requests").select("id,work_date,clock_in,clock_out,reason,status,rejection_reason,created_at").eq("box_id",boxId).eq("coach_id",ctx.user.id).order("created_at",{ascending:false}).limit(10)
    ]);
-   if(e){WodIOApp.message(document.getElementById("clockStatus"),e.message);return;}
-   document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"short",timeStyle:"medium"}).format(new Date());
+   if(e){WodIOApp.message(document.getElementById("clockStatus"),"No se pudo consultar el fichaje: "+e.message);return;}
+   if(r)console.error("[WodIO] No se pudieron cargar las solicitudes de fichaje:",r);
+   document.getElementById("clockNow").textContent=new Intl.DateTimeFormat("es-ES",{dateStyle:"full",timeStyle:"medium"}).format(new Date());
    const inBtn=document.getElementById("clockInButton"),outBtn=document.getElementById("clockOutButton");
-   inBtn.disabled=!!entry?.clock_in;outBtn.disabled=!entry?.clock_in||!!entry?.clock_out;
-   document.getElementById("clockStatus").textContent=entry?.clock_out?"Jornada cerrada · entrada "+WodIOApp.formatDateTime(entry.clock_in)+" · salida "+WodIOApp.formatDateTime(entry.clock_out):entry?.clock_in?"Jornada abierta · entrada "+WodIOApp.formatDateTime(entry.clock_in):"No has fichado la entrada de hoy.";
+   const rows=entryRows||[],openEntry=rows.find(v=>!v.clock_out),entry=openEntry||rows[0];
+   inBtn.disabled=!!openEntry;outBtn.disabled=!openEntry;
+   document.getElementById("clockStatus").textContent=openEntry?"Jornada abierta · entrada "+WodIOApp.formatDateTime(openEntry.clock_in):entry?"Último fichaje cerrado · entrada "+WodIOApp.formatDateTime(entry.clock_in)+" · salida "+WodIOApp.formatDateTime(entry.clock_out)+" · puedes iniciar otro tramo si sigues trabajando.":"No has fichado la entrada de hoy.";
    if(ctx.profile.role!=="coach"){inBtn.disabled=true;outBtn.disabled=true;document.getElementById("clockStatus").textContent="El fichaje está disponible desde una cuenta con rol Coach. Tu cuenta actual tiene rol "+(ctx.profile.role==="box_admin"?"Administrador del box":"Super administrador")+". La jornada manual de hoy ya está cerrada."; }
    const labels={pending:"Pendiente",approved:"Aprobada",rejected:"Rechazada"};
    document.getElementById("manualTimeRequests").innerHTML=(requests||[]).length?'<div class="app-table-wrap"><table class="app-table"><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead><tbody>'+requests.map(v=>'<tr><td>'+WodIOApp.formatDate(v.work_date,{withYear:true})+'</td><td>'+WodIOApp.formatDateTime(v.clock_in)+'</td><td>'+WodIOApp.formatDateTime(v.clock_out)+'</td><td><span class="app-badge '+(v.status==="approved"?"success":v.status==="rejected"?"":"warning")+'">'+labels[v.status]+'</span>'+(v.rejection_reason?'<div class="app-muted">'+WodIOApp.escapeHtml(v.rejection_reason)+'</div>':"")+'</td></tr>').join("")+'</tbody></table></div>':'<div class="app-muted">No tienes solicitudes manuales.</div>';
@@ -124,20 +130,14 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const btn=ev.currentTarget;btn.disabled=true;
    try{
     const now=new Date(),date=localDate(now);
-    const {data:existing,error:findError}=await supabaseClient.from("coach_time_entries").select("id,clock_in,clock_out,source").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",date).maybeSingle();
+    const {data:openRows,error:findError}=await supabaseClient.from("coach_time_entries").select("id,clock_in,clock_out").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",date).is("clock_out",null).order("clock_in",{ascending:false}).limit(1);
     if(findError)throw findError;
-    if(existing?.clock_in){
-     WodIOApp.message(document.getElementById("clockStatus"),"Ya existe un fichaje de entrada para hoy ("+(existing.source==="manual"?"registro manual":"fichaje") +"). No se puede crear otro registro para la misma fecha.");
+    if(openRows?.length){
+     WodIOApp.message(document.getElementById("clockStatus"),"Ya tienes una entrada abierta desde "+WodIOApp.formatDateTime(openRows[0].clock_in)+". Ficha la salida antes de iniciar otro tramo.");
      await loadClock();return;
     }
-    if(existing){
-     if(existing.source!=="coach"||existing.clock_out)throw new Error("Ya existe un registro para hoy. Contacta con el administrador del box para corregirlo.");
-     const {error}=await supabaseClient.from("coach_time_entries").update({clock_in:now.toISOString(),updated_at:now.toISOString()}).eq("id",existing.id).eq("box_id",boxId);
-     if(error)throw error;
-    }else{
-     const {error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:date,clock_in:now.toISOString(),source:"coach"});
-     if(error)throw error;
-    }
+    const {error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:date,clock_in:now.toISOString(),source:"coach"});
+    if(error)throw error;
     await loadClock();
    }catch(error){WodIOApp.message(document.getElementById("clockStatus"),error?.message||"No se pudo registrar la entrada.");}
    finally{btn.disabled=false;}
