@@ -960,8 +960,8 @@ function renderStripeStatus(){refreshStripeStatus();}
   return Number.isNaN(parsed.getTime())?null:parsed;
  }
  $("downloadClassTemplate").addEventListener("click",()=>{
- const rows=[["titulo","inicio","duracion_minutos","plazas","coach_email","sala","wod"],["CrossTraining",new Date(2026,9,20,18,0),60,12,"coach@box.com","Sala principal","Fran 21-15-9"]];
- const ws=XLSX.utils.aoa_to_sheet(rows);ws["B2"].z="dd/mm/yyyy hh:mm";ws["!cols"]=[{wch:22},{wch:22},{wch:20},{wch:10},{wch:28},{wch:20},{wch:24}];
+ const rows=[["titulo","inicio","duracion_minutos","plazas","coach_nombre","coach_email","sala","wod"],["CrossTraining",new Date(2026,9,20,18,0),60,12,"Nombre del coach","coach@box.com","Sala principal","Fran 21-15-9"]];
+ const ws=XLSX.utils.aoa_to_sheet(rows);ws["B2"].z="dd/mm/yyyy hh:mm";ws["!cols"]=[{wch:22},{wch:22},{wch:20},{wch:10},{wch:28},{wch:28},{wch:20},{wch:24}];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Clases");XLSX.writeFile(wb,"WodIO-plantilla-clases.xlsx");
 });
 $("classImportFile").addEventListener("change",async ev=>{
@@ -973,7 +973,7 @@ $("classImportFile").addEventListener("change",async ev=>{
   for(const row of rows){
    const title=String(row.titulo||row.Título||"").trim(),startValue=row.inicio??row.Inicio;if(!title||startValue==null||String(startValue).trim()==="")continue;
    const start=parseClassStart(startValue);if(!start)throw new Error('Fecha u hora no válida para la clase "'+title+'". Usa el formato dd/mm/aaaa hh:mm, por ejemplo 20/10/2026 18:00.');
-   const coachEmail=String(row.coach_email||"").trim().toLowerCase(),coach=coaches.find(x=>(x.email||"").toLowerCase()===coachEmail);
+   const coachEmail=String(row.coach_email||row.Coach_email||"").trim().toLowerCase(),coachName=String(row.coach_nombre||row["coach nombre"]||row["Coach nombre"]||row.coach||"").trim().toLocaleLowerCase("es"),normalizeCoachName=value=>String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/\\s+/g," ").trim().toLocaleLowerCase("es"),coach=(coachEmail?coaches.find(x=>(x.email||"").toLowerCase()===coachEmail):null)|| (coachName?coaches.find(x=>normalizeCoachName(name(x))===normalizeCoachName(coachName)):null);
    const payload={box_id:boxId,created_by:ctx.user.id,title,starts_at:start.toISOString(),duration_minutes:Number(row.duracion_minutos||60)||60,capacity:Number(row.plazas||12)||12,coach_id:coach?.id||null,location:String(row.sala||"").trim()||null,workout:String(row.wod||"").trim()||null};
    const {error}=await supabaseClient.from("classes").insert(payload);if(error)throw error;ok++;
   }
