@@ -33,12 +33,37 @@ Deno.serve(async (req: Request) => {
     if (userError || !user) return new Response(JSON.stringify({ error: "invalid_session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const body = await req.json();
-    const paymentId = String(body?.payment_id || "").trim();
+    let paymentId = String(body?.payment_id || "").trim();
+    const tariffId = String(body?.tariff_id || "").trim();
+
+    if (!paymentId && tariffId) {
+      const { data: profile, error: profileError } = await adminClient.from("profiles").select("box_id,role").eq("id", user.id).single();
+      if (profileError || !profile?.box_id || profile.role !== "athlete") throw new Error("athlete_profile_required");
+      const { data: tariff, error: tariffError } = await adminClient.from("box_tariffs")
+        .select("id,box_id,name,tariff_type,price_cents,is_active")
+        .eq("id", tariffId).eq("box_id", profile.box_id).eq("is_active", true).single();
+      if (tariffError || !tariff) throw new Error("tariff_not_available");
+      if (!Number.isInteger(Number(tariff.price_cents)) || Number(tariff.price_cents) <= 0) throw new Error("invalid_tariff_price");
+      const { data: createdPayment, error: createPaymentError } = await adminClient.from("payments").insert({
+        user_id: user.id,
+        box_id: profile.box_id,
+        tariff_id: tariff.id,
+        category: "tariff",
+        concept: "Tarifa · " + tariff.name + (tariff.tariff_type === "monthly" ? " (mensual)" : " (pago único)"),
+        amount_cents: tariff.price_cents,
+        currency: "EUR",
+        status: "pending",
+        due_date: new Date().toISOString().slice(0, 10),
+        payment_method: "card",
+      }).select("id").single();
+      if (createPaymentError || !createdPayment) throw new Error("tariff_payment_creation_failed");
+      paymentId = createdPayment.id;
+    }
 
     if (paymentId) {
       const { data: payment, error: paymentError } = await adminClient
         .from("payments")
-        .select("id,user_id,box_id,concept,amount_cents,currency,status")
+        .select("id,user_id,box_id,concept,amount_cents,currency,status,tariff_id")
         .eq("id", paymentId)
         .single();
       if (paymentError || !payment) throw new Error("payment_not_found");
@@ -89,9 +114,11 @@ Deno.serve(async (req: Request) => {
       params.set("metadata[payment_id]", payment.id);
       params.set("metadata[box_id]", payment.box_id);
       params.set("metadata[user_id]", payment.user_id);
+      if (payment.tariff_id) params.set("metadata[tariff_id]", payment.tariff_id);
       params.set("payment_intent_data[metadata][payment_id]", payment.id);
       params.set("payment_intent_data[metadata][box_id]", payment.box_id);
       params.set("payment_intent_data[metadata][user_id]", payment.user_id);
+      if (payment.tariff_id) params.set("payment_intent_data[metadata][tariff_id]", payment.tariff_id);
 
       const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
         method: "POST",
