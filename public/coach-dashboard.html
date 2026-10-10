@@ -40,9 +40,25 @@ document.addEventListener("DOMContentLoaded",async()=>{
  };
  document.getElementById("clockInButton").addEventListener("click",async ev=>{
    const btn=ev.currentTarget;btn.disabled=true;
-   const now=new Date(),{error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:localDate(now),clock_in:now.toISOString(),source:"coach"});
-   if(error)WodIOApp.message(document.getElementById("clockStatus"),error.message);else await loadClock();
-   btn.disabled=false;
+   try{
+    const now=new Date(),date=localDate(now);
+    const {data:existing,error:findError}=await supabaseClient.from("coach_time_entries").select("id,clock_in,clock_out,source").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",date).maybeSingle();
+    if(findError)throw findError;
+    if(existing?.clock_in){
+     WodIOApp.message(document.getElementById("clockStatus"),"Ya existe un fichaje de entrada para hoy ("+(existing.source==="manual"?"registro manual":"fichaje") +"). No se puede crear otro registro para la misma fecha.");
+     await loadClock();return;
+    }
+    if(existing){
+     if(existing.source!=="coach"||existing.clock_out)throw new Error("Ya existe un registro para hoy. Contacta con el administrador del box para corregirlo.");
+     const {error}=await supabaseClient.from("coach_time_entries").update({clock_in:now.toISOString(),updated_at:now.toISOString()}).eq("id",existing.id).eq("box_id",boxId);
+     if(error)throw error;
+    }else{
+     const {error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:date,clock_in:now.toISOString(),source:"coach"});
+     if(error)throw error;
+    }
+    await loadClock();
+   }catch(error){WodIOApp.message(document.getElementById("clockStatus"),error?.message||"No se pudo registrar la entrada.");}
+   finally{btn.disabled=false;}
  });
  document.getElementById("clockOutButton").addEventListener("click",async ev=>{
    const btn=ev.currentTarget;btn.disabled=true;
