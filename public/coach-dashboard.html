@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    const [{data:entryRows,error:e},{data:requests,error:r},{data:weekRows,error:weekError}]=await Promise.all([
      supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out,source").eq("box_id",boxId).eq("coach_id",ctx.user.id).eq("work_date",today).order("clock_in",{ascending:false}).limit(20),
      supabaseClient.from("coach_time_entry_requests").select("id,work_date,clock_in,clock_out,reason,status,rejection_reason,created_at").eq("box_id",boxId).eq("coach_id",ctx.user.id).order("created_at",{ascending:false}).limit(10),
-     supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out,source").eq("box_id",boxId).eq("coach_id",ctx.user.id).gte("work_date",weekStartDate).lte("work_date",today).order("work_date",{ascending:false}).limit(7)
+     supabaseClient.from("coach_time_entries").select("id,work_date,clock_in,clock_out,source").eq("box_id",boxId).eq("coach_id",ctx.user.id).gte("work_date",weekStartDate).lte("work_date",today).order("work_date",{ascending:false}).order("clock_in",{ascending:false}).limit(50)
    ]);
    if(e){WodIOApp.message(document.getElementById("clockStatus"),"No se pudo consultar el fichaje: "+e.message);return;}
    if(r)console.error("[WodIO] No se pudieron cargar las solicitudes de fichaje:",r);
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
      const {error}=await supabaseClient.from("coach_time_entries").insert({box_id:boxId,coach_id:ctx.user.id,work_date:date,clock_in:now.toISOString(),source:"coach"});
      if(error){
       if(error.code==="23505"){
-       WodIOApp.message(status,"Ya existe un fichaje para hoy. Se ha actualizado el estado; comprueba si debes fichar la salida.");
+       WodIOApp.message(status,"Ya hay un turno abierto para hoy. Se ha actualizado el estado; comprueba si debes fichar la salida.");
        await loadClock();return;
       }
       throw error;
