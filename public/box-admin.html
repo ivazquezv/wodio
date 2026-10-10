@@ -90,7 +90,7 @@
 .users-bottom-grid .app-card{min-width:0;width:100%;box-sizing:border-box}
 .users-bottom-grid .app-table-wrap{min-width:0;width:100%;overflow-x:auto}
 #usersChart{width:100%;min-width:0}
-.users-pagination{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft)}
+.user-tariff-control{display:grid;gap:6px;min-width:190px}.user-tariff-control select{width:100%;min-height:34px;padding:6px 8px;border:1px solid var(--border-soft);border-radius:8px;background:var(--bg-elevated);color:var(--text-main);font:inherit;font-size:.74rem}.user-tariff-control .app-btn{justify-content:center;padding:7px 10px;font-size:.76rem}.user-tariff-control .admin-mini{max-width:210px;line-height:1.35}.users-pagination{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft)}
 .users-pagination .app-btn{min-width:36px;justify-content:center;padding:7px 10px}
 .users-pagination .app-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .users-pagination-info{width:100%;text-align:center;color:var(--text-muted);font-size:.72rem;margin-bottom:2px}
@@ -454,7 +454,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const $=id=>document.getElementById(id), name=u=>[u?.first_name,u?.last_name].filter(Boolean).join(" ")||u?.email||u?.phone||"Usuario";
  const USERS_PAGE_SIZE=20;
  let usersPage=1;
- let box=null, users=[], coaches=[], classes=[], events=[], eventRegistrations=[], paymentMethods=[];
+ let box=null, users=[], coaches=[], classes=[], events=[], eventRegistrations=[], paymentMethods=[], athleteTariffs=[];
  function renderUsersTable(){
   const table=$("clientsTable");
   if(!table)return;
@@ -467,7 +467,11 @@ document.addEventListener("DOMContentLoaded",async()=>{
   }
   const start=(usersPage-1)*USERS_PAGE_SIZE;
   const pageUsers=users.slice(start,start+USERS_PAGE_SIZE);
-  const rows=pageUsers.map(v=>'<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td>'+WodIOApp.escapeHtml(v.email||"—")+'</td><td>'+WodIOApp.escapeHtml(v.phone||"—")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+ '</td><td><div class="admin-actions"><button class="app-btn" data-edit-user="'+v.id+'">Editar</button>'+(v.email?'<button class="app-btn" data-reset-user="'+v.id+'">Enviar recuperación</button>':'')+'</div></td></tr>').join("");
+  const rows=pageUsers.map(v=>{
+   const currentTariff=athleteTariffs.find(t=>t.id===v.tariff_id);
+   const tariffControl=v.role!=="athlete"?'<span class="admin-mini">Solo atletas</span>':'<div class="user-tariff-control"><select aria-label="Tarifa de '+WodIOApp.escapeHtml(name(v))+'" data-user-tariff="'+v.id+'"><option value="">Sin tarifa</option>'+athleteTariffs.filter(t=>t.is_active||t.id===v.tariff_id).map(t=>'<option value="'+t.id+'" '+(t.id===v.tariff_id?'selected':'')+'>'+WodIOApp.escapeHtml(t.name)+' · '+WodIOApp.euro(t.price_cents)+(t.tariff_type==="monthly"?" / mes":" · pago único")+'</option>').join("")+'</select><select aria-label="Aplicación de tarifa" data-user-tariff-mode="'+v.id+'"><option value="next">Desde próximo mes</option><option value="now">Inmediato</option></select><button type="button" class="app-btn" data-assign-user-tariff="'+v.id+'">Guardar</button>'+(currentTariff?'<div class="admin-mini">Actual: '+WodIOApp.escapeHtml(currentTariff.name)+'</div>':'<div class="admin-mini">Sin tarifa asignada</div>')+'</div>';
+   return '<tr><td>'+WodIOApp.escapeHtml(name(v))+'</td><td>'+WodIOApp.escapeHtml(v.email||"—")+'</td><td>'+WodIOApp.escapeHtml(v.phone||"—")+'</td><td><span class="app-badge">'+WodIOApp.escapeHtml(WodIOApp.profileLabel(v))+'</span></td><td>'+WodIOApp.formatDate(v.created_at,{withYear:true})+'</td><td>'+tariffControl+'</td><td><div class="admin-actions"><button class="app-btn" data-edit-user="'+v.id+'">Editar</button>'+(v.email?'<button class="app-btn" data-reset-user="'+v.id+'">Enviar recuperación</button>':'')+'</div></td></tr>';
+  }).join("");
   let pagination="";
   if(totalPages>1){
    const buttons=[];
@@ -483,8 +487,58 @@ document.addEventListener("DOMContentLoaded",async()=>{
    buttons.push('<button class="app-btn" type="button" data-users-page="'+(usersPage+1)+'"'+(usersPage===totalPages?' disabled':'')+'>Siguiente <i class="ph ph-caret-right"></i></button>');
    pagination='<div class="users-pagination"><div class="users-pagination-info">Mostrando '+(start+1)+'–'+Math.min(start+USERS_PAGE_SIZE,total)+' de '+total+' usuarios</div>'+buttons.join("")+'</div>';
   }
-  table.innerHTML='<table class="app-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Móvil</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+pagination;
+  table.innerHTML='<table class="app-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Móvil</th><th>Rol</th><th>Alta</th><th>Tarifa asignada</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+pagination;
  }
+ async function assignUserTariff(userId){
+  const user=users.find(v=>v.id===userId);
+  const select=document.querySelector('[data-user-tariff="'+CSS.escape(userId)+'"]');
+  const modeSelect=document.querySelector('[data-user-tariff-mode="'+CSS.escape(userId)+'"]');
+  const button=document.querySelector('[data-assign-user-tariff="'+CSS.escape(userId)+'"]');
+  if(!user||user.role!=="athlete"||!select||!modeSelect||!button)return;
+  const tariffId=select.value||null, mode=modeSelect.value;
+  const tariff=tariffId?athleteTariffs.find(t=>t.id===tariffId):null;
+  if(tariffId&&!tariff){WodIOApp.message(msg,"La tarifa seleccionada no está disponible.");return;}
+  if(tariff&& !tariff.is_active){WodIOApp.message(msg,"La tarifa está inactiva. Actívala primero en Tarifas y matrícula.");return;}
+  const effectLabel=mode==="now"?"inmediatamente":"desde el próximo mes";
+  if(!confirm(tariff?"¿Asignar "+tariff.name+" a "+name(user)+" "+effectLabel+"? "+(mode==="now"?"Se generará una cuota pendiente ahora y se sustituirán las cuotas de tarifa pendientes.":"La nueva cuota recurrente se aplicará desde el próximo mes; las cuotas pendientes actuales no se modificarán."):"¿Quitar la tarifa de "+name(user)+" y desactivar su cobro recurrente?"))return;
+  button.disabled=true;button.textContent="Guardando…";
+  try{
+   const {error:profileError}=await supabaseClient.from("profiles").update({tariff_id:tariffId,updated_at:new Date().toISOString()}).eq("id",userId).eq("box_id",boxId);
+   if(profileError)throw profileError;
+   const {data:schedules,error:scheduleError}=await supabaseClient.from("recurring_payment_schedules").select("id").eq("box_id",boxId).eq("user_id",userId).eq("category","tariff").eq("active",true);
+   if(scheduleError)throw scheduleError;
+   if(!tariff){
+    if(schedules?.length){const ids=schedules.map(s=>s.id);const {error}=await supabaseClient.from("recurring_payment_schedules").update({active:false,updated_at:new Date().toISOString()}).in("id",ids).eq("box_id",boxId);if(error)throw error;}
+    user.tariff_id=null;renderUsersTable();WodIOApp.message(msg,"Tarifa retirada y cobro recurrente desactivado.","success");await loadRecurringPayments();return;
+   }
+   const isMonthly=tariff.tariff_type==="monthly";
+   const today=new Date(),todayIso=today.toISOString().slice(0,10),monthStart=new Date(today.getFullYear(),today.getMonth(),1),nextMonth=new Date(today.getFullYear(),today.getMonth()+1,1),nextMonthIso=nextMonth.toISOString().slice(0,10);
+   const concept="Tarifa · "+tariff.name;
+   if(mode==="now"){
+    const {error:cancelError}=await supabaseClient.from("payments").update({status:"cancelled",updated_at:new Date().toISOString(),notes:"Sustituido por una nueva asignación de tarifa."}).eq("box_id",boxId).eq("user_id",userId).eq("category","tariff").eq("status","pending");
+    if(cancelError)throw cancelError;
+    const {error:paymentError}=await supabaseClient.from("payments").insert({box_id:boxId,user_id:userId,concept,amount_cents:tariff.price_cents,currency:"EUR",status:"pending",due_date:todayIso,category:"tariff",notes:"Cuota creada al asignar tarifa desde administración."});
+    if(paymentError)throw paymentError;
+   }
+   if(isMonthly){
+    const schedulePayload={box_id:boxId,user_id:userId,tariff_id:tariff.id,concept,amount_cents:tariff.price_cents,currency:"EUR",due_day:1,category:"tariff",notes:"Cuota recurrente generada a partir de la tarifa asignada.",active:true,next_run_date:nextMonthIso,updated_at:new Date().toISOString()};
+    if(schedules?.length){
+     const {error}=await supabaseClient.from("recurring_payment_schedules").update(schedulePayload).in("id",schedules.map(s=>s.id)).eq("box_id",boxId);
+     if(error)throw error;
+    }else{
+     const {error}=await supabaseClient.from("recurring_payment_schedules").insert(schedulePayload);
+     if(error)throw error;
+    }
+   }else if(schedules?.length){
+    const {error}=await supabaseClient.from("recurring_payment_schedules").update({active:false,updated_at:new Date().toISOString()}).in("id",schedules.map(s=>s.id)).eq("box_id",boxId);
+    if(error)throw error;
+   }
+   user.tariff_id=tariff.id;renderUsersTable();await loadRecurringPayments();
+   WodIOApp.message(msg,mode==="now"?"Tarifa asignada. Se ha creado una cuota pendiente y "+(isMonthly?"se programó la recurrencia para el próximo mes.":"la tarifa de pago único no generará recurrencias."):"Tarifa asignada para el próximo mes. "+(isMonthly?"La recurrencia está programada para el día 1.":"El pago único se generará el próximo mes mediante la programación recurrente actual; revisa el pago manualmente si no aparece."),"success");
+  }catch(error){WodIOApp.message(msg,error?.message||"No se pudo asignar la tarifa.");}
+  finally{button.disabled=false;button.textContent="Guardar";}
+ }
+ document.addEventListener("click",ev=>{const button=ev.target.closest("[data-assign-user-tariff]");if(button)assignUserTariff(button.dataset.assignUserTariff);});
  async function load(){
   const refreshBtn=$("refreshBtn");
   if(refreshBtn) refreshBtn.disabled=true;
@@ -504,7 +558,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
    supabaseClient.from("coach_time_entry_requests").select("id,box_id,coach_id,work_date,clock_in,clock_out,reason,status,reviewed_by,reviewed_at,rejection_reason,created_at,updated_at").eq("box_id",boxId).order("created_at",{ascending:false}).limit(200)
   ]);
   const err=b.error||u.error||c.error||e.error||p.error||x.error||pm.error||cs.error||sh.error||te.error||ter.error;if(err){WodIOApp.message(msg,err.message);return;}
-  box=b.data;users=u.data||[];classes=c.data||[];events=e.data||[];paymentMethods=pm.data||[];coaches=users.filter(v=>v.role==="coach");const coachSettings=cs.data||[],coachShifts=sh.data||[],coachTimeEntries=te.data||[],coachTimeRequests=ter.data||[];const eventIds=events.map(v=>v.id);const er=eventIds.length?await supabaseClient.from("event_registrations").select("id,event_id,user_id,status,team_name,team_members,created_at,payment_id").in("event_id",eventIds):{data:[],error:null};if(er.error)throw er.error;eventRegistrations=er.data||[];
+  box=b.data;users=u.data||[];const [tariffResult,profileTariffResult]=await Promise.all([supabaseClient.from("box_tariffs").select("id,name,tariff_type,price_cents,monthly_classes,monthly_open_boxes,description,is_active,sort_order,created_at").eq("box_id",boxId).order("sort_order",{ascending:true}).order("created_at",{ascending:true}),supabaseClient.from("profiles").select("id,tariff_id").eq("box_id",boxId)]);if(tariffResult.error)throw tariffResult.error;if(profileTariffResult.error)throw profileTariffResult.error;athleteTariffs=tariffResult.data||[];const userTariffMap=new Map((profileTariffResult.data||[]).map(p=>[p.id,p.tariff_id]));users=users.map(v=>({...v,tariff_id:userTariffMap.get(v.id)||null}));classes=c.data||[];events=e.data||[];paymentMethods=pm.data||[];coaches=users.filter(v=>v.role==="coach");const coachSettings=cs.data||[],coachShifts=sh.data||[],coachTimeEntries=te.data||[],coachTimeRequests=ter.data||[];const eventIds=events.map(v=>v.id);const er=eventIds.length?await supabaseClient.from("event_registrations").select("id,event_id,user_id,status,team_name,team_members,created_at,payment_id").in("event_id",eventIds):{data:[],error:null};if(er.error)throw er.error;eventRegistrations=er.data||[];
   renderStripeStatus();
 
   $("boxName").textContent=box.name;$("welcomeTitle").textContent="Hola, "+name(ctx.profile);
