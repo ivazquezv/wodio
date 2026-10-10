@@ -20,7 +20,7 @@
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-check-circle"></i></div><div><div class="app-stat-value" id="paidAmount">—</div><div class="app-stat-label">Pagado este año</div></div></div>
 <div class="app-card app-stat"><div class="app-stat-icon"><i class="ph ph-receipt"></i></div><div><div class="app-stat-value" id="paymentCount">—</div><div class="app-stat-label">Movimientos</div></div></div>
 </section>
-<section class="app-card" id="athleteTariffs" style="margin-top:18px"><div class="app-card-head"><div><h2>Tarifas del box</h2><p>Consulta las tarifas disponibles y selecciona la que mejor se adapte a ti.</p></div></div><div id="athleteTariffList" class="athlete-tariff-grid"><div class="app-loading">Cargando tarifas…</div></div><div id="tariffSelectionMessage" class="payment-method-note" role="status" aria-live="polite"></div></section>
+<section class="app-card" id="athleteTariffs" style="margin-top:18px"><div class="app-card-head"><div><h2>Tarifas del box</h2><p>Consulta las tarifas disponibles y selecciona la que mejor se adapte a ti.</p></div></div><div id="athleteTariffList" class="athlete-tariff-grid"><div class="app-loading">Cargando tarifas…</div></div><div id="tariffSelectionMessage" class="payment-method-note" role="status" aria-live="polite"></div><div id="tariffCheckout" class="app-card" style="margin-top:16px" hidden><div class="app-card-head"><div><h3>Confirma tu tarifa</h3><p>Revisa el importe y la periodicidad antes de continuar al pago.</p></div></div><div id="tariffCheckoutSummary"></div><button type="button" id="confirmTariffPayment" class="app-btn primary" style="margin-top:14px">Confirmar importe y pagar</button></div></section>
 <section class="app-card" id="paymentOptions" style="margin-top:18px"><div class="app-card-head"><div><h2>Formas de pago</h2><p>Solo se muestran los métodos que el box ha activado en su configuración.</p></div></div><div id="paymentMethods" class="payment-method-grid"><div class="app-loading">Cargando formas de pago…</div></div></section>
 <section class="app-card" style="margin-top:18px"><div class="app-card-head"><div><h2>Historial</h2><p>Los pagos se gestionan desde la administración del box.</p></div></div><div id="paymentList" class="app-table-wrap"><div class="app-loading">Cargando pagos…</div></div></section>
 </div>
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const paymentResult=new URLSearchParams(window.location.search).get("payment"), sessionId=new URLSearchParams(window.location.search).get("session_id");
   if(paymentResult==="success"&&sessionId){try{await supabaseClient.functions.invoke("stripe-payment-status",{body:{session_id:sessionId}});}catch(e){console.warn("[WodIO Payments] payment status check failed",e);}}
   const tariffList=document.getElementById("athleteTariffList"), tariffMessage=document.getElementById("tariffSelectionMessage");
-  let selectedTariffId=null;
+  let selectedTariffId=null, selectedTariff=null;
   async function loadAthleteTariffs(){
     if(!tariffList)return;
     const boxId=ctx.profile?.box_id;
@@ -54,6 +54,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     tariffList.querySelectorAll("[data-select-athlete-tariff]").forEach(btn=>btn.addEventListener("click",()=>{
       selectedTariffId=btn.dataset.selectAthleteTariff;
       const selected=tariffs.find(t=>t.id===selectedTariffId);
+      selectedTariff=selected;
+      const checkout=document.getElementById("tariffCheckout");
+      const summary=document.getElementById("tariffCheckoutSummary");
+      const isMonthly=selected.tariff_type==="monthly";
+      summary.innerHTML='<div class="app-stat-label">Tarifa</div><p><strong>'+WodIOApp.escapeHtml(selected.name)+'</strong></p><div class="app-stat-label">Importe que pagarás ahora</div><p style="font-size:1.35rem;font-weight:800">'+euro(selected.price_cents)+(isMonthly?' / mes':' · pago único')+'</p><div class="app-stat-label">Periodicidad</div><p>'+ (isMonthly?'Mensual. El primer pago se realiza ahora; las siguientes cuotas se generarán para el día 1 de cada mes.':'Un único pago. No se generarán cuotas mensuales.')+'</p><p class="payment-method-note">El pago se confirmará cuando el proveedor confirme la operación. No se realizará ningún cargo hasta que completes el pago en la siguiente pantalla.</p>';
+      checkout.hidden=false;
+      document.getElementById("confirmTariffPayment").textContent="Confirmar "+euro(selected.price_cents)+" y pagar";
       tariffList.querySelectorAll("[data-athlete-tariff-card]").forEach(card=>{
         const active=card.dataset.athleteTariffCard===selectedTariffId;
         card.classList.toggle("is-selected",active);
@@ -64,11 +71,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(active&&!status){status=document.createElement("div");status.className="athlete-tariff-selected";status.textContent="Seleccionada";card.insertBefore(status,button);}
         if(!active)status?.remove();
       });
-      tariffMessage.textContent="Has seleccionado «"+selected.name+"». La selección queda marcada en esta pantalla; la contratación y el cobro de tarifas aún no están conectados.";
-      WodIOApp.message(message,"Tarifa seleccionada: "+selected.name+". Para contratarla, el box debe tener habilitado el flujo de alta y cobro.","success");
+      tariffMessage.textContent="Tarifa seleccionada. Revisa el resumen y confirma el importe y la periodicidad antes de pagar.";
+      WodIOApp.message(message,"Revisa el resumen de la tarifa antes de continuar.","success");
     }));
   }
   await loadAthleteTariffs();
+  document.getElementById("confirmTariffPayment")?.addEventListener("click", async ev => {
+    if (!selectedTariffId || !selectedTariff) { WodIOApp.message(message,"Selecciona una tarifa antes de continuar.","warning"); return; }
+    const button=ev.currentTarget;
+    button.disabled=true;
+    button.textContent="Preparando el pago…";
+    try {
+      const {data,error}=await supabaseClient.functions.invoke("stripe-checkout",{body:{tariff_id:selectedTariffId}});
+      if(error) {
+        let serverMessage="";
+        try { const response=error.context; if(response?.clone){const body=await response.clone().json();serverMessage=body?.error||"";} } catch(_e) {}
+        throw new Error(serverMessage || error.message || "No se pudo iniciar el pago.");
+      }
+      if(!data?.url) throw new Error(data?.error || "No se pudo iniciar el pago.");
+      window.location.href=data.url;
+    } catch(error) {
+      WodIOApp.message(message,error?.message||"No se pudo iniciar el pago.","warning");
+      button.disabled=false;
+      button.textContent="Confirmar "+WodIOApp.euro(selectedTariff.price_cents)+" y pagar";
+    }
+  });
   console.info("[WodIO Payments] loading payments");
   const {data:payments,error}=await supabaseClient.from("payments").select("id,concept,amount_cents,currency,status,due_date,paid_at,created_at,payment_method,provider_reference").eq("user_id",ctx.user.id).order("created_at",{ascending:false});
   if(error){WodIOApp.message(message,error.message);list.innerHTML='<div class="app-empty">No se pudieron cargar los pagos.</div>';return;}
