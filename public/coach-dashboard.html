@@ -67,7 +67,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
  initials.textContent=coachInitials||"CO";
  const showCoachPhoto=url=>{if(url){photo.src=url;photo.hidden=false;initials.hidden=true;}else{photo.removeAttribute("src");photo.hidden=true;initials.hidden=false;}};
  photo.addEventListener("error",()=>{photo.hidden=true;initials.hidden=false;});
- showCoachPhoto(ctx.profile.avatar_url);
+ // requireUser no incluye avatar_url en su consulta inicial; cargarlo explícitamente al abrir el panel.
+ const {data:coachPhotoProfile,error:coachPhotoProfileError}=await supabaseClient.from("profiles").select("avatar_url").eq("id",ctx.user.id).maybeSingle();
+ if(coachPhotoProfileError)console.error("[WodIO] No se pudo cargar la foto de perfil del coach:",coachPhotoProfileError);
+ showCoachPhoto(coachPhotoProfile?.avatar_url);
  photoChoose.addEventListener("click",()=>photoInput.click());
  photoInput.addEventListener("change",()=>{const file=photoInput.files?.[0];photoUpload.disabled=!file;photoStatus.textContent=file?file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB":"";});
  photoUpload.addEventListener("click",async()=>{
